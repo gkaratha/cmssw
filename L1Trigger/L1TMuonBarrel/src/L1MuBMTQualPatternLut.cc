@@ -20,7 +20,7 @@
 // This Class's Header --
 //-----------------------
 
-//#include "L1Trigger/L1TMuonBarrel/interface/L1MuDTQualPatternLut.h"
+
 #include "L1Trigger/L1TMuonBarrel/interface/L1MuBMTQualPatternLut.h"
 
 //---------------
@@ -37,6 +37,7 @@
 
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "CondFormats/L1TObjects/interface/L1TriggerLutFile.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 using namespace std;
 
@@ -121,8 +122,10 @@ int L1MuBMTQualPatternLut::load() {
     //    if ( L1MuDTTFConfig::Debug(1) ) cout << "Reading file : " 
     //                                         << file.getName() << endl; 
 
-    // ignore comment lines 
-    file.ignoreLines(14);
+  
+  int skip2=getIgnoredLines(file);
+  // cout<<"coarse lines to skip2 "<<skip2<<endl;
+    file.ignoreLines(skip2);
 
     // read file
     while ( file.good() ) {
@@ -200,7 +203,7 @@ int L1MuBMTQualPatternLut::getCoarseEta(int sp, int adr) const {
 
   LUT::const_iterator it = m_lut.find(make_pair(sp,adr));
   if ( it == m_lut.end() ) {
-    cerr << "Error: L1MuDTQualPatternLut: no coarse eta found for address " << adr << endl;
+     edm::LogError ("Not found") << "Error: L1MuDTQualPatternLut: no coarse eta found for address " << adr << endl;
     return 0;
   }
   return (*it).second.first;
@@ -215,8 +218,24 @@ const vector<short>& L1MuBMTQualPatternLut::getQualifiedPatterns(int sp, int adr
 
   LUT::const_iterator it = m_lut.find(make_pair(sp,adr));
   if ( it == m_lut.end() ) {
-    cerr << "Error: L1MuDTQualPatternLut: no pattern list found for address " << adr << endl;
+    edm::LogError ("Not found") << "Error: L1MuDTQualPatternLut: no pattern list found for address " << adr << endl;
   }
   return (*it).second.second;
 
+}
+
+
+int L1MuBMTQualPatternLut::getIgnoredLines(L1TriggerLutFile file) const{
+    if ( file.open() != 0 ) return -1;
+  int skip=0;
+  while ( file.good() ) {
+     string str=file.readString();
+     if (str.find("#")==0) skip+=1;
+     // cout<<"here "<<str<<" found "<<str.find("#")<<endl;
+        if ( !file.good() ) { file.close(); break; }
+    
+  }
+  // cout<<"coarse lines to skip3 "<<skip<<endl;
+  file.close();
+  return skip;
 }
