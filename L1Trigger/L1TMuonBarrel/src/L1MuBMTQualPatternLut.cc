@@ -13,7 +13,7 @@
 //   Author :
 //   N. Neumeister            CERN EP
 //   J. Troconiz              UAM Madrid
-//
+//   Modifications:    G karathanasis U Athens
 //--------------------------------------------------
 
 //-----------------------
@@ -22,6 +22,7 @@
 
 
 #include "L1Trigger/L1TMuonBarrel/interface/L1MuBMTQualPatternLut.h"
+#include "L1Trigger/L1TMuonBarrel/interface/L1MuBMTEtaPatternLut.h"
 
 //---------------
 // C++ Headers --
@@ -97,8 +98,8 @@ void L1MuBMTQualPatternLut::reset() {
 int L1MuBMTQualPatternLut::load() {
 
   // get directory name
-  string defaultPath ="L1Trigger/"; //"L1TriggerConfig/DTTrackFinder/parameters/";
-    string eau_dir = "L1TMuon/data/bmtf_luts/LUTs_Ass/";//"L1TriggerData/DTTrackFinder/Eau/";
+  string defaultPath ="L1Trigger/";
+  string eau_dir = "L1TMuon/data/bmtf_luts/LUTs_Ass/";
   string emu_str = "";
 
   // loop over all sector processors
@@ -120,12 +121,12 @@ int L1MuBMTQualPatternLut::load() {
     L1TriggerLutFile file(emu_file);
     if ( file.open() != 0 ) return -1;
     //    if ( L1MuDTTFConfig::Debug(1) ) cout << "Reading file : " 
-    //                                         << file.getName() << endl; 
-
-  
-  int skip2=getIgnoredLines(file);
-  // cout<<"coarse lines to skip2 "<<skip2<<endl;
-    file.ignoreLines(skip2);
+    //                                         << file.getName() << endl;  
+   
+    L1MuBMTEtaPatternLut lines;
+    int skip3=lines.getIgnoredLines(file);
+    // cout<<"this "<<skip3<<endl;
+    file.ignoreLines(skip3);
 
     // read file
     while ( file.good() ) {
@@ -203,7 +204,7 @@ int L1MuBMTQualPatternLut::getCoarseEta(int sp, int adr) const {
 
   LUT::const_iterator it = m_lut.find(make_pair(sp,adr));
   if ( it == m_lut.end() ) {
-     edm::LogError ("Not found") << "Error: L1MuDTQualPatternLut: no coarse eta found for address " << adr << endl;
+     edm::LogError ("L1MuBMTQualPatternLut: coarse eta not found") << "Error: L1MuBMTQualPatternLut: no coarse eta found for address " << adr << endl;
     return 0;
   }
   return (*it).second.first;
@@ -218,24 +219,10 @@ const vector<short>& L1MuBMTQualPatternLut::getQualifiedPatterns(int sp, int adr
 
   LUT::const_iterator it = m_lut.find(make_pair(sp,adr));
   if ( it == m_lut.end() ) {
-    edm::LogError ("Not found") << "Error: L1MuDTQualPatternLut: no pattern list found for address " << adr << endl;
+    edm::LogError ("L1MuBMTQualPatternLut: coarse eta pattern list not found") << "Error: L1MuBMTQualPatternLut: no pattern list found for address " << adr << endl;
   }
   return (*it).second.second;
 
 }
 
 
-int L1MuBMTQualPatternLut::getIgnoredLines(L1TriggerLutFile file) const{
-    if ( file.open() != 0 ) return -1;
-  int skip=0;
-  while ( file.good() ) {
-     string str=file.readString();
-     if (str.find("#")==0) skip+=1;
-     // cout<<"here "<<str<<" found "<<str.find("#")<<endl;
-        if ( !file.good() ) { file.close(); break; }
-    
-  }
-  // cout<<"coarse lines to skip3 "<<skip<<endl;
-  file.close();
-  return skip;
-}

@@ -11,7 +11,7 @@
 //   Author :
 //   N. Neumeister            CERN EP
 //   J. Troconiz              UAM Madrid
-//
+//   Modificattions:      George Karathanasis U Athens
 //--------------------------------------------------
 
 //-----------------------
@@ -88,8 +88,8 @@ void L1MuBMTEtaPatternLut::reset() {
 int L1MuBMTEtaPatternLut::load() {
 
   // get directory name
-  string defaultPath = "L1Trigger/";//L1TriggerConfig/DTTrackFinder/parameters/";
-  string eau_dir = "L1TMuon/data/bmtf_luts/LUTs_Ass/";//L1TriggerData/DTTrackFinder/Eau/
+  string defaultPath = "L1Trigger/";
+  string eau_dir = "L1TMuon/data/bmtf_luts/LUTs_Ass/";
 
   // assemble file name
   edm::FileInPath lut_f = edm::FileInPath(string(defaultPath + eau_dir + "ETFPatternList.lut"));
@@ -165,7 +165,7 @@ L1MuDTEtaPattern L1MuBMTEtaPatternLut::getPattern(int id) const {
 
   LUT::const_iterator it = m_lut.find(id);
   if ( it == m_lut.end() ) {
-    edm::LogError ("Not found") << "Error: L1MuDTEtaPatternLut: pattern not found : " << id << endl;
+    edm::LogError ("L1MuBMTEtaPatternLut: fine eta not found") << "Error: L1MuBMTEtaPatternLut: pattern not found : " << id << endl;
     //    return 0;
   }
   return (*it).second;  

@@ -174,9 +174,9 @@ void L1MuBMAssignmentUnit::PhiAU(const edm::EventSetup& c) {
   int phi_precision = 4096 >> sh_phi;
   const double k = 57.2958/0.625/static_cast<float>(phi_precision);
   double phi_f = static_cast<double>(phi2);
-   int bit_div_phi=static_cast<int>(phi2)%4;
+  int bit_div_phi=static_cast<int>(phi2)%4;
   if (bit_div_phi<0) bit_div_phi+=4;
-   phi_f=phi_f-std::abs(bit_div_phi);
+  phi_f=phi_f-std::abs(bit_div_phi);
   int phi_8 = static_cast<int>(floor(phi_f*k));
 
   if ( second == 0 && first ) {
