@@ -110,3 +110,19 @@ L1MuDTChambPhDigi const* L1MuDTChambPhContainer::chPhiSegm2(int wheel, int stat,
 
   return(rT);
 }
+
+
+L1MuDTChambPhDigi* L1MuDTChambPhContainer::chPhiSegm(int wheel, int stat, int sect, int step, int ts2tag) {
+
+
+  L1MuDTChambPhDigi * rT=0;
+  for ( Phi_Container::iterator i  = phiSegments.begin();
+                     i != phiSegments.end();
+                     i++ ) {
+    if  (step == i->bxNum() && wheel == i->whNum() && sect == i->scNum()
+      && stat == i->stNum() && i->Ts2Tag() == ts2tag)
+      rT = &(*i);
+  }
+
+  return(rT);
+}

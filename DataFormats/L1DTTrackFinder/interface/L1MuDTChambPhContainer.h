@@ -56,6 +56,8 @@ class L1MuDTChambPhContainer {
 
   L1MuDTChambPhDigi const* chPhiSegm2(int wheel, int stat, int sect, int bx) const;
 
+  L1MuDTChambPhDigi* chPhiSegm(int wheel, int stat, int sect, int bx, int ts2tag);
+
  private:
 
   Phi_Container phiSegments; 
