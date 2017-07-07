@@ -20,7 +20,7 @@ double_soft_muon_muonpt.invMassLowercut  = cms.double(10)
 double_soft_muon_muonpt.histoPSet.muPtBinning      =cms.vdouble(0,2,5,7,10,12,15,17,20,25,30,50)
 double_soft_muon_muonpt.histoPSet.muPtBinning2D    =cms.vdouble(0,2,5,7,10,12,15,17,20,25,30,50)
 # Triggers
-double_soft_muon_muonpt.numGenericTriggerEventPSet.hltPaths = cms.vstring('HLT_DoubleMU3_DZ_PFMET50_PFMHT60_v*')
+double_soft_muon_muonpt.numGenericTriggerEventPSet.hltPaths = cms.vstring('HLT_DoubleMu3_DZ_PFMET50_PFMHT60_v*')
 double_soft_muon_muonpt.denGenericTriggerEventPSet.hltPaths = cms.vstring('HLT_PFMET140_PFMHT140_v*')
 
 #met
@@ -76,8 +76,11 @@ double_soft_muon_mhtpt.invMassLowercut       = cms.double(10)
 double_soft_muon_mhtpt.numGenericTriggerEventPSet.hltPaths = cms.vstring('HLT_DoubleMu3_DZ_PFMET50_PFMHT60_v*')
 double_soft_muon_mhtpt.denGenericTriggerEventPSet.hltPaths = cms.vstring('HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*')
 
+from DQMOffline.Trigger.RazorMonitor_cff import *
+
 susyMonitorHLT = cms.Sequence(
-double_soft_muon_muonpt
+susyHLTRazorMonitoring
++double_soft_muon_muonpt
 +double_soft_muon_metpt
 +double_soft_muon_mhtpt
 +double_soft_muon_mll
