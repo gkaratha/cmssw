@@ -8,9 +8,9 @@ SiPixelPhase1DigisADC = DefaultHistoDigiCluster.clone(
   name = "adc",
   title = "Digi ADC values",
   xlabel = "adc readout",
-  range_min = 0,
-  range_max = 300,
-  range_nbins = 300,
+  range_min = -0.5,
+  range_max = 300.5,
+  range_nbins = 301,
   specs = VPSet(
     StandardSpecificationTrend,
     StandardSpecificationTrend2D,
@@ -25,8 +25,8 @@ SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
   title = "Digis",
   xlabel = "digis",
   range_min = 0,
-  range_max = 30,
-  range_nbins = 30,
+  range_max = 100,
+  range_nbins = 100,
   dimensions = 0, # this is a count
 
   specs = VPSet(
@@ -37,11 +37,11 @@ SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
     Specification().groupBy("PXBarrel/PXLayer/Event") #this will produce inclusive counts per Layer/Disk
                              .reduce("COUNT")    
                              .groupBy("PXBarrel/PXLayer")
-                             .save(nbins=100, xmin=0, xmax=6000),
+                             .save(nbins=150, xmin=0, xmax=30000),
     Specification().groupBy("PXForward/PXDisk/Event")
                              .reduce("COUNT")    
                              .groupBy("PXForward/PXDisk/")
-                             .save(nbins=100, xmin=0, xmax=6000),
+                             .save(nbins=150, xmin=0, xmax=15000),
   )
 )
 
@@ -49,7 +49,7 @@ SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
 SiPixelPhase1ClustersNdigisInclusive = DefaultHistoDigiCluster.clone(
   name = "digis",
   title = "Digis",
-  range_min = 0, range_max = 20000, range_nbins = 100,
+  range_min = 0, range_max = 100000, range_nbins = 100,
   xlabel = "digis",
   dimensions = 0,
   specs = VPSet(
@@ -63,14 +63,15 @@ SiPixelPhase1DigisNdigisPerFED = DefaultHisto.clone( #to be removed?
   title = "Digis",   # should allow setting the range per spec, but OTOH a 
   xlabel = "digis",  # HistogramManager is almost free.
   range_min = 0,
-  range_max = 1000,
+  range_max = 2000,
   range_nbins = 200,
   dimensions = 0, 
   specs = VPSet(
     Specification().groupBy("FED/Event")
                    .reduce("COUNT")
                    .groupBy("FED")
-                   .groupBy("", "EXTEND_Y")
+                   .reduce("MEAN")
+                   .groupBy("", "EXTEND_X")
                    .save()
   )
 )
@@ -83,18 +84,18 @@ SiPixelPhase1DigisNdigisPerFEDtrend = DefaultHisto.clone(
   range_max = 1000,
   range_nbins = 200,
   dimensions = 0,
-  enabled = False,
+  #enabled = False,
   specs = VPSet(
   Specification().groupBy("FED/Event") #produce the mean number of digis per event and FED per lumisection
                    .reduce("COUNT")
-                   .groupBy("FED/Lumisection")
+                   .groupBy("FED/LumiBlock")
                    .reduce("MEAN")
                    .groupBy("FED", "EXTEND_X")
                    .groupBy("", "EXTEND_Y")
                    .save(),
   Specification().groupBy("FED/Event") #produce the mean number of digis per event and FED per lumisection
                    .reduce("COUNT")
-                   .groupBy("Lumisection")
+                   .groupBy("LumiBlock")
                    .reduce("MEAN")
                    .groupBy("", "EXTEND_X")
                    .save()
@@ -108,7 +109,9 @@ SiPixelPhase1DigisEvents = DefaultHistoDigiCluster.clone(
   ylabel = "#Events",
   dimensions = 0,
   specs = VPSet(
+
     Specification().groupBy("Lumisection")
+                   .reduce("MEAN")
                    .groupBy("", "EXTEND_X").save(),
     Specification().groupBy("BX")
                    .groupBy("", "EXTEND_X").save()
@@ -152,16 +155,21 @@ SiPixelPhase1DigisOccupancy = DefaultHistoReadout.clone(
   specs = VPSet(
     Specification(PerReadout).groupBy("PXBarrel/FED/Channel")
                              .groupBy("PXBarrel/FED", "EXTEND_X").save(),
-    Specification(PerReadout).groupBy("PXBarrel/FED/Channel/RocInLink")
-                             .groupBy("PXBarrel/FED/Channel", "EXTEND_Y")
-                             .groupBy("PXBarrel/FED", "EXTEND_X").save(),
+
+    #Specification(PerReadout).groupBy("PXBarrel/FED/Channel/RocInLink") #Deactivating 2D maps giving redundant information
+    #                         .groupBy("PXBarrel/FED/Channel", "EXTEND_Y")
+    #                         .groupBy("PXBarrel/FED", "EXTEND_X").save(),
+
     Specification(PerReadout).groupBy("PXForward/FED/Channel")
                              .groupBy("PXForward/FED", "EXTEND_X").save(),
-    Specification(PerReadout).groupBy("PXForward/FED/Channel/RocInLink")
-                             .groupBy("PXForward/FED/Channel", "EXTEND_Y")
-                             .groupBy("PXForward/FED", "EXTEND_X").save(),
+
+    #Specification(PerReadout).groupBy("PXForward/FED/Channel/RocInLink")
+    #                         .groupBy("PXForward/FED/Channel", "EXTEND_Y")
+    #                         .groupBy("PXForward/FED", "EXTEND_X").save(),
+
     Specification(PerReadout).groupBy("PXBarrel/FED")
                              .groupBy("PXBarrel", "EXTEND_X").save(),
+
     Specification(PerReadout).groupBy("PXForward/FED")
                              .groupBy("PXForward", "EXTEND_X").save(),
 
