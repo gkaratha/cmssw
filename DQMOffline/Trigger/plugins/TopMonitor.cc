@@ -7,9 +7,9 @@
 #include "CommonTools/TriggerUtils/interface/GenericTriggerEventFlag.h"
 
 
-// -----------------------------
+// ------------------------------
 //  constructors and destructor
-// -----------------------------
+// ------------------------------
 
 TopMonitor::TopMonitor( const edm::ParameterSet& iConfig ) : 
   folderName_             ( iConfig.getParameter<std::string>("FolderName") )
