@@ -41,7 +41,8 @@
 //Suvankar
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-
+//george
+#include "TLorentzVector.h"
 
 class GenericTriggerEventFlag;
 
@@ -75,7 +76,8 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
   static void fillHistoPSetDescription(edm::ParameterSetDescription & pset);
   static void fillHistoLSPSetDescription(edm::ParameterSetDescription & pset);
-
+  //george
+  bool mllpairscut(std::vector<TLorentzVector> mu, double uppercut, double lowercut);
 protected:
 
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
@@ -272,6 +274,7 @@ unsigned int njets_;
   double MHTcut_;
   double mll;
   int   sign;
+  bool invMassCutInAllMuPairs_;
   
 
 
