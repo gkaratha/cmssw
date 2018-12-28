@@ -97,9 +97,8 @@ class LeptonSkimming : public edm::stream::EDFilter<> {
       virtual bool filter(edm::Event&, const edm::EventSetup&) override;
       virtual void endStream() override;
   
-       bool sort_by_MaxPt(const std::vector<float>& a, const std::vector<float>& b);
-      bool HLTFired(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector< string> HLTPath );
-      std::vector<float> HLTObject(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector< string> Seed);
+      bool hltFired(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector< string> HLTPath );
+      std::array<float,5> hltObject(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector< string> Seed);
      
 
       edm::EDGetToken electronsToken_; edm::EDGetToken muonsToken_;
@@ -118,11 +117,11 @@ class LeptonSkimming : public edm::stream::EDFilter<> {
       std::vector<float> muon_pt,muon_eta,muon_phi,el_pt,el_eta,el_phi,muon_soft,muon_medium,muon_tight;
       std::vector<unsigned int> Epair_ObjectIndex,Epair_TrkIndex,Epair_ObjectId;
       
-      std::vector<float> SelectedTrgObj_PtEtaPhiCharge; int SelectedMu_index;
+    /*  std::array<float,5> SelectedTrgObj_PtEtaPhiCharge;*/ int SelectedMu_index;
     
       float SelectedMu_DR=-1;
-      float ZvertexTrg=-100000000; unsigned int trk_index=0;
-      std::vector<reco::TransientTrack> tempTracks;  std::vector<float> tempPtEtaPhiM,tempXYZ;
+      float ZvertexTrg=-1*std::numeric_limits<float>::max(); unsigned int trk_index=0;
+      std::vector<float> tempPtEtaPhiM,tempXYZ;
       std::vector<std::shared_ptr<reco::Track>> cleanedObjTracks;
       std::vector<std::shared_ptr<reco::Track>> cleanedPairTracks;
       std::vector<std::shared_ptr<reco::Track>> MuTracks;
@@ -130,7 +129,7 @@ class LeptonSkimming : public edm::stream::EDFilter<> {
       std::vector<std::shared_ptr<reco::Track>> cleanedTracks;
       std::vector<unsigned int> trackObj_container,trackPair_container;
       std::vector<unsigned int> Trk_container,object_container,object_id;
-    
+      reco::TrackBase::Point  vertex_point; 
       unsigned int nel=0,nmuons=0,ntracks=0;
      //options
       double PtTrack_Cut=0; double EtaTrack_Cut=10; double MinChi2Track_Cut=-1000; 

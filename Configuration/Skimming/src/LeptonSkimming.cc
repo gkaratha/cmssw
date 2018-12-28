@@ -92,11 +92,7 @@ LeptonSkimming::~LeptonSkimming()
 
 }
 
-bool LeptonSkimming::sort_by_MaxPt(const std::vector<float>& a, const std::vector<float>& b) {
-  return a[0] > b[0];
-  }
-
-bool LeptonSkimming::HLTFired(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector<string> HLTPath ){
+bool LeptonSkimming::hltFired(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector<string> HLTPath ){
   using namespace std;  using namespace edm;  using namespace reco;
   using namespace trigger;
  
@@ -111,15 +107,15 @@ bool LeptonSkimming::HLTFired(const edm::Event& iEvent, const edm::EventSetup& i
   const edm::TriggerNames & trigName = iEvent.triggerNames(*trigResults);    
   //cout << "new" << endl;
   for( int i_Trig = 0; i_Trig < N_Triggers; ++i_Trig ) {
-    std::string TrigPath =trigName.triggerName(i_Trig); 
     if (!trigResults->accept(i_Trig))   continue;
+    const std::string & TrigPath =trigName.triggerName(i_Trig); 
     if (TrigPath.find(HLTPath[ip]) != std::string::npos) fire=true;
     } 
   }
   return fire;
 }
 
-std::vector<float> LeptonSkimming::HLTObject(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector<string> Seed ){
+std::array<float,5> LeptonSkimming::hltObject(const edm::Event& iEvent, const edm::EventSetup& iSetup,std::vector<string> Seed ){
   using namespace std;  using namespace edm;  using namespace reco;
   using namespace trigger;
  
@@ -127,30 +123,30 @@ std::vector<float> LeptonSkimming::HLTObject(const edm::Event& iEvent, const edm
   iEvent.getByToken(trigobjectsToken_ ,triggerObjectsSummary);
   trigger::TriggerObjectCollection selectedObjects;
 
-  std::vector<std::vector<float>> max_per_trigger; 
+  std::vector<std::array<float,5>> max_per_trigger; 
 
 for (unsigned int ipath=0; ipath<Seed.size(); ipath++){ 
-  std::vector<std::vector<float>> tot_tr_obj_pt_eta_phi;
+  std::vector<std::array<float, 5>> tot_tr_obj_pt_eta_phi;
   if (!triggerObjectsSummary.isValid()) continue;
     size_t filterIndex = (*triggerObjectsSummary).filterIndex(InputTag(Seed[ipath],"","HLT"));
     trigger::TriggerObjectCollection allTriggerObjects = triggerObjectsSummary->getObjects();     
     if (filterIndex < (*triggerObjectsSummary).sizeFilters()) { 
       const trigger::Keys &keys = (*triggerObjectsSummary).filterKeys(filterIndex);
       for (size_t j = 0; j < keys.size(); j++) {
-        trigger::TriggerObject foundObject = (allTriggerObjects)[keys[j]];
-        std::vector<float> tr_obj_pt_eta_phi;
+        const trigger::TriggerObject & foundObject = (allTriggerObjects)[keys[j]];
+        std::array<float, 5> tr_obj_pt_eta_phi;
         if (fabs(foundObject.id())!=13) continue;
-        tr_obj_pt_eta_phi.push_back(foundObject.pt());
-        tr_obj_pt_eta_phi.push_back(foundObject.eta());
-        tr_obj_pt_eta_phi.push_back(foundObject.phi());
-        tr_obj_pt_eta_phi.push_back(foundObject.id()/fabs(foundObject.id()));
+        tr_obj_pt_eta_phi[0]=foundObject.pt();
+        tr_obj_pt_eta_phi[1]=foundObject.eta();
+        tr_obj_pt_eta_phi[2]=foundObject.phi();
+        tr_obj_pt_eta_phi[3]=foundObject.id()/fabs(foundObject.id());
         tot_tr_obj_pt_eta_phi.push_back(tr_obj_pt_eta_phi);
       }  
     }
     //take the max per hlt
     if (tot_tr_obj_pt_eta_phi.size()>0){
       std::sort(tot_tr_obj_pt_eta_phi.begin(),tot_tr_obj_pt_eta_phi.end(),
-               [](const std::vector<float>& a, const std::vector<float>& b) {
+               [](const std::array<float, 5>& a, const std::array<float, 5>& b) {
                return a[0] > b[0];
                 });
        max_per_trigger.push_back(tot_tr_obj_pt_eta_phi.at(0));   }
@@ -158,7 +154,7 @@ for (unsigned int ipath=0; ipath<Seed.size(); ipath++){
 //we know that at least a trigger fired
 //find the total max
   std::sort( max_per_trigger.begin(), max_per_trigger.end(),
-         [](const std::vector<float>& a, const std::vector<float>& b) {
+         [](const std::array<float,5>& a, const std::array<float,5>& b) {
                return a[0] > b[0];
                 });
   return  max_per_trigger.at(0); 
@@ -210,15 +206,15 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   TransientVertex LLvertex;
   
 
-  vertex_x=-1000000;  vertex_y=-1000000;  vertex_z=-1000000;  
-  beam_x=-9999,beam_y=-9999,beam_z=-99999;
+  vertex_x=-1*std::numeric_limits<float>::max();  vertex_y=-1*std::numeric_limits<float>::max();  vertex_z=-1*std::numeric_limits<float>::max();  
+  beam_x=-1*std::numeric_limits<float>::max(),beam_y=-1*std::numeric_limits<float>::max(),beam_z=-1*std::numeric_limits<float>::max();
  
   // trigger1=0; trigger2=0; trigger3=0; trigger4=0; trigger5=0; trigger6=0;
   nmuons=0; nel=0; ntracks=0;
     
   
-  SelectedTrgObj_PtEtaPhiCharge.clear(); SelectedMu_index=-1;
-  SelectedMu_DR=1000; muon_pt.clear(); muon_eta.clear(); muon_phi.clear();
+  SelectedMu_index=-1;
+  SelectedMu_DR=std::numeric_limits<float>::max(); muon_pt.clear(); muon_eta.clear(); muon_phi.clear();
   Result=false;  el_pt.clear(); el_eta.clear(); el_phi.clear();
   Trk_container.clear();  MuTracks.clear();  ElTracks.clear(); 
   object_container.clear(); object_id.clear();  cleanedTracks.clear(); 
@@ -226,28 +222,28 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   Epair_ObjectIndex.clear(); cleanedObjTracks.clear(); cleanedPairTracks.clear();
     Epair_ObjectIndex.clear(); Epair_ObjectId.clear(); Epair_TrkIndex.clear();
   //internal stuff
-   ZvertexTrg=-100000000;
-
+   ZvertexTrg=-1*std::numeric_limits<float>::max();
+   std::array<float,5> SelectedTrgObj_PtEtaPhiCharge{ {-999,-999,-999,-999,-999}} ;
+   vertex_point.SetCoordinates(-1*std::numeric_limits<float>::max(),-1*std::numeric_limits<float>::max(),-1*std::numeric_limits<float>::max());
    for (const reco::Vertex& vtx : *vertices) {
-    bool isFake = vtx.isFake();
-    if ( isFake) continue;
-        vertex_x=vtx.x();  vertex_y=vtx.y();  vertex_z=vtx.z(); 
-	if ( vertex_x!=-10000000) break;
+     bool isFake = vtx.isFake();
+     if (isFake) continue;
+     vertex_point.SetCoordinates(vtx.x(),vtx.y(),vtx.z());
+     if (vertex_point.x()!=-1*std::numeric_limits<float>::max()) break;
     }
-  if (vertex_x==-1000000)
+   if (vertex_point.x()==-1*std::numeric_limits<float>::max())
          return false;
-  reco::TrackBase::Point  vertex_point;
-  vertex_point.SetCoordinates(vertex_x,vertex_y,vertex_z);
-  beam_x= theBeamSpot->x0(); beam_y= theBeamSpot->y0(); beam_z= theBeamSpot->z0();   
+  
+   beam_x= theBeamSpot->x0(); beam_y= theBeamSpot->y0(); beam_z= theBeamSpot->z0();   
 
-  if(!HLTFired(iEvent,iSetup,HLTPath_)) 
+   if(!hltFired(iEvent,iSetup,HLTPath_)) 
     return false;   
       
-  SelectedTrgObj_PtEtaPhiCharge=HLTObject(iEvent,iSetup,HLTFilter_);
+   SelectedTrgObj_PtEtaPhiCharge=hltObject(iEvent,iSetup,HLTFilter_);
 //  std::cout<<"pt "<<SelectedTrgObj_PtEtaPhiCharge[0]<<" eta "<<SelectedTrgObj_PtEtaPhiCharge[1]<<" phi "<<SelectedTrgObj_PtEtaPhiCharge[2]<<endl; 
-  SelectedMu_DR=1000; 
-  MuTracks.clear();  object_container.clear(); object_id.clear(); nmuons=0;
-  for (const reco::Muon  &mu: *muons){
+   SelectedMu_DR=std::numeric_limits<float>::max(); 
+   MuTracks.clear();  object_container.clear(); object_id.clear(); nmuons=0;
+   for (const reco::Muon  &mu: *muons){
     if (fabs(mu.eta())>EtaTrack_Cut) continue;
     bool tight=false,soft=false;
     if(vertices.isValid()){
@@ -270,13 +266,13 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //delete mutrack;
   }
   
-  if (SelectedMu_DR==1000 && SkipIfNoMuMatch){
+  if (SelectedMu_DR==std::numeric_limits<float>::max() && SkipIfNoMuMatch){
       return false;
    }
 
   ElTracks.clear();
   for(const reco::GsfElectron &el : *electrons){  
-    bool passConvVeto = !ConversionTools::hasMatchedConversion(*(&el), conversions, theBeamSpot->position());
+    bool passConvVeto = !ConversionTools::hasMatchedConversion(*(&el), *conversions, theBeamSpot->position());
       if (!passConvVeto) continue;
       if (fabs(el.eta())>EtaTrack_Cut) continue;
       if (el.pt()<PtEl_Cut) continue;
@@ -305,7 +301,7 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       minDR=tempDR;
    }
    if (minDR<MuTrkMinDR_Cut) continue;
-   if (SelectedMu_DR<1000 ){
+   if (SelectedMu_DR<std::numeric_limits<float>::max() ){
      if (fabs(ZvertexTrg-trk.vz())>TrackMuDz_Cut ) continue;
      if ( deltaR(trk.eta(),trk.phi(),SelectedTrgObj_PtEtaPhiCharge[1],SelectedTrgObj_PtEtaPhiCharge[2])<TrgExclusionCone) continue;
    }
@@ -335,16 +331,14 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       unsigned int iobj=&obj-&cleanedObjects[0];
       unsigned int index=object_container.at(iobj);
       if ( object_id.at(iobj)==13 && QualMu_Cut==1 && !muon_soft.at(index)) continue;
-     if ( object_id.at(iobj)==13 && QualMu_Cut==2 && !muon_medium.at(index)) continue;
-     if ( object_id.at(iobj)==13 && QualMu_Cut==3 && !muon_tight.at(index)) continue;
-     if (object_id.at(iobj)==13) vel1.SetPtEtaPhiM(muon_pt.at(index),muon_eta.at(index),muon_phi.at(index),0.0005);
+      if ( object_id.at(iobj)==13 && QualMu_Cut==2 && !muon_medium.at(index)) continue;
+      if ( object_id.at(iobj)==13 && QualMu_Cut==3 && !muon_tight.at(index)) continue;
+      if (object_id.at(iobj)==13) vel1.SetPtEtaPhiM(muon_pt.at(index),muon_eta.at(index),muon_phi.at(index),0.0005);
        
-     else vel1.SetPtEtaPhiM(el_pt.at(index),el_eta.at(index),el_phi.at(index),0.0005);
-    
-     
+      else vel1.SetPtEtaPhiM(el_pt.at(index),el_eta.at(index),el_phi.at(index),0.0005);
       if (object_id.at(iobj)==13 && vel1.Pt()<PtMu_Cut) continue;
       for(auto& trk2: cleanedTracks){
- 	unsigned int itrk2=&trk2-&cleanedTracks[0];
+ 	 unsigned int itrk2=&trk2-&cleanedTracks[0];
 	//auto trk2=cleanedTracks.at(itrk2);
          if (obj->charge()*trk2->charge()==1) continue;
          if (ObjPtLargerThanTrack && vel1.Pt()<trk2->pt()) continue;
@@ -352,18 +346,19 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
          if (deltaR(obj->eta(),obj->phi(),trk2->eta(),trk2->phi())<TrkObjExclusionCone) continue;
          if (object_id.at(iobj)==13 && deltaR(obj->eta(),obj->phi(),SelectedTrgObj_PtEtaPhiCharge[1],SelectedTrgObj_PtEtaPhiCharge[2])<MuTrgExclusionCone) continue;
          if (object_id.at(iobj)==11 && deltaR(obj->eta(),obj->phi(),SelectedTrgObj_PtEtaPhiCharge[1],SelectedTrgObj_PtEtaPhiCharge[2])<ElTrgExclusionCone) continue;
-         if (SelectedMu_DR<1000 ){
+         if (SelectedMu_DR<std::numeric_limits<float>::max() ){
 	   if (object_id.at(iobj)==13 && fabs(ZvertexTrg- obj->vz())>MuTrgMuDz_Cut ) continue;
            if (object_id.at(iobj)==11 && fabs(ZvertexTrg-obj->vz())>ElTrgMuDz_Cut ) continue;
          }
          if ((vel1+vel2).M()>MaxMee_Cut || (vel1+vel2).M()<MinMee_Cut ) continue;        
 	 auto trantrk2=std::make_shared<reco::TransientTrack>(reco::TransientTrack(*trk2,&(*bFieldHandle)));
-	 tempTracks.clear(); 
+	 std::vector<reco::TransientTrack> tempTracks;
+         tempTracks.reserve(2);
          tempTracks.push_back(*tranobj); tempTracks.push_back(*trantrk2);
          LLvertex = theKalmanFitter.vertex(tempTracks);
          if (!LLvertex.isValid()) continue;
 	 if (ChiSquaredProbability(LLvertex.totalChiSquared(),LLvertex.degreesOfFreedom())<Probee_Cut)  continue;
-         if (ZvertexTrg>-1000000 && fabs(ZvertexTrg-LLvertex.position().z())>EpairZvtx_Cut ) continue;
+         if (ZvertexTrg>-1*std::numeric_limits<float>::max() && fabs(ZvertexTrg-LLvertex.position().z())>EpairZvtx_Cut ) continue;
 	 GlobalError err =LLvertex.positionError();
 	 GlobalPoint Dispbeamspot(-1*((theBeamSpot->x0()-LLvertex.position().x())+(LLvertex.position().z()-theBeamSpot->z0()) * theBeamSpot->dxdz()),-1*((theBeamSpot->y0()-LLvertex.position().y())+ (LLvertex.position().z()-theBeamSpot->z0()) * theBeamSpot->dydz()), 0);
           math::XYZVector pperp((vel1+vel2).Px(),(vel1+vel2).Py(),0);
@@ -405,7 +400,8 @@ LeptonSkimming::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
          if ((vel1+vel2+vK).M()> MaxMB_Cut || (vel1+vel2+vK).M()< MinMB_Cut) continue;
          if ((vel1+vel2+vK).Pt()<PtB_Cut) continue;
          auto trantrk=std::make_shared<reco::TransientTrack>(reco::TransientTrack(*trk,&(*bFieldHandle)));
-	 tempTracks.clear();
+	 std::vector<reco::TransientTrack> tempTracks;
+         tempTracks.reserve(3);
          tempTracks.push_back(*tranobj); tempTracks.push_back(*tranpair);
          tempTracks.push_back(*trantrk);
 	 
