@@ -31,5 +31,6 @@
   <use   name="RecoMET/METAlgorithms"/>
   <use   name="RecoEgamma/EgammaTools"/>
   <use   name="TrackingTools/IPTools"/>
+  <use   name="CommonTools/Utils"/>
   <use   name="root"/>
 </library>
