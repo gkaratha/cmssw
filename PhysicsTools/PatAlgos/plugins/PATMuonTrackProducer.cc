@@ -73,38 +73,49 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
   // pf cand. association to packed cand.
   edm::Handle<edm::Association<pat::PackedCandidateCollection>> pf_to_pc;
   iEvent.getByToken(pf_to_pc_,pf_to_pc);
+
   // slimmedMuons collection
   edm::Handle<pat::MuonCollection> muons;
   iEvent.getByToken(mu_, muons);
 
   auto outPtrP = std::make_unique<std::vector<pat::MuonTrack>>( );
   outPtrP->reserve(gtrk->size());
+
   // create associations between muon
-  std::map<reco::TrackRef,pat::PackedCandidateRef> trk_to_pc;
- 
+  std::vector<unsigned> trk_to_pc(gtrk->size(),pfcands->size());
   for (unsigned ipf=0; ipf<pfcands->size(); ++ipf){
     edm::Ref<reco::PFCandidateCollection> refcand(pfcands,ipf);
-    const reco::PFCandidate& pfcand=(*pfcands)[ipf];
-    if (pfcand.charge() && pfcand.trackRef().isNonnull() && pfcand.trackRef().id() == gtrk.id() && (*pf_to_pc)[refcand]->numberOfHits()>0 )
-        trk_to_pc[pfcand.trackRef()] = (*pf_to_pc)[refcand];
+    const reco::PFCandidate& pfcand= pfcands->at(ipf);
+    auto packed_ref = (*pf_to_pc)[refcand];
+    if (pfcand.charge() && pfcand.trackRef().isNonnull() && packed_ref.isNonnull() && pfcand.trackRef().id() == gtrk.id() )
+        trk_to_pc[pfcand.trackRef().index()] = ipf;
   }
 
-
-  std::map<reco::TrackRef,pat::MuonRef> trk_to_mu;
+  std::vector<unsigned> trk_to_mu(gtrk->size(),muons->size());
   for (unsigned imu=0; imu<muons->size(); ++imu){
     const pat::Muon & muon = (*muons)[imu];
     pat::MuonRef muonRef(muons,imu);
     if (muon.track().isNonnull() )
-       trk_to_mu[muon.track()] = muonRef;
+       trk_to_mu[muon.track().index()] = imu;
   }
 
-  const reco::TrackCollection* generalTracks = gtrk.product();
+ 
   
-  for (unsigned int igt = 0; igt < generalTracks->size(); igt++) {
+  for (unsigned int igt = 0; igt < gtrk->size(); igt++) {
     const reco::Track& trk = (*gtrk)[igt];
-    if (!trk_selection_(trk)) continue; 
-   
-    reco::TrackRef trackerTrackRef(generalTracks, igt);        
+    if (!trk_selection_(trk)) continue;   
+ 
+    pat::PackedCandidateRef refcand;
+    if (trk_to_pc[igt]!=pfcands->size()){
+      edm::Ref<reco::PFCandidateCollection> pfcand(pfcands,trk_to_pc[igt]);
+      refcand = (*pf_to_pc)[pfcand];
+     }
+
+    pat::MuonRef muonRef;    
+    if (trk_to_mu[igt]!=muons->size()){
+      muonRef = edm::Ref<pat::MuonCollection>(muons,trk_to_mu[igt]);
+    }
+
     LorentzVector p4;
     double m = 0.105;  //assume muon mass
     double E = sqrt(m * m + trk.p() * trk.p());
@@ -120,30 +131,22 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
       for ( size_t j=i; j<5; ++j)
         cov(i,j)=MiniFloatConverter::reduceMantissaToNbitsRounding<12>(cov(i,j));
     }
-/*
-    pat::MuonRef muonRef;
-    // match to slimmed muons 
-    for (unsigned int imu = 0; imu < muons->size(); imu++) {
-      const pat::Muon& muon = (*muons)[imu];
-      if (muon.track() == trackerTrackRef){
-	muonRef = pat::MuonRef(muons, imu);
-	break;
-      }
-    }
-*/
+
+
 
   math::XYZPoint refpoint(
 			    MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.referencePoint().X()),
                             MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.referencePoint().Y()),
                             MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.referencePoint().Z())
 			    );
+ //   pat::PackedCandidateRef ref(pfcands,0);
     
     outPtrP->emplace_back(pat::MuonTrack(p4,
 				      refpoint,
 				      trk.charge(),
 				      cov,
-				      trk_to_mu[trackerTrackRef],
-                                      trk_to_pc[trackerTrackRef]
+				      muonRef,
+                                      refcand
 				      ));
 
   }

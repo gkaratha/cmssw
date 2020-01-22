@@ -21,7 +21,8 @@ process.out.outputCommands = ['keep *_selectedPat*_*_*']
 #   process.GlobalTag.globaltag =  ...    ##  (according to https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideFrontierConditions)
 #                                         ##
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
-process.source.fileNames = filesRelValProdTTbarAODSIM
+#process.source.fileNames = filesRelValProdTTbarAODSIM
+process.source.filenames = ["/store/mc/RunIIAutumn18DR/BuToKJpsi_ToMuMu_MuFilter_SoftQCDnonD_TuneCP5_13TeV-pythia8-evtgen/AODSIM/PUPoissonAve20_102X_upgrade2018_realistic_v15-v2/810000/F647981D-B4EE-E74E-9CC6-A7224B0FB8DD.root"]
 #                                         ##
 process.maxEvents.input = 100
 #                                         ##

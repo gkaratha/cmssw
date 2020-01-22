@@ -5,5 +5,5 @@ muonTracks = cms.EDProducer("PATMuonTrackProducer",
                             slimmedMuons  = cms.InputTag("slimmedMuons"),
                             pfCandidates  = cms.InputTag("particleFlow"),
                             packedCandidates = cms.InputTag("packedPFCandidates"),
-                            trk_selection = cms.string(' pt>3.0 && eta<2.4 && eta>-2.4')
+                            trk_selection = cms.string(' pt>0.0 && eta<24 && eta>-24')
                         )
