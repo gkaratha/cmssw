@@ -3,7 +3,7 @@ from PhysicsTools.NanoAOD.common_cff import *
 
 
 DiMuonVertex = cms.EDProducer("DiMuonVertexProducer",
-    src = cms.InputTag("slimmedMuons"),
+    src = cms.InputTag("finalMuons"),
     beamSpot = cms.InputTag("offlineBeamSpot"),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
     mu1Selection = cms.string ("pt>5 && abs(eta)<2.4"),
