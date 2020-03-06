@@ -10,8 +10,7 @@
 
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
-#include "DataFormats/PatCandidates/interface/MuonTrack.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/GeneralTrack.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackExtraFwd.h"
@@ -27,18 +26,17 @@
 
 namespace pat {
 
-  class PATMuonTrackProducer : public edm::stream::EDProducer<> {
+  class PATGeneralTrackSlimmer : public edm::stream::EDProducer<> {
   public:
-    typedef pat::MuonTrack::LorentzVector LorentzVector;
+    typedef pat::GeneralTrack::LorentzVector LorentzVector;
 
-    explicit PATMuonTrackProducer(const edm::ParameterSet&);
-    ~PATMuonTrackProducer() override;
+    explicit PATGeneralTrackSlimmer(const edm::ParameterSet&);
+    ~PATGeneralTrackSlimmer() override;
 
     void produce(edm::Event&, const edm::EventSetup&) override;
 
   private:
     const edm::EDGetTokenT<reco::TrackCollection> gtrk_;
-    const edm::EDGetTokenT<pat::MuonCollection> mu_;
     const edm::EDGetTokenT<reco::PFCandidateCollection> pfcands_;
     const edm::EDGetTokenT<edm::Association<pat::PackedCandidateCollection>> pf_to_pc_;
     const StringCutObjectSelector<reco::Track> trk_selection_;
@@ -49,20 +47,19 @@ namespace pat {
   };
 }  // namespace pat
 
-pat::PATMuonTrackProducer::PATMuonTrackProducer(const edm::ParameterSet& iConfig)
+pat::PATGeneralTrackSlimmer::PATGeneralTrackSlimmer(const edm::ParameterSet& iConfig)
   :   gtrk_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTracks"))),
-      mu_(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("slimmedMuons"))),
       pfcands_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCandidates"))),
       pf_to_pc_(consumes<edm::Association<pat::PackedCandidateCollection>>(iConfig.getParameter<edm::InputTag>("packedCandidates"))),
       trk_selection_(iConfig.getParameter<std::string>("trk_selection"))
 {
-  produces<pat::MuonTrackCollection>();
+  produces<pat::GeneralTrackCollection>();
 
 }
 
-pat::PATMuonTrackProducer::~PATMuonTrackProducer() {}
+pat::PATGeneralTrackSlimmer::~PATGeneralTrackSlimmer() {}
 
-void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void pat::PATGeneralTrackSlimmer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // generalTracks collection
   edm::Handle<reco::TrackCollection> gtrk;
@@ -74,14 +71,10 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
   edm::Handle<edm::Association<pat::PackedCandidateCollection>> pf_to_pc;
   iEvent.getByToken(pf_to_pc_,pf_to_pc);
 
-  // slimmedMuons collection
-  edm::Handle<pat::MuonCollection> muons;
-  iEvent.getByToken(mu_, muons);
-
-  auto outPtrP = std::make_unique<std::vector<pat::MuonTrack>>( );
+  auto outPtrP = std::make_unique<std::vector<pat::GeneralTrack>>( );
   outPtrP->reserve(gtrk->size());
 
-  // create associations between muon
+  // create associations with packed cands
   std::vector<unsigned> trk_to_pc(gtrk->size(),pfcands->size());
   for (unsigned ipf=0; ipf<pfcands->size(); ++ipf){
     edm::Ref<reco::PFCandidateCollection> refcand(pfcands,ipf);
@@ -91,15 +84,6 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
         trk_to_pc[pfcand.trackRef().index()] = ipf;
   }
 
-  std::vector<unsigned> trk_to_mu(gtrk->size(),muons->size());
-  for (unsigned imu=0; imu<muons->size(); ++imu){
-    const pat::Muon & muon = (*muons)[imu];
-    pat::MuonRef muonRef(muons,imu);
-    if (muon.track().isNonnull() )
-       trk_to_mu[muon.track().index()] = imu;
-  }
-
- 
   
   for (unsigned int igt = 0; igt < gtrk->size(); igt++) {
     const reco::Track& trk = (*gtrk)[igt];
@@ -111,13 +95,8 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
       refcand = (*pf_to_pc)[pfcand];
      }
 
-    pat::MuonRef muonRef;    
-    if (trk_to_mu[igt]!=muons->size()){
-      muonRef = edm::Ref<pat::MuonCollection>(muons,trk_to_mu[igt]);
-    }
-
     LorentzVector p4;
-    double m = 0.105;  //assume muon mass
+    double m = 0.139;  //assume pion+ mass
     double E = sqrt(m * m + trk.p() * trk.p());
     p4.SetPxPyPzE(
        MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.px()),
@@ -139,18 +118,12 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
                             MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.referencePoint().Y()),
                             MiniFloatConverter::reduceMantissaToNbitsRounding<12>(trk.referencePoint().Z())
 			    );
- //   pat::PackedCandidateRef ref(pfcands,0);
-    
-    outPtrP->emplace_back(pat::MuonTrack(p4,
-				      refpoint,
-				      trk.charge(),
-				      cov,
-				      muonRef,
-                                      refcand
-				      ));
+    pat::GeneralTrack cand(p4,refpoint,trk.charge(),cov,refcand ); 
+    outPtrP->emplace_back(cand);
 
   }
-  auto orphHandle = iEvent.put(std::move(outPtrP));
+  
+   auto orphHandle = iEvent.put(std::move(outPtrP));
 
 }
 
@@ -159,6 +132,6 @@ void pat::PATMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetu
 
 
 
-using pat::PATMuonTrackProducer;
+using pat::PATGeneralTrackSlimmer;
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(PATMuonTrackProducer);
+DEFINE_FWK_MODULE(PATGeneralTrackSlimmer);

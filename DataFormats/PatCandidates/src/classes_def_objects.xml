@@ -127,9 +127,8 @@
    <version ClassVersion="3" checksum="550880582"/>
   </class>
 
-  <class name="pat::MuonTrack" ClassVersion="-1">
-   <version ClassVersion="1" checksum="1942440959"/>
-   <version ClassVersion="0" checksum="1518614722"/>
+  <class name="pat::GeneralTrack" ClassVersion="0">
+   <version ClassVersion="0" checksum="1933220914"/>
    <version ClassVersion="-1" checksum="1942440959"/>
   </class>
 
@@ -509,7 +508,7 @@
   <class name="std::vector<pat::Conversion>" />
   <class name="std::vector<pat::PackedCandidate>"/>
   <class name="std::vector<pat::IsolatedTrack>"/>
-  <class name="std::vector<pat::MuonTrack>"/>
+  <class name="std::vector<pat::GeneralTrack>"/>
   <class name="std::vector<pat::PackedGenParticle>"/>
 
   <!-- PAT Object Collection Iterators -->
@@ -545,7 +544,7 @@
   <class name="edm::Wrapper<std::vector<pat::Conversion> >" />
   <class name="edm::Wrapper<std::vector<pat::PackedCandidate> >"/>
   <class name="edm::Wrapper<std::vector<pat::IsolatedTrack> >"/>
-  <class name="edm::Wrapper<std::vector<pat::MuonTrack> >"/>
+  <class name="edm::Wrapper<std::vector<pat::GeneralTrack> >"/>
   <class name="edm::Wrapper<std::vector<pat::PackedGenParticle> >"/>
 
   <!-- PAT Object References -->
