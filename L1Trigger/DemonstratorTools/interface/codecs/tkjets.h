@@ -15,12 +15,12 @@
 
 namespace l1t::demo::codecs {
 
-  ap_uint<64> encodeTkJet(const l1t::TkJetWord& t);
+  ap_uint<128> encodeTkJet(const l1t::TkJetWord& t);
 
   // Encodes TkJet collection onto 1 'logical' output link
-  std::array<std::vector<ap_uint<64>>, 1> encodeTkJets(const edm::View<l1t::TkJetWord>&);
+  std::array<std::vector<ap_uint<128>>, 1> encodeTkJets(const edm::View<l1t::TkJetWord>&);
 
-  std::vector<l1t::TkJetWord> decodeTkJets(const std::vector<ap_uint<64>>&);
+  std::vector<l1t::TkJetWord> decodeTkJets(const std::vector<ap_uint<128>>&);
 
 }  // namespace l1t::demo::codecs
 

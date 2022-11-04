@@ -3,17 +3,18 @@ from L1Trigger.VertexFinder.VertexProducer_cff import VertexProducer
 
 #prompt jet selection
 L1TrackJets = cms.EDProducer('L1TrackJetProducer',
-	L1TrackInputTag= cms.InputTag("TTTracksFromTrackletEmulation", "Level1TTTracks"),
-        L1PVertexCollection = cms.InputTag("VertexProducer", VertexProducer.l1VertexCollectionName.value()),
+        L1TrackInputTag= cms.InputTag("L1GTTInputProducer","Level1TTTracksConverted"),
+#        L1TrackInputTag= cms.InputTag("L1TrackSelectionProducer", "Level1TTTracksSelected"),
+        VertexInputTag = cms.InputTag("VertexProducerEmu","l1verticesEmulation"),
         MaxDzTrackPV = cms.double( 1.0 ), #max distance from PV;negative=no cut
 	trk_zMax = cms.double (15.) ,    # maximum track z
 	trk_ptMax = cms.double(200.),    # maximumum track pT before saturation [GeV]
-	trk_ptMin = cms.double(3.0),     # minimum track pt [GeV]
+	trk_ptMin = cms.double(2.0),     # minimum track pt [GeV]
    	trk_etaMax = cms.double(2.4),    # maximum track eta
-	nStubs4PromptChi2=cms.double(5.0), #Prompt track quality flags for loose/tight
-        nStubs4PromptBend=cms.double(1.7),
-        nStubs5PromptChi2=cms.double(2.75),
-        nStubs5PromptBend=cms.double(3.5),
+	nStubs4PromptChi2=cms.double(10.0), #Prompt track quality flags for loose/tight
+        nStubs4PromptBend=cms.double(2.2),
+        nStubs5PromptChi2=cms.double(10.0),
+        nStubs5PromptBend=cms.double(2.2),
 	trk_nPSStubMin=cms.int32(-1),    # minimum PS stubs, -1 means no cut
 	minTrkJetpT=cms.double(-1.),     # min track jet pt to be considered for most energetic zbin finding 
 	etaBins=cms.int32(24),
@@ -36,7 +37,7 @@ L1TrackJets = cms.EDProducer('L1TrackJetProducer',
 #displaced jets
 L1TrackJetsExtended = cms.EDProducer('L1TrackJetProducer',
 	L1TrackInputTag= cms.InputTag("TTTracksFromExtendedTrackletEmulation", "Level1TTTracks"),
-        L1PVertexCollection = cms.InputTag("VertexProducer", VertexProducer.l1VertexCollectionName.value()),
+        VertexInputTag = cms.InputTag("VertexProducerEmu","l1verticesEmulation"),
         MaxDzTrackPV = cms.double(5.0),#max track distance from PV;negative=no cut
 	trk_zMax = cms.double (15.) ,    # max track z
 	trk_ptMax = cms.double(200.),    # maxi track pT before saturation
