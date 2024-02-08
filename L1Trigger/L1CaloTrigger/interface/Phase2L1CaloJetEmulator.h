@@ -39,17 +39,6 @@ namespace gctobj {
       etaCenter = 0;
     }
 
-    towerMax& operator=(const towerMax& rhs) {
-      energy = rhs.energy;
-      phi = rhs.phi;
-      eta = rhs.eta;
-      energyMax = rhs.energyMax;
-      phiMax = rhs.phiMax;
-      etaMax = rhs.etaMax;
-      phiCenter = rhs.phiCenter;
-      etaCenter = rhs.etaCenter;
-      return *this;
-    }
   };
 
   class jetInfo {
@@ -78,19 +67,6 @@ namespace gctobj {
       etaCenter = 0;
     }
 
-    jetInfo& operator=(const jetInfo& rhs) {
-      seedEnergy = rhs.seedEnergy;
-      energy = rhs.energy;
-      tauEt = rhs.tauEt;
-      phi = rhs.phi;
-      eta = rhs.eta;
-      energyMax = rhs.energyMax;
-      phiMax = rhs.phiMax;
-      etaMax = rhs.etaMax;
-      phiCenter = rhs.phiCenter;
-      etaCenter = rhs.etaCenter;
-      return *this;
-    }
   };
 
   typedef struct {
@@ -482,7 +458,8 @@ namespace gctobj {
       jet_tmp.tauEt = 0.;
     }
     jet_tmp.etaCenter = jet.etaCenter;  // this is the ET weighted eta centre of the ST
-    jet_tmp.phiCenter = jet.phiCenter;  // this is the ET weighted eta centre of the ST
+
+    jet_tmp.phiCenter = jet.phiCenter;  // this is the ET weighted phi centre of the ST
     jet_tmp.etaMax = jet.etaMax;        // this is the leading tower eta in the ST
     jet_tmp.phiMax = jet.phiMax;        // this is the leading tower phi in the ST
     return jet_tmp;
