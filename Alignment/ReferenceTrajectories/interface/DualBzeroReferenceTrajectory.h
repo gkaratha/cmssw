@@ -34,43 +34,36 @@
 
 class BzeroReferenceTrajectory;
 
-
-class DualBzeroReferenceTrajectory : public DualReferenceTrajectory
-{
-
+class DualBzeroReferenceTrajectory : public DualReferenceTrajectory {
 public:
-
   typedef TransientTrackingRecHit::ConstRecHitContainer ConstRecHitContainer;
 
-  DualBzeroReferenceTrajectory( const TrajectoryStateOnSurface &referenceTsos,
-				const ConstRecHitContainer &forwardRecHits,
-				const ConstRecHitContainer &backwardRecHits,
-				const MagneticField *magField,
-				MaterialEffects materialEffects,
-				PropagationDirection propDir,
-				double mass,
-				double momentumEstimate,
-				bool useBeamSpot,
-				const reco::BeamSpot &beamSpot);
+  DualBzeroReferenceTrajectory(const TrajectoryStateOnSurface& tsos,
+                               const ConstRecHitContainer& forwardRecHits,
+                               const ConstRecHitContainer& backwardRecHits,
+                               const MagneticField* magField,
+                               const reco::BeamSpot& beamSpot,
+                               const ReferenceTrajectoryBase::Config& config);
 
-  virtual ~DualBzeroReferenceTrajectory() {}
+  ~DualBzeroReferenceTrajectory() override {}
 
-  virtual DualBzeroReferenceTrajectory* clone() const { return new DualBzeroReferenceTrajectory(*this); }
+  DualBzeroReferenceTrajectory* clone() const override { return new DualBzeroReferenceTrajectory(*this); }
 
 protected:
+  using DualReferenceTrajectory::construct;
 
-  virtual ReferenceTrajectory* construct(const TrajectoryStateOnSurface &referenceTsos, 
-					 const ConstRecHitContainer &recHits,
-					 double mass, MaterialEffects materialEffects,
-					 const PropagationDirection propDir,
-					 const MagneticField *magField,
-					 bool useBeamSpot,
-					 const reco::BeamSpot &beamSpot) const;
+  virtual ReferenceTrajectory* construct(const TrajectoryStateOnSurface& referenceTsos,
+                                         const ConstRecHitContainer& recHits,
+                                         double mass,
+                                         MaterialEffects materialEffects,
+                                         const PropagationDirection propDir,
+                                         const MagneticField* magField,
+                                         bool useBeamSpot,
+                                         const reco::BeamSpot& beamSpot) const;
 
-  virtual AlgebraicVector extractParameters(const TrajectoryStateOnSurface &referenceTsos) const;
+  AlgebraicVector extractParameters(const TrajectoryStateOnSurface& referenceTsos) const override;
 
   double theMomentumEstimate;
-
 };
 
 #endif

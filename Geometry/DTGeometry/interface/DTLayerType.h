@@ -13,14 +13,11 @@
 #include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 
 class DTLayerType : public GeomDetType {
+public:
+  /* Constructor */
+  DTLayerType();
 
-  public:
-
-/* Constructor */ 
-    DTLayerType() ;
-
-/* Operations */ 
-    virtual const Topology& topology() const;
+  /* Operations */
+  const Topology& topology() const override;
 };
-#endif // DTLAYERTYPE_H
-
+#endif  // DTLAYERTYPE_H

@@ -1,5 +1,5 @@
 #include "TrackingTools/GsfTracking/interface/GsfMultiStateUpdator.h"
-
+#include "TrackingTools/GsfTools/interface/GetComponents.h"
 #include "TrackingTools/KalmanUpdators/interface/KFUpdator.h"
 #include "TrackingTools/PatternTools/interface/MeasurementExtractor.h"
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
@@ -11,16 +11,21 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 TrajectoryStateOnSurface GsfMultiStateUpdator::update(const TrajectoryStateOnSurface& tsos,
-						      const TrackingRecHit& aRecHit) const {
-  
-  std::vector<TrajectoryStateOnSurface> && predictedComponents = tsos.components();
-  if (predictedComponents.empty()) {
-    edm::LogError("GsfMultiStateUpdator") << "Trying to update trajectory state with zero components! " ;
+                                                      const TrackingRecHit& aRecHit) const {
+  if (!tsos.isValid()) {
+    edm::LogError("GsfMultiStateUpdator") << "Trying to update trajectory state with invalid TSOS! ";
     return TrajectoryStateOnSurface();
   }
 
-  std::vector<double> && weights = PosteriorWeightsCalculator(predictedComponents).weights(aRecHit);
-  if ( weights.empty() ) {
+  GetComponents comps(tsos);
+  auto const& predictedComponents = comps();
+  if (predictedComponents.empty()) {
+    edm::LogError("GsfMultiStateUpdator") << "Trying to update trajectory state with zero components! ";
+    return TrajectoryStateOnSurface();
+  }
+
+  auto&& weights = PosteriorWeightsCalculator(predictedComponents).weights(aRecHit);
+  if (weights.empty()) {
     edm::LogError("GsfMultiStateUpdator") << " no weights could be retreived. invalid updated state !.";
     return TrajectoryStateOnSurface();
   }
@@ -28,22 +33,25 @@ TrajectoryStateOnSurface GsfMultiStateUpdator::update(const TrajectoryStateOnSur
   MultiTrajectoryStateAssembler result;
 
   int i = 0;
-  for (std::vector<TrajectoryStateOnSurface>::const_iterator iter = predictedComponents.begin();
-       iter != predictedComponents.end(); iter++) {
-    TrajectoryStateOnSurface updatedTSOS = KFUpdator().update(*iter, aRecHit);
-    if (updatedTSOS.isValid()){
-      result.addState(TrajectoryStateOnSurface(weights[i], 
-                                               updatedTSOS.localParameters(),
-					       updatedTSOS.localError(), updatedTSOS.surface(), 
-					       &(tsos.globalParameters().magneticField()),
-					       (*iter).surfaceSide()
-                                              ));
-    i++;
-    }
-    else{
-      edm::LogError("GsfMultiStateUpdator") << "one of the KF updated state is invalid. skipping.";
-    }
+  for (auto const& tsosI : predictedComponents) {
+    TrajectoryStateOnSurface updatedTSOS = KFUpdator().update(tsosI, aRecHit);
 
+    if (double det;
+        updatedTSOS.isValid() && updatedTSOS.localError().valid() && updatedTSOS.localError().posDef() &&
+        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix22>(0, 0).Det(det) && det > 0) &&
+        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix33>(0, 0).Det(det) && det > 0) &&
+        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix44>(0, 0).Det(det) && det > 0) &&
+        (det = 0., updatedTSOS.curvilinearError().matrix().Det2(det) && det > 0)) {
+      result.addState(TrajectoryStateOnSurface(weights[i],
+                                               updatedTSOS.localParameters(),
+                                               updatedTSOS.localError(),
+                                               updatedTSOS.surface(),
+                                               &(tsos.globalParameters().magneticField()),
+                                               tsosI.surfaceSide()));
+    } else {
+      edm::LogError("GsfMultiStateUpdator") << "KF updated state " << i << " is invalid. skipping.";
+    }
+    ++i;
   }
 
   return result.combinedState();

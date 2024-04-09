@@ -6,11 +6,10 @@
 #include <string>
 #include <map>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
-
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
@@ -22,8 +21,6 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/EventSetupRecordKey.h"
-
-
 
 #include "CondFormats/EcalObjects/interface/EcalTPGLinearizationConst.h"
 #include "CondFormats/DataRecord/interface/EcalTPGLinearizationConstRcd.h"
@@ -45,21 +42,20 @@ namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
 namespace popcon {
   class EcalTPGPedfromFile : public popcon::PopConSourceHandler<EcalTPGPedestals> {
-
   public:
-    void getNewObjects();
-    ~EcalTPGPedfromFile();
-    EcalTPGPedfromFile(edm::ParameterSet const & ); 
-    
-    std::string id() const { return m_name;}
+    void getNewObjects() override;
+    ~EcalTPGPedfromFile() override;
+    EcalTPGPedfromFile(edm::ParameterSet const&);
+
+    std::string id() const override { return m_name; }
 
   private:
-    enum { kEBChannels = 61200, kEEChannels = 14648, kGains = 3};
+    enum { kEBChannels = 61200, kEEChannels = 14648, kGains = 3 };
     std::string m_name;
   };
-}
+}  // namespace popcon
 #endif

@@ -15,9 +15,7 @@
 class Surface;
 
 class MultiRefittedTS : public RefittedTrackState<5> {
-
 public:
-
   typedef ReferenceCountingPointer<RefittedTrackState<5> > RefCountedRefittedTrackState;
   typedef ReferenceCountingPointer<LinearizedTrackState<5> > RefCountedLinearizedTrackState;
 
@@ -25,66 +23,63 @@ public:
    *   Constructor with a reference surface, to be used to assemble the 
    *   TSOS components on one identical surface.
    */
-  MultiRefittedTS(const std::vector<RefCountedRefittedTrackState> & prtsComp,
-	const Surface & referenceSurface);
+  MultiRefittedTS(const std::vector<RefCountedRefittedTrackState>& prtsComp, const Surface& referenceSurface);
 
   /**
    *   Constructor with a reference position. The surface which is going to be usedto assemble the 
    *   TSOS components will be the surface perpendicular to the PCA of the state with the highest weight
    *   to the reference point.
    */
-  MultiRefittedTS(const std::vector<RefCountedRefittedTrackState> & prtsComp,
-	const GlobalPoint & referencePosition);
+  MultiRefittedTS(const std::vector<RefCountedRefittedTrackState>& prtsComp, const GlobalPoint& referencePosition);
 
-  virtual ~MultiRefittedTS(){}
+  ~MultiRefittedTS() override {}
 
   /**
    * Returns a FreeTrajectoryState. It will be the FTS of the single, collapsed
    * state.
    */
 
-  virtual FreeTrajectoryState freeTrajectoryState() const;
+  FreeTrajectoryState freeTrajectoryState() const override;
 
   /**
    * Returns a multi-state TSOS at a given surface
    */
-  virtual TrajectoryStateOnSurface trajectoryStateOnSurface(
-  		const Surface & surface) const;
+  TrajectoryStateOnSurface trajectoryStateOnSurface(const Surface& surface) const override;
 
   /**
    * Returns a multi-state TSOS at a given surface, with a given propagator
    */
 
-  virtual TrajectoryStateOnSurface trajectoryStateOnSurface(
-		const Surface & surface, const Propagator & propagator) const;
+  TrajectoryStateOnSurface trajectoryStateOnSurface(const Surface& surface,
+                                                    const Propagator& propagator) const override;
 
   /**
    *   Returns a new reco::Track, which can then be made persistent. The parameters are taken
    *    from FTS described above.
    */
 
-  virtual reco::TransientTrack transientTrack() const;
+  reco::TransientTrack transientTrack() const override;
 
   /**
    * Vector containing the refitted track parameters. Not possible yet for a
    * multi-state, throws an exception.
    */
 
-  virtual AlgebraicVectorN  parameters() const;
+  AlgebraicVectorN parameters() const override;
 
   /**
    * The covariance matrix. Not possible yet for a
    * multi-state, throws an exception.
    */
 
-  virtual AlgebraicSymMatrixNN  covariance() const;
+  AlgebraicSymMatrixNN covariance() const override;
 
   /**
    * Position at which the momentum is defined. Not possible yet for a
    * multi-state, throws an exception.
    */
 
-  virtual GlobalPoint position() const;
+  GlobalPoint position() const override;
 
   /**
    * Vector containing the parameters describing the momentum as the vertex.
@@ -92,14 +87,11 @@ public:
    * multi-state, throws an exception.
    */
 
-  virtual AlgebraicVectorM momentumVector() const;
+  AlgebraicVectorM momentumVector() const override;
 
-  virtual double weight() const;
+  double weight() const override;
 
-  virtual std::vector<ReferenceCountingPointer<RefittedTrackState<5> > > components() const
-  {
-    return theComponents;
-  }
+  std::vector<ReferenceCountingPointer<RefittedTrackState<5> > > components() const override { return theComponents; }
 
   /**
    * This method is meant to returns a new refitted state of the same type, 
@@ -109,16 +101,12 @@ public:
    * The current state is unchanged.
    */
 
-  virtual ReferenceCountingPointer<RefittedTrackState<5> > stateWithNewWeight
-  	(const double newWeight) const;
-
+  ReferenceCountingPointer<RefittedTrackState<5> > stateWithNewWeight(const double newWeight) const override;
 
 private:
-
   void computeFreeTrajectoryState() const;
 
-
-  typedef std::vector<RefCountedRefittedTrackState > RTSvector;
+  typedef std::vector<RefCountedRefittedTrackState> RTSvector;
 
   mutable RTSvector theComponents;
   mutable bool totalWeightAvailable, ftsAvailable;
@@ -127,6 +115,5 @@ private:
   const GlobalPoint refPosition;
   ConstReferenceCountingPointer<Surface> refSurface;
   const bool surf;
-
 };
 #endif

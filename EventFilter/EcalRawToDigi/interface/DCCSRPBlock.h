@@ -1,7 +1,6 @@
 #ifndef DCCSRPBLOCK_HH
 #define DCCSRPBLOCK_HH
 
-
 /*
  *\ Class DCCSRPBlock
  *
@@ -14,10 +13,9 @@
  *
 */
 
-
 #include <iostream>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
@@ -29,36 +27,28 @@
 #include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
 #include <DataFormats/EcalDetId/interface/EcalDetIdCollections.h>
 
-
 class DCCSRPBlock : public DCCDataBlockPrototype {
-	
-  public :
+public:
+  DCCSRPBlock(DCCDataUnpacker* u, EcalElectronicsMapper* m, DCCEventBlock* e, bool unpack);
 
-    DCCSRPBlock( DCCDataUnpacker * u,EcalElectronicsMapper * m, DCCEventBlock * e, bool unpack);
-	 
-    void display(std::ostream & o); 
+  void display(std::ostream& o) override;
+  using DCCDataBlockPrototype::unpack;
+  int unpack(const uint64_t** data, unsigned int* dwToEnd, unsigned int numbFlags = SRP_NUMBFLAGS);
 
-    int unpack(const uint64_t ** data, unsigned int * dwToEnd, unsigned int numbFlags = SRP_NUMBFLAGS);     	 
+  unsigned short srFlag(unsigned int feChannel) { return srFlags_[feChannel - 1]; }
 
-    unsigned short srFlag(unsigned int feChannel){ return srFlags_[feChannel-1]; }
-    			
-  protected :
-    
-    virtual void addSRFlagToCollection(){};
-	 
-    virtual bool checkSrpIdAndNumbSRFlags(){ return true; };
-	 
-    unsigned int srpId_         ;  
-    unsigned int bx_            ;  
-    unsigned int l1_            ;   
-    unsigned int nSRFlags_      ; 
-    unsigned int expNumbSrFlags_;
-	 
-    unsigned short srFlags_[SRP_NUMBFLAGS]; 
-	 
-	 
-	 
+protected:
+  virtual void addSRFlagToCollection(){};
+
+  virtual bool checkSrpIdAndNumbSRFlags() { return true; };
+
+  unsigned int srpId_;
+  unsigned int bx_;
+  unsigned int l1_;
+  unsigned int nSRFlags_;
+  unsigned int expNumbSrFlags_;
+
+  unsigned short srFlags_[SRP_NUMBFLAGS];
 };
-
 
 #endif

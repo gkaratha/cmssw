@@ -1,8 +1,9 @@
 #ifndef SimG4Core_GFlash_ParametrisedPhysics_H
 #define SimG4Core_GFlash_ParametrisedPhysics_H
 
-#include "G4VPhysicsConstructor.hh"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "G4FastSimulationManagerProcess.hh"
+#include "G4VPhysicsConstructor.hh"
 #include "SimG4Core/GFlash/interface/GflashEMShowerModel.h"
 #include "SimG4Core/GFlash/interface/GflashHadronShowerModel.h"
 
@@ -10,23 +11,24 @@
 // Physics process for Gflash parameterisation
 // modified by Soon Yung Jun, Dongwook Jang
 
-class ParametrisedPhysics : public G4VPhysicsConstructor
-{
- public:
-  ParametrisedPhysics(std::string name, const edm::ParameterSet & p);
-  virtual ~ParametrisedPhysics();
-	
- protected:
-  virtual void ConstructParticle();
-  virtual void ConstructProcess();
+class ParametrisedPhysics : public G4VPhysicsConstructor {
+public:
+  ParametrisedPhysics(std::string name, const edm::ParameterSet &p);
+  ~ParametrisedPhysics() override;
 
- private:
+protected:
+  void ConstructParticle() override;
+  void ConstructProcess() override;
+
+private:
   edm::ParameterSet theParSet;
-  GflashEMShowerModel *theEMShowerModel;
-  GflashEMShowerModel *theHadShowerModel;
-  GflashHadronShowerModel *theHadronShowerModel;
-
+  struct ThreadPrivate {
+    GflashEMShowerModel *theEMShowerModel;
+    GflashEMShowerModel *theHadShowerModel;
+    GflashHadronShowerModel *theHadronShowerModel;
+    G4FastSimulationManagerProcess *theFastSimulationManagerProcess;
+  };
+  static G4ThreadLocal ThreadPrivate *tpdata;
 };
 
 #endif
-

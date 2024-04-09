@@ -14,10 +14,8 @@ process.options = cms.untracked.PSet(
 
 # initialize  MessageLogger
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.destinations = ['alignment']
-process.MessageLogger.statistics = ['alignment']
-process.MessageLogger.categories = ['Alignment']
-process.MessageLogger.alignment = cms.untracked.PSet(
+
+process.MessageLogger.files.alignment = cms.untracked.PSet(
     DEBUG = cms.untracked.PSet(
         limit = cms.untracked.int32(-1)
         ),
@@ -32,11 +30,12 @@ process.MessageLogger.alignment = cms.untracked.PSet(
         ),
     Alignment = cms.untracked.PSet(
         limit = cms.untracked.int32(-1),
-        )
+        ),
+    enableStatistics = cms.untracked.bool(True)
     )
 
    
-process.MessageLogger.cerr.placeholder = cms.untracked.bool(True)
+process.MessageLogger.cerr.enable = cms.untracked.bool(False)
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 
@@ -135,16 +134,11 @@ process.HitFilteredTracks = RecoTracker.TrackProducer.CTFFinalFitWithMaterial_cf
 )
     
 #-- Alignment producer
-process.load("Alignment.CommonAlignmentProducer.TrackerAlignmentProducerForPCL_cff")
+process.load("Alignment.CommonAlignmentProducer.AlignmentProducerAsAnalyzer_cff")
 process.AlignmentProducer.ParameterBuilder.Selector = cms.PSet(
     alignParams = cms.vstring(
-        'TrackerTPBHalfBarrel,111111',
-        'TrackerTPEHalfCylinder,111111',
-
-        'TrackerTIBHalfBarrel,ffffff',
-        'TrackerTOBHalfBarrel,ffffff',
-        'TrackerTIDEndcap,ffffff',
-        'TrackerTECEndcap,ffffff'
+        "PixelHalfBarrels,111111",
+        "PXECHalfCylinders,111111",
         )
     )
 

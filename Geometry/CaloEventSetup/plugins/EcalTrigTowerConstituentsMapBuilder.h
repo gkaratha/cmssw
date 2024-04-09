@@ -2,7 +2,7 @@
 //
 // Package:    EcalTrigTowerConstituentsMapBuilder
 // Class:      EcalTrigTowerConstituentsMapBuilder
-// 
+//
 /**\class EcalTrigTowerConstituentsMapBuilder EcalTrigTowerConstituentsMapBuilder.h tmp/EcalTrigTowerConstituentsMapBuilder/interface/EcalTrigTowerConstituentsMapBuilder.h
 
  Description: <one line class summary>
@@ -20,12 +20,10 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/ESProducer.h"
 
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "Geometry/CaloTopology/interface/EcalTrigTowerConstituentsMap.h"
@@ -35,18 +33,18 @@
 //
 
 class EcalTrigTowerConstituentsMapBuilder : public edm::ESProducer {
-   public:
+public:
   EcalTrigTowerConstituentsMapBuilder(const edm::ParameterSet&);
-  ~EcalTrigTowerConstituentsMapBuilder();
+  ~EcalTrigTowerConstituentsMapBuilder() override;
 
-  typedef std::auto_ptr<EcalTrigTowerConstituentsMap> ReturnType;
+  typedef std::unique_ptr<EcalTrigTowerConstituentsMap> ReturnType;
 
   ReturnType produce(const IdealGeometryRecord&);
 
 private:
-  void parseTextMap(const std::string& filename,EcalTrigTowerConstituentsMap& theMap);
+  void parseTextMap(const std::string& filename, EcalTrigTowerConstituentsMap& theMap);
   std::string mapFile_;
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
 };
 
 #endif

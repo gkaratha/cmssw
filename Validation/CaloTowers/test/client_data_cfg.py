@@ -1,11 +1,12 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 import os
 import sys
 import re
 
 class config: pass
-config.runNumber = int(sys.argv[2])
+config.runNumber = int(sys.argv[1])
 print config.runNumber
 
 for arg in sys.argv: 
@@ -14,7 +15,7 @@ for arg in sys.argv:
 readFiles = cms.untracked.vstring()
 
 matchRootFile = re.compile("\S*\.root$")
-for argument in sys.argv[3:]:
+for argument in sys.argv[2:]:
    if matchRootFile.search(argument):
       fileToRead = "file:"+argument
       readFiles.append(fileToRead)
@@ -36,7 +37,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.EDMtoMEAtRunEnd_cff')
 process.load('Configuration.StandardSequences.Harvesting_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load("DQMServices.Core.DQM_cfg")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
@@ -74,8 +75,6 @@ process.options = cms.untracked.PSet(
 
 #process.load('Configuration/StandardSequences/EDMtoMEAtRunEnd_cff')
 ##process.EDMtoMEConverter.convertOnEndLumi = False
-#process.dqmSaver.referenceHandling = cms.untracked.string('all')
-## Don't do this: process.dqmSaver.enableMultiThread = cms.untracked.bool(True)
 
 cmssw_version = os.environ.get('CMSSW_VERSION','CMSSW_X_Y_Z')
 Workflow = '/HcalValidation/'+'Harvesting/'+str(cmssw_version)
@@ -88,39 +87,38 @@ process.dqmSaver.workflow = Workflow
 #process.dqmSaver.saveByRun = cms.untracked.int32(1)
 #process.dqmSaver.saveAtJobEnd = cms.untracked.bool(True)
 #process.dqmSaver.forceRunNumber = cms.untracked.int32(999999)
-process.DQMStore.collateHistograms = cms.untracked.bool(True)
 process.dqmSaver.convention = 'Offline'
 process.dqmSaver.saveByRun = -1
 process.dqmSaver.saveAtJobEnd = True
 process.dqmSaver.forceRunNumber = config.runNumber
 
-process.calotowersClient = cms.EDAnalyzer("CaloTowersClient", 
+process.calotowersClient = DQMEDHarvester("CaloTowersClient", 
      outputFile = cms.untracked.string('CaloTowersHarvestingME.root'),
      DQMDirName = cms.string("/") # root directory
 )
 
-process.noiseratesClient = cms.EDAnalyzer("NoiseRatesClient", 
+process.noiseratesClient = DQMEDHarvester("NoiseRatesClient", 
      outputFile = cms.untracked.string('NoiseRatesHarvestingME.root'),
      DQMDirName = cms.string("/") # root directory
 )
 
-process.hcalrechitsClient = cms.EDAnalyzer("HcalRecHitsClient", 
+process.hcalrechitsClient = DQMEDHarvester("HcalRecHitsClient", 
      outputFile = cms.untracked.string('HcalRecHitsHarvestingME.root'),
      DQMDirName = cms.string("/") # root directory
 )
 
 ##########
-process.calotowersDQMClient = cms.EDAnalyzer("CaloTowersDQMClient",
+process.calotowersDQMClient = DQMEDHarvester("CaloTowersDQMClient",
       outputFile = cms.untracked.string('CaloTowersHarvestingME.root'),
 #     outputFile = cms.untracked.string(''),
       DQMDirName = cms.string("/") # root directory
 )
-process.hcalNoiseRatesClient = cms.EDAnalyzer("HcalNoiseRatesClient", 
+process.hcalNoiseRatesClient = DQMEDHarvester("HcalNoiseRatesClient", 
      outputFile = cms.untracked.string('NoiseRatesHarvestingME.root'),
 #     outputFile = cms.untracked.string(''),
      DQMDirName = cms.string("/") # root directory
 )
-process.hcalRecHitsDQMClient = cms.EDAnalyzer("HcalRecHitsDQMClient", 
+process.hcalRecHitsDQMClient = DQMEDHarvester("HcalRecHitsDQMClient", 
      outputFile = cms.untracked.string('HcalRecHitsHarvestingME.root'),
 #    outputFile = cms.untracked.string(''),
      DQMDirName = cms.string("/") # root directory

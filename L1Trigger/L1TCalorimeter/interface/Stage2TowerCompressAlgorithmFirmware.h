@@ -21,15 +21,14 @@ namespace l1t {
   // Imp1 is for v1 and v2
   class Stage2TowerCompressAlgorithmFirmwareImp1 : public Stage2TowerCompressAlgorithm {
   public:
-    Stage2TowerCompressAlgorithmFirmwareImp1(CaloParamsHelper* params);
-    virtual ~Stage2TowerCompressAlgorithmFirmwareImp1();
-    virtual void processEvent(const std::vector<l1t::CaloTower> & inTowers,
-			      std::vector<l1t::CaloTower> & outTowers);
-  private:
-    CaloParamsHelper* params_;
+    Stage2TowerCompressAlgorithmFirmwareImp1(CaloParamsHelper const* params);
+    ~Stage2TowerCompressAlgorithmFirmwareImp1() override;
+    void processEvent(const std::vector<l1t::CaloTower>& inTowers, std::vector<l1t::CaloTower>& outTowers) override;
 
+  private:
+    CaloParamsHelper const* params_;
   };
 
-}
+}  // namespace l1t
 
 #endif

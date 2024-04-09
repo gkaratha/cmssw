@@ -13,7 +13,7 @@
 //
 
 // system include files
-#include <assert.h>
+#include <cassert>
 #include "TClass.h"
 
 // user include files
@@ -21,21 +21,15 @@
 
 // forward declarations
 
-FWItemRandomAccessorBase::FWItemRandomAccessorBase(const TClass *type, const type_info &modelTypeName)
-:m_type(type),
- m_modelType(TClass::GetClass(modelTypeName)),
- m_data(0)
-{
-}
+FWItemRandomAccessorBase::FWItemRandomAccessorBase(const TClass* type, const std::type_info& modelTypeName)
+    : m_type(type), m_modelType(TClass::GetClass(modelTypeName)), m_data(nullptr) {}
 
 // FWItemRandomAccessor::FWItemRandomAccessor(const FWItemRandomAccessor& rhs)
 // {
 //    // do actual copying here;
 // }
 
-FWItemRandomAccessorBase::~FWItemRandomAccessorBase()
-{
-}
+FWItemRandomAccessorBase::~FWItemRandomAccessorBase() {}
 
 //
 // assignment operators
@@ -52,58 +46,33 @@ FWItemRandomAccessorBase::~FWItemRandomAccessorBase()
 //
 // member functions
 //
-void
-FWItemRandomAccessorBase::setData(const edm::ObjectWithDict& product)
-{
-   if (product.address() == 0)
-   {
-      reset();
-      return;
-   }
-   
-   m_data = product.address();
-   assert(0!=m_data);
+void FWItemRandomAccessorBase::setData(const edm::ObjectWithDict& product) {
+  if (product.address() == nullptr) {
+    reset();
+    return;
+  }
+
+  m_data = product.address();
+  assert(nullptr != m_data);
 }
 
-void
-FWItemRandomAccessorBase::reset()
-{
-   m_data = 0;
-}
+void FWItemRandomAccessorBase::reset() { m_data = nullptr; }
 
 //
 // const member functions
 //
-const void*
-FWItemRandomAccessorBase::data() const
-{
-   return m_data;
+const void* FWItemRandomAccessorBase::data() const { return m_data; }
+
+void* FWItemRandomAccessorBase::getDataPtr() const { return m_data; }
+
+const TClass* FWItemRandomAccessorBase::type() const { return m_type; }
+
+const TClass* FWItemRandomAccessorBase::modelType() const {
+  assert(m_modelType);
+  return m_modelType;
 }
 
-void*
-FWItemRandomAccessorBase::getDataPtr() const
-{
-   return m_data;
-}
-
-const TClass*
-FWItemRandomAccessorBase::type() const
-{
-   return m_type;
-}
-
-const TClass*
-FWItemRandomAccessorBase::modelType() const
-{
-   assert(m_modelType);
-   return m_modelType; 
-}
-
-bool
-FWItemRandomAccessorBase::isCollection() const
-{
-   return true;
-}
+bool FWItemRandomAccessorBase::isCollection() const { return true; }
 //
 // static member functions
 //

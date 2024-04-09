@@ -33,13 +33,10 @@ process.hltPhysicsDeclared.L1GtReadoutRecordTag = 'gtDigis'
 
 # i do not know what is this doing?
 triggerSelection = cms.EDFilter( "TriggerResultsFilter",
-    triggerConditions = cms.vstring(
-    'HLT_ZeroBias / 1' ),
+    triggerConditions = cms.vstring( 'HLT_ZeroBias' ),
     hltResults = cms.InputTag( "TriggerResults", "", "HLT" ),
     l1tResults = cms.InputTag( "gtDigis" ),
-    l1tIgnoreMask = cms.bool( True ),
-    l1techIgnorePrescales = cms.bool( True ),
-    daqPartitions = cms.uint32( 1 ),
+    l1tIgnoreMaskAndPrescale = cms.bool( True ),
     throw = cms.bool( True )
 )
 
@@ -49,15 +46,14 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('siPixelClusters'),
-    destinations = cms.untracked.vstring('cout'),
-#    destinations = cms.untracked.vstring("log","cout"),
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
         threshold = cms.untracked.string('ERROR')
-    )
-#    log = cms.untracked.PSet(
-#        threshold = cms.untracked.string('DEBUG')
-#    )
+    ),
+    debugModules = cms.untracked.vstring('siPixelClusters')
 )
 
 process.source = cms.Source("PoolSource",

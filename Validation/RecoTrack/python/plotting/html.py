@@ -12,58 +12,128 @@ _sampleName = {
     "RelValQCD_FlatPt_15_3000": "QCD Flat Pt 15 to 3000",
     "RelValZMM": "ZMuMu",
     "RelValWjet_Pt_3000_3500": "Wjet Pt 3000 to 3500",
+    "RelValH125GGgluonfusion": "Higgs to gamma gamma",
     "RelValSingleElectronPt35": "Single Electron Pt 35",
+    "RelValSingleElectronPt35Extended": "Single Electron Pt 35 (extended eta)",
     "RelValSingleElectronPt10": "Single Electron Pt 10",
+    "RelValSingleMuPt1": "Single Muon Pt 1",
     "RelValSingleMuPt10": "Single Muon Pt 10",
+    "RelValSingleMuPt10Extended": "Single Muon Pt 10 (extended eta)",
     "RelValSingleMuPt100": "Single Muon Pt 100",
+    "RelValTenMuE_0_200": "Ten muon Pt 0-200",
 }
 
 _sampleFileName = {
     "RelValMinBias": "minbias",
     "RelValTTbar": "ttbar",
-    "RelValQCD_Pt600_800": "qcd600",
-    "RelValQCD_Pt3000_3500": "qcd3000",
+    "RelValQCD_Pt_600_800": "qcd600",
+    "RelValQCD_Pt_3000_3500": "qcd3000",
     "RelValQCD_FlatPt_15_3000": "qcdflat",
     "RelValZMM": "zmm",
     "RelValWjet_Pt_3000_3500": "wjet3000",
+    "RelValH125GGgluonfusion": "hgg",
     "RelValSingleElectronPt35": "ele35",
+    "RelValSingleElectronPt35Extended": "ele35ext",
     "RelValSingleElectronPt10": "ele10",
+    "RelValSingleMuPt1": "mu1",
     "RelValSingleMuPt10": "mu10",
+    "RelValSingleMuPt10Extended": "mu10ext",
     "RelValSingleMuPt100": "mu100",
+    "RelValTenMuE_0_200": "tenmu200",
 }
 
-_allTPEfficName = "All tracks (all TPs)"
+_allName = "All tracks"
+_allTPEfficName = _allName+" (all TPs)"
 _fromPVName = "Tracks from PV"
 _fromPVAllTPName = "Tracks from PV (all TPs)"
+_tpPtLess09Name = "All tracks (TP pT &lt; 0.9 GeV)"
+_tpEtaGreater2p7Name = "All tracks (TP |eta| &gt; 2.7)"
+_conversionName = "Tracks for conversions"
+_gsfName = "Electron GSF tracks"
+_bhadronName = "All tracks (B-hadron TPs)"
+_displacedName = "All tracks (TPs with no tip or lip cuts)"
+def _toHP(s):
+    return "High purity "+_lowerFirst(s)
+def _toOriAlgo(s):
+    return s.replace("tracks", "tracks by originalAlgo")
+def _toAlgoMask(s):
+    return s.replace("tracks", "tracks by algoMask")
+def _allToHP(s):
+    return s.replace("All", "High purity")
+def _allToBTV(s):
+    return s.replace("All", "BTV-like")
+def _allPtCut(s):
+    return s.replace("All tracks", "Tracks pT &gt; 0.9 GeV")
+def _ptCut(s):
+    return s.replace("Tracks", "Tracks pT &gt; 0.9 GeV").replace("tracks", "tracks pT &gt; 0.9 GeV")
+def _allToPixel(s):
+    return s.replace("All", "Pixel")
+def _toPixel(s):
+    return s.replace("Tracks", "Pixel tracks")
 _trackQualityNameOrder = collections.OrderedDict([
     ("seeding_seeds", "Seeds"),
     ("seeding_seedsa", "Seeds A"),
     ("seeding_seedsb", "Seeds B"),
+    ("seeding_seedsc", "Seeds C"),
     ("seeding_seedstripl", "Seeds triplets"),
     ("seeding_seedspair", "Seeds pairs"),
     ("building_", "Built tracks"),
-    ("", "All tracks"),
-    ("highPurity", "High purity tracks"),
-    ("Pt", "Tracks pT &gt; 0.9 GeV"),
-    ("highPurityPt", "High purity tracks pT &gt; 0.9 GeV"),
-    ("ByOriginalAlgo", "All tracks by originalAlgo"),
-    ("highPurityByOriginalAlgo", "High purity tracks by originalAlgo"),
-    ("ByAlgoMask", "All tracks by algoMask"),
-    ("highPurityByAlgoMask", "High purity tracks by algoMask"),
-    ("btvLike", "BTV-like"),
+    ("", _allName),
+    ("highPurity", _allToHP(_allName)),
+    ("Pt09", _allPtCut(_allName)),
+    ("highPurityPt09", _ptCut(_allToHP(_allName))),
+    ("ByOriginalAlgo", _toOriAlgo(_allName)),
+    ("highPurityByOriginalAlgo", _toOriAlgo(_toHP(_allName))),
+    ("ByAlgoMask", _toAlgoMask(_allName)),
+    ("highPurityByAlgoMask", _toAlgoMask(_toHP(_allName))),
+    ("tpPtLess09_", _tpPtLess09Name),
+    ("tpPtLess09_highPurity", _allToHP(_tpPtLess09Name)),
+    ("tpPtLess09_ByOriginalAlgo", _toOriAlgo(_tpPtLess09Name)),
+    ("tpPtLess09_highPurityByOriginalAlgo", _toOriAlgo(_allToHP(_tpPtLess09Name))),
+    ("tpPtLess09_ByAlgoMask", _toAlgoMask(_tpPtLess09Name)),
+    ("tpPtLess09_highPurityByAlgoMask", _toAlgoMask(_allToHP(_tpPtLess09Name))),
+    ("tpEtaGreater2p7_", _tpEtaGreater2p7Name),
+    ("tpEtaGreater2p7_highPurity", _allToHP(_tpEtaGreater2p7Name)),
+    ("btvLike", _allToBTV(_allName)),
     ("ak4PFJets", "AK4 PF jets"),
     ("allTPEffic_", _allTPEfficName),
-    ("allTPEffic_highPurity", _allTPEfficName.replace("All", "High purity")),
+    ("allTPEffic_highPurity", _allToHP(_allTPEfficName)),
     ("fromPV_", _fromPVName),
-    ("fromPV_highPurity", "High purity "+_lowerFirst(_fromPVName)),
+    ("fromPV_highPurity", _toHP(_fromPVName)),
+    ("fromPV_Pt09", _ptCut(_fromPVName)),
+    ("fromPV_highPurityPt09", _toHP(_ptCut(_fromPVName))),
     ("fromPVAllTP_", _fromPVAllTPName),
-    ("fromPVAllTP_highPurity", "High purity "+_lowerFirst(_fromPVAllTPName)),
-    ("fromPVAllTP_Pt", _fromPVAllTPName.replace("Tracks", "Tracks pT &gt; 0.9 GeV")),
-    ("fromPVAllTP_highPurityPt", "High purity "+_lowerFirst(_fromPVAllTPName).replace("tracks", "tracks pT &gt; 0.9 GeV")),
+    ("fromPVAllTP_highPurity", _toHP(_fromPVAllTPName)),
+    ("fromPVAllTP_Pt09", _ptCut(_fromPVAllTPName)),
+    ("fromPVAllTP_highPurityPt09", _toHP(_ptCut(_fromPVAllTPName))),
     ("fromPVAllTP2_", _fromPVAllTPName.replace("PV", "PV v2")),
     ("fromPVAllTP2_highPurity", "High purity "+_lowerFirst(_fromPVAllTPName).replace("PV", "PV v2")),
-    ("fromPVAllTP2_Pt", _fromPVAllTPName.replace("Tracks", "Tracks pT &gt; 0.9 GeV").replace("PV", "PV v2")),
-    ("fromPVAllTP2_highPurityPt", "High purity "+_lowerFirst(_fromPVAllTPName).replace("tracks", "tracks pT &gt; 0.9 GeV").replace("PV", "PV v2")),
+    ("fromPVAllTP2_Pt09", _fromPVAllTPName.replace("Tracks", "Tracks pT &gt; 0.9 GeV").replace("PV", "PV v2")),
+    ("fromPVAllTP2_highPurityPt09", _toHP(_ptCut(_fromPVAllTPName)).replace("PV", "PV v2")),
+    ("conversion_", _conversionName),
+    ("gsf_", _gsfName),
+    ("bhadron_", _bhadronName),
+    ("bhadron_highPurity", _allToHP(_bhadronName)),
+    ("bhadron_ByOriginalAlgo", _toOriAlgo(_bhadronName)),
+    ("bhadron_highPurityByOriginalAlgo", _toOriAlgo(_toHP(_bhadronName))),
+    ("bhadron_ByAlgoMask", _toAlgoMask(_bhadronName)),
+    ("bhadron_highPurityByAlgoMask", _toAlgoMask(_allToHP(_bhadronName))),
+    ("bhadron_btvLike", _allToBTV(_bhadronName)),
+    ("displaced_", _displacedName),
+    ("displaced_highPurity", _allToHP(_displacedName)),
+    ("displaced_ByOriginalAlgo", _toOriAlgo(_displacedName)),
+    ("displaced_highPurityByOriginalAlgo", _toOriAlgo(_allToHP(_displacedName))),
+    ("displaced_ByAlgoMask", _toAlgoMask(_displacedName)),
+    ("displaced_highPurityByAlgoMask", _toAlgoMask(_allToHP(_displacedName))),
+    # Pixel tracks
+    ("pixel_", _allToPixel(_allName)),
+    ("pixel_Pt09", _ptCut(_allToPixel(_allName))),
+    ("pixelFromPV_", _toPixel(_fromPVName)),
+    ("pixelFromPV_Pt09", _ptCut(_toPixel(_fromPVName))),
+    ("pixelFromPVAllTP_", _toPixel(_fromPVAllTPName)),
+    ("pixelFromPVAllTP_Pt09", _ptCut(_toPixel(_fromPVAllTPName))),
+    ("pixelbhadron_", _allToPixel(_bhadronName)),
+    ("pixelbhadron_Pt09", _ptCut(_allToPixel(_bhadronName))),
 ])
 
 _trackAlgoName = {
@@ -75,8 +145,10 @@ _trackAlgoName = {
     "iter4" : "Iterative Step 4",
     "iter5" : "Iterative Step 5",
     "iter6" : "Iterative Step 6",
+    "iter7" : "Iterative Step 7",
     "iter9" : "Iterative Step 9",
     "iter10": "Iterative Step 10",
+    "pixel": "Pixel tracks",
 }
 
 _trackAlgoOrder = [
@@ -84,18 +156,25 @@ _trackAlgoOrder = [
     'initialStepPreSplitting',
     'initialStep',
     'highPtTripletStep',
+    'detachedQuadStep',
+    'detachedTripletStep',
     'lowPtQuadStep',
     'lowPtTripletStep',
     'pixelPairStep',
-    'detachedQuadStep',
-    'detachedTripletStep',
     'mixedTripletStep',
     'pixelLessStep',
     'tobTecStep',
+    'displacedGeneralStep',
     'jetCoreRegionalStep',
     'muonSeededStepInOut',
     'muonSeededStepOutIn',
+    'displacedRegionalStep',
     'duplicateMerge',
+    'convStep',
+    'conversionStep',
+    'ckfInOutFromConversions',
+    'ckfOutInFromConversions',
+    'electronGsf',
     'iter0',
     'iter1',
     'iter2',
@@ -103,8 +182,10 @@ _trackAlgoOrder = [
     'iter4',
     'iter5',
     'iter6',
+    'iter7',
     'iter9',
     'iter10',
+    "pixel",
 ]
 
 _pageNameMap = {
@@ -113,53 +194,101 @@ _pageNameMap = {
     "v0": "V0",
     "miniaod": "MiniAOD",
     "timing": "Timing",
+    "hlt": "HLT",
+    "pixel": "Pixel tracks",
+    "pf": "PF",
 }
 
 _sectionNameMapOrder = collections.OrderedDict([
     # These are for the summary page
     ("seeding_seeds", "Seeds"),
     ("building", "Built tracks"),
-    ("", "All tracks"),
-    ("highPurity", "High purity tracks"),
+    ("", _allName),
+    ("Pt09", _allPtCut(_allName)),
+    ("highPurity", _allToHP(_allName)),
+    ("highPurityPt09", _ptCut(_allToHP(_allName))),
+    ("tpPtLess09", _tpPtLess09Name),
+    ("tpPtLess09_highPurity", _allToHP(_tpPtLess09Name)),
+    ("tpEtaGreater2p7", _tpEtaGreater2p7Name),
+    ("tpEtaGreater2p7_highPurity", _allToHP(_tpEtaGreater2p7Name)),
+    ("btvLike", "BTV-like"),
+    ("ak4PFJets", "AK4 PF jets"),
     ("allTPEffic", _allTPEfficName),
-    ("allTPEffic_highPurity", _allTPEfficName.replace("All", "High purity")),
+    ("allTPEffic_highPurity", _allToHP(_allTPEfficName)),
     ("fromPV", _fromPVName),
     ("fromPV_highPurity", "High purity "+_lowerFirst(_fromPVName)),
     ("fromPVAllTP", _fromPVAllTPName),
     ("fromPVAllTP_highPurity", "High purity "+_lowerFirst(_fromPVAllTPName)),
+    ("conversion", _conversionName),
+    ("gsf", _gsfName),
+    ("bhadron", _bhadronName),
+    ("bhadron_highPurity", _allToHP(_bhadronName)),
+    ("displaced", _displacedName),
+    ("displaced_highPurity", _allToHP(_displacedName)),
+    # Pixel tracks
+    ("pixel", _allToPixel(_allName)),
+    ("pixelPt09", _ptCut(_allToPixel(_allName))),
+    ("pixelFromPV", _toPixel(_fromPVName)),
+    ("pixelFromPVPt09", _ptCut(_toPixel(_fromPVName))),
+    ("pixelFromPVAllTP", _toPixel(_fromPVAllTPName)),
+    ("pixelFromPVAllTPPt09", _ptCut(_toPixel(_fromPVAllTPName))),
+    ("pixelbhadron", _allToPixel(_bhadronName)),
+    ("pixelbhadronPt09", _ptCut(_allToPixel(_bhadronName))),
     # These are for vertices
+    ("genvertex", "Gen vertices"),
+    ("pixelVertices", "Pixel vertices"),
+    ("selectedPixelVertices", "Selected pixel vertices"),
+    ("firstStepPrimaryVerticesPreSplitting", "firstStepPrimaryVerticesPreSplitting"),
+    ("firstStepPrimaryVertices", "firstStepPrimaryVertices"),
     ("offlinePrimaryVertices", "All vertices (offlinePrimaryVertices)"),
     ("selectedOfflinePrimaryVertices", "Selected vertices (selectedOfflinePrimaryVertices)"),
+    ("offlinePrimaryVerticesWithBS", "All vertices with BS constraint"),
+    ("selectedOfflinePrimaryVerticesWithBS", "Selected vertices with BS constraint"),
     # These are for V0
     ("k0", "K0"),
     ("lambda", "Lambda"),
 ])
+_btvLegend = "BTV-like selected tracks"
 _allTPEfficLegend = "All tracks, efficiency denominator contains all TrackingParticles"
 _fromPVLegend = "Tracks from reco PV vs. TrackingParticles from gen PV (fake rate includes pileup tracks)"
+_fromPVPtLegend = "Tracks (pT &gt; 0.9 GeV) from reco PV vs. TrackingParticles from gen PV (fake rate includes pileup tracks)"
 _fromPVAllTPLegend = "Tracks from reco PV, fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
-_fromPVAllTPPtLegend = "Tracks (pT &gt 0.9 GeV) from reco PV, fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
+_fromPVAllTPPtLegend = "Tracks (pT &gt; 0.9 GeV) from reco PV, fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
 _fromPVAllTP2Legend = "Tracks from reco PV (another method), fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
-_fromPVAllTPPt2Legend = "Tracks (pT &gt 0.9 GeV) from reco PV (another method), fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
+_fromPVAllTPPt2Legend = "Tracks (pT &gt; 0.9 GeV) from reco PV (another method), fake rate numerator contains all TrackingParticles (separates fake tracks from pileup tracks)"
+_bhadronLegend = "All tracks, efficiency denominator contains only TrackingParticles from B-hadron decays"
+_bhadronPtLegend = "Tracks (pT &gt; 0.9 GeV), efficiency denominator contains only TrackingParticles from B-hadron decays"
 
 def _sectionNameLegend():
     return {
-        "btvLike": "BTV-like selected tracks",
+        "btvLike": _btvLegend,
         "ak4PFJets": "Tracks from AK4 PF jets (jet corrected pT &gt; 10 GeV)",
         "allTPEffic": _allTPEfficLegend,
         "allTPEffic_": _allTPEfficLegend,
-        "allTPEffic_highPurity": _allTPEfficLegend.replace("All", "High purity"),
+        "allTPEffic_highPurity": _allToHP(_allTPEfficLegend),
         "fromPV": _fromPVLegend,
         "fromPV_": _fromPVLegend,
-        "fromPV_highPurity": "High purity "+_lowerFirst(_fromPVLegend),
+        "fromPV_highPurity": _toHP(_fromPVLegend),
+        "fromPV_Pt09": _fromPVPtLegend,
+        "fromPV_highPurity_Pt09": _toHP(_fromPVPtLegend),
         "fromPVAllTP": _fromPVAllTPLegend,
         "fromPVAllTP_": _fromPVAllTPLegend,
-        "fromPVAllTP_highPurity": "High purity "+_lowerFirst(_fromPVAllTPLegend),
-        "fromPVAllTP_Pt": _fromPVAllTPPtLegend,
-        "fromPVAllTP_highPurityPt": "High purity "+_lowerFirst(_fromPVAllTPPtLegend),
+        "fromPVAllTP_highPurity": _toHP(_fromPVAllTPLegend),
+        "fromPVAllTP_Pt09": _fromPVAllTPPtLegend,
+        "fromPVAllTP_highPurityPt09": _toHP(_fromPVAllTPPtLegend),
         "fromPVAllTP2_": _fromPVAllTP2Legend,
-        "fromPVAllTP2_highPurity": "High purity "+_lowerFirst(_fromPVAllTP2Legend),
-        "fromPVAllTP2_Pt": _fromPVAllTPPt2Legend,
-        "fromPVAllTP2_highPurityPt": "High purity "+_lowerFirst(_fromPVAllTPPt2Legend),
+        "fromPVAllTP2_highPurity": _toHP(_fromPVAllTP2Legend),
+        "fromPVAllTP2_Pt09": _fromPVAllTPPt2Legend,
+        "fromPVAllTP2_highPurityPt09": _toHP(_fromPVAllTPPt2Legend),
+        "bhadron_": _bhadronLegend,
+        "bhadron_highPurity": _allToHP(_bhadronLegend),
+        "bhadron_btvLike": _bhadronLegend.replace("All tracks", _btvLegend),
+        "pixelFromPV_": _fromPVLegend,
+        "pixelFromPV_Pt09": _fromPVPtLegend,
+        "pixelFromPVAllTP_": _fromPVAllTPLegend,
+        "pixelFromPVAllTP_Pt09": _fromPVAllTPPtLegend,
+        "pixelbhadron_": _bhadronLegend,
+        "pixelbhadron_Pt09": _bhadronPtLegend,
     }
 
 class Table:
@@ -215,6 +344,9 @@ class PlotPurpose:
     class Vertexing: pass
     class MiniAOD: pass
     class Timing: pass
+    class HLT: pass
+    class Pixel: pass
+    class PF: pass
 
 class Page(object):
     def __init__(self, title, sampleName):
@@ -233,13 +365,16 @@ class Page(object):
         self._tables = {}
 
     def addPlotSet(self, section, plotSet):
-        self._plotSets[section] = plotSet
+        if section in self._plotSets:
+            self._plotSets[section].extend(plotSet)
+        else:
+            self._plotSets[section] = plotSet
 
     def addTable(self, section, table):
         self._tables[section] = table
 
     def isEmpty(self):
-        for plotSet in self._plotSets.itervalues():
+        for plotSet in self._plotSets.values():
             if len(plotSet) > 0:
                 return False
 
@@ -291,7 +426,7 @@ class Page(object):
 
         fileTable = []
 
-        sections = self._orderSets(self._plotSets.keys())
+        sections = self._orderSets(list(self._plotSets.keys()))
         for isec, section in enumerate(sections):
             leg = self._appendLegend(section)
 
@@ -331,6 +466,12 @@ class Page(object):
             '  </table>',
         ])
 
+        if len(fileTable):
+            first_row = fileTable[0]
+            self._content.extend([
+              '  <a href="%s">Browse Folder</a>' % (first_row[1][0:first_row[1].rfind('/')])
+            ])
+
     def _appendColumnHeader(self, header):
         leg = ""
         if header in self._columnHeadersIndex:
@@ -348,7 +489,7 @@ class Page(object):
                     return False
             return True
 
-        sections = self._orderSets(self._tables.keys())
+        sections = self._orderSets(list(self._tables.keys()))
         for isec, section in enumerate(sections):
             leg = self._appendLegend(section)
 
@@ -409,33 +550,40 @@ class Page(object):
         return _sectionNameMapOrder.get(section, section)
 
     def _orderSets(self, keys):
+        keys_sorted = sorted(keys)
         ret = []
         for section in _sectionNameMapOrder.keys():
-            if section in keys:
+            if section in keys_sorted:
                 ret.append(section)
-                keys.remove(section)
-        ret.extend(keys)
+                keys_sorted.remove(section)
+        ret.extend(keys_sorted)
         return ret
 
 class PageSet(object):
-    def __init__(self, title, sampleName, sample, fastVsFull):
+    def __init__(self, title, sampleName, sample, fastVsFull, pileupComparison, dqmSubFolderTranslatedToSectionName=None):
         self._title = title
         self._sampleName = sampleName
         self._pages = collections.OrderedDict()
+        self._dqmSubFolderTranslatedToSectionName = dqmSubFolderTranslatedToSectionName
 
-        self._prefix=""
-        if hasattr(sample, "hasPileup"):
-            self._prefix = "nopu"
-            if sample.hasPileup():
-                self._prefix = "pu"+sample.pileupType()
-            self._prefix += "_"
-
+        self._prefix = ""
         if sample.fastsim():
             self._prefix += "fast_"
             if fastVsFull:
                 self._prefix += "full_"
 
         self._prefix += _sampleFileName.get(sample.label(), sample.label())+"_"
+        if hasattr(sample, "hasScenario") and sample.hasScenario():
+            self._prefix += sample.scenario()+"_"
+
+        if hasattr(sample, "hasPileup"):
+            if sample.hasPileup():
+                self._prefix += "pu"+str(sample.pileupNumber())+"_"+sample.pileupType()+"_"
+            else:
+                self._prefix += "nopu_"
+            if pileupComparison:
+                self._prefix += "vspu_"
+
 
     def _getPage(self, key, pageClass):
         if key not in self._pages:
@@ -457,7 +605,10 @@ class PageSet(object):
         sectionName = plotterFolder.getSection()
         if sectionName is None:
             if plotterFolder.getPage() is not None and dqmSubFolder is not None:
-                sectionName = dqmSubFolder.translated
+                if self._dqmSubFolderTranslatedToSectionName is not None:
+                    sectionName = self._dqmSubFolderTranslatedToSectionName(dqmSubFolder.translated)
+                else:
+                    sectionName = dqmSubFolder.translated
             else:
                 sectionName = ""
 
@@ -474,7 +625,7 @@ class PageSet(object):
         #print "TrackingPageSet.write"
         ret = []
 
-        keys = self._orderPages(self._pages.keys())
+        keys = self._orderPages(list(self._pages.keys()))
         for key in keys:
             page = self._pages[key]
             if page.isEmpty():
@@ -549,7 +700,7 @@ class TrackingPageSet(PageSet):
 
 
 class IndexSection:
-    def __init__(self, sample, fastVsFull, title):
+    def __init__(self, sample, title, fastVsFull, pileupComparison):
         self._sample = sample
 
         self._sampleName = ""
@@ -562,15 +713,26 @@ class IndexSection:
         if hasattr(sample, "hasPileup"):
             pileup = "with no pileup"
             if sample.hasPileup():
-                pileup = "with %s pileup" % sample.pileupType()
-        self._sampleName += "%s sample %s" % (_sampleName.get(sample.name(), sample.name()), pileup)
+                pileup = "with %d pileup (%s)" % (sample.pileupNumber(), sample.pileupType())
+            if pileupComparison is not None:
+                pileup += " "+pileupComparison
+        if hasattr(sample, "customPileupLabel"):
+            pileup = sample.customPileupLabel()
 
-        params = [title, self._sampleName, sample, fastVsFull]
+        scenario = ""
+        if hasattr(sample, "hasScenario") and sample.hasScenario():
+            scenario = " (\"%s\")" % sample.scenario()
+        self._sampleName += "%s sample%s %s" % (_sampleName.get(sample.name(), sample.name()), scenario, pileup)
+
+        params = [title, self._sampleName, sample, fastVsFull, pileupComparison is not None]
         self._summaryPage = PageSet(*params)
         self._iterationPages = TrackingPageSet(*params)
         self._vertexPage = PageSet(*params)
         self._miniaodPage = PageSet(*params)
         self._timingPage = PageSet(*params)
+        self._pfPages = PageSet(*params)
+        self._hltPages = PageSet(*params, dqmSubFolderTranslatedToSectionName=lambda algoQuality: algoQuality[0])
+        self._pixelPages = TrackingPageSet(*params)
         self._otherPages = PageSet(*params)
 
         self._purposePageMap = {
@@ -579,6 +741,9 @@ class IndexSection:
             PlotPurpose.Vertexing: self._vertexPage,
             PlotPurpose.MiniAOD: self._miniaodPage,
             PlotPurpose.Timing: self._timingPage,
+            PlotPurpose.PF: self._pfPages,
+            PlotPurpose.HLT: self._hltPages,
+            PlotPurpose.Pixel: self._pixelPages,
         }
 
     def addPlots(self, plotterFolder, dqmSubFolder, plotFiles):
@@ -600,7 +765,7 @@ class IndexSection:
             "  <ul>",
             ]
 
-        for pages in [self._summaryPage, self._iterationPages, self._vertexPage, self._miniaodPage, self._timingPage, self._otherPages]:
+        for pages in [self._summaryPage, self._iterationPages, self._pixelPages, self._vertexPage, self._miniaodPage, self._timingPage, self._hltPages, self._pfPages, self._otherPages]:
             labelFiles = pages.write(baseDir)
             for label, fname in labelFiles:
                 ret.append('   <li><a href="%s">%s</a></li>' % (fname, label))
@@ -630,12 +795,16 @@ class HtmlReport:
     def addNote(self, note):
         self._index.append('  <p>%s</p>'%note)
 
-    def beginSample(self, sample, fastVsFull=False):
-        key = (sample.digest(), fastVsFull)
+    def beginSample(self, sample, fastVsFull=False, pileupComparison=None):
+        # Fast vs. Full becomes just after the corresponding Fast
+        # Same for PU
+        rightAfterRefSample = fastVsFull or (pileupComparison is not None)
+
+        key = (sample.digest(), rightAfterRefSample)
         if key in self._sections:
             self._currentSection = self._sections[key]
         else:
-            self._currentSection = IndexSection(sample, fastVsFull, self._title)
+            self._currentSection = IndexSection(sample, self._title, fastVsFull, pileupComparison)
             self._sections[key] = self._currentSection
 
     def addPlots(self, *args, **kwargs):
@@ -646,7 +815,7 @@ class HtmlReport:
 
     def write(self):
         # Reorder sections such that Fast vs. Full becomes just after the corresponding Fast
-        keys = self._sections.iterkeys()
+        keys = self._sections.keys()
         newkeys = []
         for key in keys:
             if not key[1]:

@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+hltMuonOfflineAnalyzer = DQMEDAnalyzer('HLTMuonOfflineAnalyzer',
 
     ## Used when fetching triggerSummary and triggerResults
     hltProcessName = cms.string("HLT"),
@@ -10,52 +11,17 @@ hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
 
     ## HLT paths passing any one of these regular expressions will be included
     hltPathsToCheck = cms.vstring(
-      "HLT_Mu45_eta2p1_v1",
+      "HLT_Mu8_TrkIsoVVL_v",
       "HLT_Mu50_v",
+      "HLT_Mu24_v",
       "HLT_IsoMu24_v",
-      "HLT_IsoTkMu24_v",
-      "HLT_Mu17_Mu8_DZ_v",
-      "HLT_Mu17_TkMu8_DZ_v",
-      "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v",
-      "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v",
-      "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-      "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v",
-      "HLT_IsoMu20_eta2p1_v",
-      "HLT_IsoTkMu20_eta2p1_v",
-      "HLT_IsoMu24_eta2p1_v",
-      "HLT_IsoTkMu24_eta2p1_v",
-      "HLT_Mu24_eta2p1_v",
-      "HLT_TkMu24_v",
       "HLT_IsoMu27_v",
-      "HLT_IsoTkMu27_v",
-      "HLT_Mu27_v",
-      "HLT_TkMu27_v",
       "HLT_IsoMu20_v",
-      "HLT_Mu20_v",
-      "HLT_TkMu20_v",
-      "HLT_IsoTkMu20_v",
-      "HLT_IsoMu22_v",
-      "HLT_IsoTkMu22_v",
-      "HLT_IsoMu18_v",
-      "HLT_IsoTkMu18_v",
-      "HLT_OldIsoMu18_v",
-      "HLT_OldIsoTkMu18_v",
-      "HLT_L1SingleMu16_v",
-      "HLT_L2Mu10_v",
-      "HLT_HIL1DoubleMu0", #for HI
-      "HLT_HIL1DoubleMu0BPTX", #for HI
-      "HLT_HIL2Mu3", #for HI
-      "HLT_HIL2Mu3BPTX", #for HI
-      "HLT_HIL2Mu7", #for HI
-      "HLT_HIL2Mu15", #for HI
-      "HLT_HIL2Mu3_NHitQ", #for HI
-      "HLT_HIL2DoubleMu0", #for HI
-      "HLT_HIL2DoubleMu0BPTX", #for HI
-      "HLT_HIL2DoubleMu0_NHitQ", #for HI
-      "HLT_HIL2DoubleMu3", #for HI
-      "HLT_HIL3Mu3", #for HI
-      "HLT_HIL3Mu3BPTX", #for HI
-      "HLT_HIL3DoubleMuOpen" #for HI
+      "HLT_HIL3Mu12_v", #for HI
+      "HLT_HIL3Mu15_v", #for HI
+      "HLT_HIL3Mu20_v", #for HI
+      "HLT_CascadeMu100_v",
+      "HLT_HighPtTkMu100_v"
     ),
 
 #HLT_Mu15_eta2p1_TriCentral_40_20_20_BTagIP3D1stTrack_v3 matches HLT_Mu15_eta2p1_v
@@ -72,23 +38,33 @@ hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
     ## Both 1D and 2D plots use the binnings defined here
     binParams = cms.untracked.PSet(
         ## parameters for fixed-width plots
-        NVertex    = cms.untracked.vdouble( 20,  1,   50),
+        NVertex    = cms.untracked.vdouble( 1,10,15,20,25,30,35,40,45,50,55,60,65,70,100),
+        NVertexFine= cms.untracked.vdouble( 1,5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,85,100),
         eta        = cms.untracked.vdouble( 20,  -2.40,   2.40),
         phi        = cms.untracked.vdouble( 20,  -3.14,   3.14),
-        z0         = cms.untracked.vdouble( 10, -15.00,  15.00),
+        phiHEP17   = cms.untracked.vdouble( -3.14,-2.4,-1.8,-1.0,-0.4,0.0,0.4,1.0,1.8,2.4,3.14),
+        z0         = cms.untracked.vdouble( 10, -0.15,  0.15),
+        z0Fine     = cms.untracked.vdouble( 20, -0.15,  0.15),
         d0         = cms.untracked.vdouble( 10,  -0.50,   0.50),
         zMass      = cms.untracked.vdouble( 50,  65.00, 115.00),
         jpsiMass   = cms.untracked.vdouble( 60,   0.00,   6.00),
         charge     = cms.untracked.vdouble(  2,  -2.00,   2.00),
         deltaR     = cms.untracked.vdouble( 20,   0.00,   0.05),
+        deltaR2    = cms.untracked.vdouble( 20,    0.0,   4.5 ),
         phiCoarse  = cms.untracked.vdouble( 10,  -3.14,   3.14),
-        resolutionRel = cms.untracked.vdouble( 20,  -0.15,   0.15),
+        resolutionRel = cms.untracked.vdouble( 40,  -0.30,   0.30),
         resolutionEta = cms.untracked.vdouble( 20,  -0.01,   0.01),
         resolutionPhi = cms.untracked.vdouble( 20,  -0.01,   0.01),
         ## parameters for variable-width plots
         etaCoarse = cms.untracked.vdouble(-2.4, -2.1, -1.6, -1.2, -0.8, 0.0,
                                            0.8,  1.2,  1.6,  2.1,  2.4),
+        etaFine = cms.untracked.vdouble(-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,
+                                         -0.2,0.2,0.3,0.9,1.2,1.6,2.1,2.4),
+        phiFine = cms.untracked.vdouble(-3.14,-(11.0/12.0)*3.14,-(9.0/12.0)*3.14,-(7.0/12.0)*3.14,-(5.0/12.0)*3.14,-
+(3.0/12.0)*3.14,-(1.0/12.0)*3.14,(1.0/12.0)*3.14,(3.0/12.0)*3.14,(5.0/12.0)*3.14,(7.0/12.0)*3.14,
+(9.0/12.0)*3.14,(11.0/12.0)*3.14,3.14),
         ptCoarse = cms.untracked.vdouble(10.0, 20.0, 40.0, 60.0, 80.0, 100.0, 200.0),
+        ptFine   = cms.untracked.vdouble(10.0,15.0, 20.0,30.0, 40.0,50.0, 60.0,70.0, 80.0,90.0, 100.0,150., 200.0),
         pt = cms.untracked.vdouble(  0.0,   2.0,   4.0, 
                                      6.0,   8.0,  10.0, 
                                     20.0,  30.0,  40.0, 
@@ -109,7 +85,7 @@ hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
     ),
 
     ## Only events passing all these triggers will be considered
-    requiredTriggers = cms.untracked.vstring(),
+    requiredTriggers   = cms.untracked.vstring(),
 
     ## This collection is used to fill most distributions
     targetParams = cms.PSet(
@@ -118,8 +94,11 @@ hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
         d0Cut = cms.untracked.double(2.0),
         z0Cut = cms.untracked.double(25.0),
         ## cuts
-        recoCuts = cms.untracked.string("isGlobalMuon && abs(eta) < 2.4"),
-        hltCuts  = cms.untracked.string("abs(eta) < 2.4"),
+        recoMaxEtaCut = cms.untracked.double(2.4),
+        recoMinEtaCut = cms.untracked.double(0.0),
+        recoGlbMuCut = cms.untracked.bool(True),
+        hltMaxEtaCut  = cms.untracked.double(2.4),
+        hltMinEtaCut  = cms.untracked.double(0.0),
     ),
 
     ## If this PSet is empty, then no "tag and probe" plots are produced;
@@ -130,8 +109,11 @@ hltMuonOfflineAnalyzer = cms.EDAnalyzer("HLTMuonOfflineAnalyzer",
         d0Cut = cms.untracked.double(2.0),
         z0Cut = cms.untracked.double(25.0),
         ## cuts
-        recoCuts = cms.untracked.string("isGlobalMuon && abs(eta) < 2.0"),
-        hltCuts  = cms.untracked.string("abs(eta) < 2.0"),
+        recoMaxEtaCut = cms.untracked.double(2.4),
+        recoMinEtaCut = cms.untracked.double(0.0),
+        recoGlbMuCut = cms.untracked.bool(True),        
+        hltMaxEtaCut  = cms.untracked.double(2.4),
+        hltMinEtaCut  = cms.untracked.double(0.0),
     ),
 
 )

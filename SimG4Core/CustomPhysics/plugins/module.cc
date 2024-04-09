@@ -5,11 +5,9 @@
 #include "SimG4Core/Physics/interface/PhysicsListFactory.h"
 #include "SimG4Core/CustomPhysics/interface/CustomPhysics.h"
 
-#include "RHStopDump.h"
-#include "RHStopTracer.h"
-
+#include "SimG4Core/CustomPhysics/interface/RHStopDump.h"
+#include "SimG4Core/CustomPhysics/interface/RHStopTracer.h"
 
 DEFINE_PHYSICSLIST(CustomPhysics);
-DEFINE_FWK_MODULE(RHStopDump) ;
+DEFINE_FWK_MODULE(RHStopDump);
 DEFINE_SIMWATCHER(RHStopTracer);
-

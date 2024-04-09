@@ -12,30 +12,23 @@
 #include <string>
 
 class SiStripNoiseBuilderFromDb : public SiStripNoiseESSource {
-  
- public:
+public:
+  SiStripNoiseBuilderFromDb(const edm::ParameterSet&);
+  ~SiStripNoiseBuilderFromDb() override;
 
-  SiStripNoiseBuilderFromDb( const edm::ParameterSet& );
-  virtual ~SiStripNoiseBuilderFromDb();
-  
   /** Builds pedestals using info from configuration database. */
-  virtual SiStripNoises* makeNoise();
-  
-  
- protected:
-  
+  SiStripNoises* makeNoise() override;
+
+protected:
   /** Virtual method that is called by makeNoise() to allow
       pedestals to be written to the conditions database. */
-  virtual void writeNoiseToCondDb( const SiStripNoises& ) {;}
-  
-  
+  virtual void writeNoiseToCondDb(const SiStripNoises&) { ; }
+
   /** Container for DB connection parameters. */
   SiStripDbParams dbParams_;
 
   /** Service to access onlineDB and extract pedestal/noise */
   edm::Service<SiStripCondObjBuilderFromDb> condObjBuilder;
-  
 };
 
-#endif // OnlineDB_SiStripESSources_SiStripNoiseBuilderFromDb_H
-
+#endif  // OnlineDB_SiStripESSources_SiStripNoiseBuilderFromDb_H

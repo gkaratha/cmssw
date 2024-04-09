@@ -15,29 +15,29 @@ namespace reco {
   class RecoCaloTowerCandidate : public RecoCandidate {
   public:
     /// default constructor
-    RecoCaloTowerCandidate() : RecoCandidate() { }
+    RecoCaloTowerCandidate() : RecoCandidate() {}
     /// constructor from values
-    RecoCaloTowerCandidate( Charge q , const LorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ) ) :
-      RecoCandidate( q, p4, vtx ) { }
+    RecoCaloTowerCandidate(Charge q, const LorentzVector& p4, const Point& vtx = Point(0, 0, 0))
+        : RecoCandidate(q, p4, vtx) {}
     /// constructor from values
-    RecoCaloTowerCandidate( Charge q , const PolarLorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ) ) :
-      RecoCandidate( q, p4, vtx ) { }
+    RecoCaloTowerCandidate(Charge q, const PolarLorentzVector& p4, const Point& vtx = Point(0, 0, 0))
+        : RecoCandidate(q, p4, vtx) {}
     /// destructor
-    virtual ~RecoCaloTowerCandidate();
+    ~RecoCaloTowerCandidate() override;
     /// returns a clone of the candidate
-    virtual RecoCaloTowerCandidate * clone() const;
+    RecoCaloTowerCandidate* clone() const override;
     /// set CaloTower reference
-    void setCaloTower( const CaloTowerRef & r ) { caloTower_ = r; }
+    void setCaloTower(const CaloTowerRef& r) { caloTower_ = r; }
     /// reference to a CaloTower
-    virtual CaloTowerRef caloTower() const;
+    CaloTowerRef caloTower() const override;
 
   private:
     /// check overlap with another candidate
-    virtual bool overlap( const Candidate & ) const;
+    bool overlap(const Candidate&) const override;
     /// reference to a CaloTower
     CaloTowerRef caloTower_;
   };
-  
-}
+
+}  // namespace reco
 
 #endif

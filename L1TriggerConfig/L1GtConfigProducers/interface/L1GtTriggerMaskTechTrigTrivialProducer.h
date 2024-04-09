@@ -17,7 +17,6 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 #include <vector>
 
@@ -34,28 +33,21 @@
 class L1GtTriggerMaskTechTrigRcd;
 
 // class declaration
-class L1GtTriggerMaskTechTrigTrivialProducer : public edm::ESProducer
-{
-
+class L1GtTriggerMaskTechTrigTrivialProducer : public edm::ESProducer {
 public:
+  /// constructor
+  L1GtTriggerMaskTechTrigTrivialProducer(const edm::ParameterSet&);
 
-    /// constructor
-    L1GtTriggerMaskTechTrigTrivialProducer(const edm::ParameterSet&);
+  /// destructor
+  ~L1GtTriggerMaskTechTrigTrivialProducer() override;
 
-    /// destructor
-    ~L1GtTriggerMaskTechTrigTrivialProducer();
+  /// public methods
 
-
-    /// public methods
-
-    boost::shared_ptr<L1GtTriggerMask> produceTriggerMask(
-        const L1GtTriggerMaskTechTrigRcd&);
+  std::unique_ptr<L1GtTriggerMask> produceTriggerMask(const L1GtTriggerMaskTechTrigRcd&);
 
 private:
-
-    /// trigger mask
-    std::vector<unsigned int> m_triggerMask;
-
+  /// trigger mask
+  std::vector<unsigned int> m_triggerMask;
 };
 
 #endif

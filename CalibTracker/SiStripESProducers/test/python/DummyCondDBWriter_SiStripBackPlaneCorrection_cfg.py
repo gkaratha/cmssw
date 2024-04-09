@@ -8,11 +8,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Builder")
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     debugModules = cms.untracked.vstring('siStripBackPlaneCorrectionDummyDBWriter'),
-    threshold = cms.untracked.string('DEBUG'),
-    destinations = cms.untracked.vstring('BackPlaneCorrectionBuilder.log')
+    files = cms.untracked.PSet(
+        BackPlaneCorrectionBuilder = cms.untracked.PSet(
+
+        )
+    ),
+    threshold = cms.untracked.string('DEBUG')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -45,8 +51,9 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 
 process.siStripBackPlaneCorrectionDummyDBWriter.record=process.PoolDBOutputService.toPut[0].record
 
+from CalibTracker.SiStripESProducers.fake.SiStripBackPlaneCorrectionFakeESSource_cfi import siStripBackPlaneCorrectionFakeESSource
 #BackPlaneCorrection values for each module geometry: IB1, IB2, OB1, OB2, W1A, W1B, W2A, W2B, W3A, W3B, W4, W5, W6, W7
-#process.SiStripBackPlaneCorrectionGenerator.BackPlaneCorrection_PerModuleGeometry = cms.vdouble(0.034, 0.034, 0.05, 0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-process.SiStripBackPlaneCorrectionGenerator.BackPlaneCorrection_PerModuleGeometry = cms.vdouble(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+#siStripBackPlaneCorrectionFakeESSource.BackPlaneCorrection_PerModuleGeometry = cms.vdouble(0.034, 0.034, 0.05, 0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+siStripBackPlaneCorrectionFakeESSource.BackPlaneCorrection_PerModuleGeometry = cms.vdouble(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 process.p1 = cms.Path(process.siStripBackPlaneCorrectionDummyDBWriter)

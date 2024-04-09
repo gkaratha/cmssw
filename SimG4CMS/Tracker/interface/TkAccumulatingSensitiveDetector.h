@@ -11,9 +11,11 @@
 #include "SimG4Core/Notification/interface/BeginOfEvent.h"
 #include "SimG4Core/Notification/interface/EndOfEvent.h"
 #include "SimG4Core/Notification/interface/BeginOfJob.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
+#include "Geometry/TrackerNumberingBuilder/interface/GeometricDet.h"
 
 #include "G4Step.hh"
-#include "G4StepPoint.hh"
 #include "G4Track.hh"
 
 #include <string>
@@ -24,78 +26,69 @@ class TrackingSlaveSD;
 class FrameRotation;
 class UpdatablePSimHit;
 class G4ProcessTypeEnumerator;
-class G4TrackToParticleID;
 class TrackerG4SimHitNumberingScheme;
 
-class TkAccumulatingSensitiveDetector : 
-public SensitiveTkDetector, 
-public Observer<const BeginOfEvent*>,
-public Observer<const BeginOfTrack*>,
-public Observer<const BeginOfJob*>
-{ 
-public:    
-    TkAccumulatingSensitiveDetector(std::string, const DDCompactView &,
-				    const SensitiveDetectorCatalog &,
-				    edm::ParameterSet const &,
-				    const SimTrackManager*);
-    virtual ~TkAccumulatingSensitiveDetector();
-    virtual bool ProcessHits(G4Step *,G4TouchableHistory *);
-    virtual uint32_t setDetUnitId(G4Step*);
-    virtual void EndOfEvent(G4HCofThisEvent*);
+class TkAccumulatingSensitiveDetector : public SensitiveTkDetector,
+                                        public Observer<const BeginOfEvent *>,
+                                        public Observer<const BeginOfTrack *>,
+                                        public Observer<const BeginOfJob *> {
+public:
+  TkAccumulatingSensitiveDetector(const std::string &,
+                                  const GeometricDet *,
+                                  const SensitiveDetectorCatalog &,
+                                  edm::ParameterSet const &,
+                                  const SimTrackManager *);
+  ~TkAccumulatingSensitiveDetector() override;
+  bool ProcessHits(G4Step *, G4TouchableHistory *) override;
+  uint32_t setDetUnitId(const G4Step *) override;
+  void EndOfEvent(G4HCofThisEvent *) override;
 
-    void fillHits(edm::PSimHitContainer&, std::string use);
-    std::vector<std::string> getNames();
-    std::string type();
+  void fillHits(edm::PSimHitContainer &, const std::string &) override;
+  void clearHits() override;
 
 private:
-    virtual void sendHit();
-    virtual void updateHit(G4Step *);
-    virtual bool newHit(G4Step *);
-    virtual bool closeHit(G4Step *);
-    virtual void createHit(G4Step *);
-    void checkExitPoint(Local3DPoint);
-    void update(const BeginOfEvent *);
-    void update(const BeginOfTrack *);
-    void update(const BeginOfJob *);
-    virtual void clearHits();
-    Local3DPoint toOrcaRef(Local3DPoint ,G4VPhysicalVolume *);
-    int tofBin(float);
-    std::string myName; 
-    TrackingSlaveSD * slaveLowTof;
-    TrackingSlaveSD * slaveHighTof;
-    FrameRotation * myRotation;
-    UpdatablePSimHit * mySimHit;
-    std::string pname;
-    Local3DPoint globalEntryPoint;
-    Local3DPoint globalExitPoint;
-    const SimTrackManager* theManager;
-    G4VPhysicalVolume * oldVolume;
-    G4ProcessTypeEnumerator * theG4ProcessTypeEnumerator;
-    double theSigma;
-    uint32_t lastId;
-    unsigned int lastTrack;
-    int eventno;
-    // cache stuff for debugging
-    float px,py,pz;
-    bool allowZeroEnergyLoss;
-    bool printHits;
-    bool neverAccumulate;
-    G4TrackToParticleID * myG4TrackToParticleID;
-    TrackInformation* getOrCreateTrackInformation(const G4Track *);
-    float energyCut;
-    float energyHistoryCut;
-    //
-    // definition of Tracker volume
-    //
-    float rTracker;
-    float zTracker;
+  void createHit(const G4Step *);
+  void sendHit();
+  void updateHit(const G4Step *);
+  bool newHit(const G4Step *);
+  bool closeHit(const G4Step *);
 
-    TrackerG4SimHitNumberingScheme* numberingScheme_;
+protected:
+  void update(const BeginOfEvent *) override;
+  void update(const BeginOfTrack *) override;
+  void update(const BeginOfJob *) override;
+
+private:
+  // data members initialised before run
+  const GeometricDet *pDD_;
+  const SimTrackManager *theManager;
+  std::unique_ptr<TrackingSlaveSD> slaveLowTof;
+  std::unique_ptr<TrackingSlaveSD> slaveHighTof;
+  std::unique_ptr<FrameRotation> theRotation;
+  std::unique_ptr<const G4ProcessTypeEnumerator> theG4ProcTypeEnumerator;
+  TrackerG4SimHitNumberingScheme *theNumberingScheme;  //does not own
+  bool allowZeroEnergyLoss;
+  bool printHits;
+  bool neverAccumulate;
+  double rTracker2;  // tracker volume R^2
+  double rTracker;   // tracker volume R
+  double zTracker;   // tracker volume Z
+  float theTofLimit;
+  float energyCut;
+  float energyHistoryCut;
+
+  // run time cache
+  UpdatablePSimHit *mySimHit;
+  uint32_t lastId;
+  int lastTrack;
+
+  // cache stuff for debugging and printout
+  Local3DPoint globalEntryPoint;
+  Local3DPoint globalExitPoint;
+  const G4VPhysicalVolume *oldVolume;
+  float px, py, pz;
+  int eventno;
+  std::string pname;
 };
 
 #endif
-
-
-
-
-

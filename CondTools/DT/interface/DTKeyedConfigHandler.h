@@ -22,6 +22,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CondCore/CondDB/interface/ConnectionPool.h"
 #include "CondFormats/DTObjects/interface/DTCCBConfig.h"
+#include <memory>
 #include <string>
 
 namespace coral {
@@ -32,39 +33,35 @@ namespace cond {
   namespace persistency {
     class KeyList;
   }
-}
+}  // namespace cond
 
 //---------------
 // C++ Headers --
 //---------------
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTKeyedConfigHandler: public popcon::PopConSourceHandler<DTCCBConfig> {
-
- public:
-
+class DTKeyedConfigHandler : public popcon::PopConSourceHandler<DTCCBConfig> {
+public:
   /** Constructor
    */
-  DTKeyedConfigHandler( const edm::ParameterSet& ps );
+  DTKeyedConfigHandler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTKeyedConfigHandler();
+  ~DTKeyedConfigHandler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
-  static void setList( cond::persistency::KeyList* list );
+  void setList(const cond::persistency::KeyList* list);
 
- private:
-
+private:
   bool copyData;
   int minBrickId;
   int maxBrickId;
@@ -77,22 +74,13 @@ class DTKeyedConfigHandler: public popcon::PopConSourceHandler<DTCCBConfig> {
   int onlineAuthSys;
   std::string brickContainer;
   DTCCBConfig* ccbConfig;
-  
+
   cond::persistency::ConnectionPool connection;
-  boost::shared_ptr<coral::ISessionProxy> isession;
+  std::shared_ptr<coral::ISessionProxy> isession;
   void chkConfigList();
-  static bool sameConfigList( const std::vector<DTConfigKey>& cfgl,
-                              const std::vector<DTConfigKey>& cfgr );
+  static bool sameConfigList(const std::vector<DTConfigKey>& cfgl, const std::vector<DTConfigKey>& cfgr);
 
-  static cond::persistency::KeyList* keyList;
-
+  const cond::persistency::KeyList* keyList = nullptr;
 };
 
-
-#endif // DTKeyedConfigHandler_H
-
-
-
-
-
-
+#endif  // DTKeyedConfigHandler_H

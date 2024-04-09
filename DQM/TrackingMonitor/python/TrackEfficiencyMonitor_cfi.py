@@ -5,7 +5,8 @@
 
 import FWCore.ParameterSet.Config as cms
 
-TrackEffMon = cms.EDAnalyzer("TrackEfficiencyMonitor",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+TrackEffMon = DQMEDAnalyzer('TrackEfficiencyMonitor',
     theRadius = cms.double(85.0),
     theMaxZ = cms.double(110.0),
     isBFieldOff = cms.bool(False),
@@ -17,7 +18,7 @@ TrackEffMon = cms.EDAnalyzer("TrackEfficiencyMonitor",
 
     FolderName = cms.string('Track/Efficiencies'),
     AlgoName = cms.string('CTF'),
-            
+    muoncoll = cms.InputTag('muons'),        
     muonXBin =  cms.int32(50),
     muonXMin = cms.double(-100),
     muonXMax = cms.double(100),
@@ -89,7 +90,6 @@ TrackEffMon = cms.EDAnalyzer("TrackEfficiencyMonitor",
     signDeltaYBin = cms.int32(50),
     signDeltaYMin = cms.double(-5),
     signDeltaYMax = cms.double(5),
-    
  
 )   
     

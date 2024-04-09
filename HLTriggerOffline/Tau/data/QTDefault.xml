@@ -26,15 +26,6 @@ https://twiki.cern.ch/twiki/bin/view/CMS/DQMQualityTests
 </QTEST>
 
 
-<QTEST name="histoMatching">
-<TYPE>Comp2RefKolmogorov</TYPE>
-<PARAM name="testparam">0</PARAM>
-<PARAM name="error">0.01</PARAM>
-<PARAM name="warning">0.20</PARAM>
-</QTEST>
-
-
-
 <QTEST name="efficiencyCheckDoubleTauHigh">
         <TYPE>ContentsYRange</TYPE>
         <PARAM name="ymin">0.8</PARAM>
@@ -73,28 +64,28 @@ https://twiki.cern.ch/twiki/bin/view/CMS/DQMQualityTests
 
 
 
-<LINK name="HLT/TauRelVal/MC/L1/L1TauEtEff">
+<LINK name="HLT/TAU/RelVal/MC/L1/L1TauEtEff">
       <TestName activate="true">efficiencyCheckL1</TestName>
 </LINK>
 
-<LINK name="HLT/TauRelVal/MC/L1/L1TauEtResol">
+<LINK name="HLT/TAU/RelVal/MC/L1/L1TauEtResol">
       <TestName activate="true">resolutionCheckL1</TestName>
 </LINK>
 
-<LINK name="HLT/TauRelVal/MC/DoubleTau/EfficiencyRefPrevious">
+<LINK name="HLT/TAU/RelVal/MC/DoubleTau/EfficiencyRefPrevious">
       <TestName activate="true">efficiencyCheckDoubleTauHigh</TestName>
 </LINK>
 
-<LINK name="HLT/TauRelVal/MC/DoubleTau/EfficiencyRefPrevious">
+<LINK name="HLT/TAU/RelVal/MC/DoubleTau/EfficiencyRefPrevious">
       <TestName activate="true">efficiencyCheckDoubleTauLow</TestName>
 </LINK>
 
 
-<LINK name="HLT/TauRelVal/MC/TauMET/EfficiencyRefPrevious">
+<LINK name="HLT/TAU/RelVal/MC/TauMET/EfficiencyRefPrevious">
       <TestName activate="true">efficiencyCheckSingleTauHigh</TestName>
 </LINK>
 
-<LINK name="HLT/TauRelVal/MC/TauMET/EfficiencyRefPrevious">
+<LINK name="HLT/TAU/RelVal/MC/TauMET/EfficiencyRefPrevious">
       <TestName activate="true">efficiencyCheckSingleTauLow</TestName>
 </LINK>
 

@@ -1,12 +1,15 @@
 #ifndef DDLBox_H
 #define DDLBox_H
 
+#include <string>
+
 // -------------------------------------------------------------------------
 // Includes
 // -------------------------------------------------------------------------
 #include "DDLSolid.h"
 
-#include <string>
+class DDCompactView;
+class DDLElementRegistry;
 
 /// DDLBox processes Box elements.
 /** @class DDLBox
@@ -21,17 +24,11 @@
  *                                                                         
  */
 
-class DDLBox : public DDLSolid
-{
- public:
+class DDLBox final : public DDLSolid {
+public:
+  DDLBox(DDLElementRegistry* myreg);
 
-  /// Constructor
-  DDLBox( DDLElementRegistry* myreg );
-
-  /// Destructor
-  ~DDLBox();
-
-  void processElement (const std::string& name, const std::string& nmspace, DDCompactView& cpv);
-
+  void processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
 };
+
 #endif

@@ -15,34 +15,27 @@ namespace reco {
      \date   February 2007
   */
   class PileUpPFCandidate : public PFCandidate {
-
   public:
-    
     /// default constructor
     PileUpPFCandidate();
-    
-    PileUpPFCandidate( const PFCandidatePtr& candidatePtr,
-		       const VertexRef& vertexRef);
+
+    PileUpPFCandidate(const PFCandidatePtr& candidatePtr, const VertexRef& vertexRef);
 
     /// destructor
-    virtual ~PileUpPFCandidate();
+    ~PileUpPFCandidate() override;
 
     /// return a clone
-    virtual PileUpPFCandidate * clone() const;
-    
-    /// return reference to the associated vertex
-    const VertexRef&  vertexRef() const {return vertexRef_;}
-    
+    PileUpPFCandidate* clone() const override;
 
-    friend std::ostream& operator<<( std::ostream& out, 
-				     const PileUpPFCandidate& c );
-  
+    /// return reference to the associated vertex
+    const VertexRef& vertexRef() const { return vertexRef_; }
+
   private:
-    
-    VertexRef     vertexRef_;
+    VertexRef vertexRef_;
   };
 
+  std::ostream& operator<<(std::ostream& out, const PileUpPFCandidate& c);
 
-}
+}  // namespace reco
 
 #endif

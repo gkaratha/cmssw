@@ -4,7 +4,7 @@
 //
 // Package:     ParameterSet
 // Class  :     ParameterSetDescriptionFillerBase
-// 
+//
 /**\class ParameterSetDescriptionFillerBase ParameterSetDescriptionFillerBase.h FWCore/ParameterSet/interface/ParameterSetDescriptionFillerBase.h
 
  Description: Base class for a component which can fill a ParameterSetDescription object
@@ -30,51 +30,113 @@ and query the component for its allowed ParameterSetDescription.
 #include <string>
 
 namespace edm {
-class ParameterSetDescriptionFillerBase
-{
 
-   public:
-      ParameterSetDescriptionFillerBase() {}
-      virtual ~ParameterSetDescriptionFillerBase();
+  namespace one {
+    class EDProducerBase;
+    class EDFilterBase;
+    class EDAnalyzerBase;
+    class OutputModuleBase;
+  }  // namespace one
 
-      // ---------- const member functions ---------------------
-      virtual void fill(ConfigurationDescriptions & descriptions) const = 0;
-      virtual const std::string& baseType() const = 0;
-      virtual const std::string& extendedBaseType() const = 0;
-  
-      // ---------- static member functions --------------------
+  namespace stream {
+    class EDProducerBase;
+    class EDFilterBase;
+    class EDAnalyzerBase;
+  }  // namespace stream
 
-      // ---------- member functions ---------------------------
+  namespace global {
+    class EDProducerBase;
+    class EDFilterBase;
+    class EDAnalyzerBase;
+    class OutputModuleBase;
+  }  // namespace global
 
-protected:
-     static const std::string kEmpty;
-     static const std::string kBaseForService;
-     static const std::string kBaseForESSource;
-     static const std::string kBaseForESProducer;
-     static const std::string kExtendedBaseForEDAnalyzer;
-     static const std::string kExtendedBaseForEDProducer;
-     static const std::string kExtendedBaseForEDFilter;
-     static const std::string kExtendedBaseForOutputModule;
-     static const std::string kExtendedBaseForOneEDAnalyzer;
-     static const std::string kExtendedBaseForOneEDProducer;
-     static const std::string kExtendedBaseForOneEDFilter;
-     static const std::string kExtendedBaseForOneOutputModule;
-     static const std::string kExtendedBaseForStreamEDAnalyzer;
-     static const std::string kExtendedBaseForStreamEDProducer;
-     static const std::string kExtendedBaseForStreamEDFilter;
-     static const std::string kExtendedBaseForGlobalEDAnalyzer;
-     static const std::string kExtendedBaseForGlobalEDProducer;
-     static const std::string kExtendedBaseForGlobalEDFilter;
-     static const std::string kExtendedBaseForGlobalOutputModule;
+  namespace limited {
+    class EDProducerBase;
+    class EDFilterBase;
+    class EDAnalyzerBase;
+    class OutputModuleBase;
+  }  // namespace limited
 
-   private:
-      ParameterSetDescriptionFillerBase(const ParameterSetDescriptionFillerBase&); // stop default
+  class ParameterSetDescriptionFillerBase {
+  public:
+    ParameterSetDescriptionFillerBase() {}
+    ParameterSetDescriptionFillerBase(const ParameterSetDescriptionFillerBase&) = delete;  // stop default
+    const ParameterSetDescriptionFillerBase& operator=(const ParameterSetDescriptionFillerBase&) =
+        delete;  // stop default
+    virtual ~ParameterSetDescriptionFillerBase();
 
-      const ParameterSetDescriptionFillerBase& operator=(const ParameterSetDescriptionFillerBase&); // stop default
+    // ---------- const member functions ---------------------
+    virtual void fill(ConfigurationDescriptions& descriptions) const = 0;
+    virtual const std::string& baseType() const = 0;
+    virtual const std::string& extendedBaseType() const = 0;
 
-      // ---------- member data --------------------------------
+    // ---------- static member functions --------------------
 
-};
+    // ---------- member functions ---------------------------
 
-}
+    static const std::string kBaseForESSource;
+    static const std::string kBaseForESProducer;
+    static const std::string kBaseForEDLooper;
+
+  protected:
+    static const std::string kEmpty;
+    static const std::string kBaseForService;
+    static const std::string kExtendedBaseForEDAnalyzer;
+    static const std::string kExtendedBaseForEDProducer;
+    static const std::string kExtendedBaseForEDFilter;
+    static const std::string kExtendedBaseForOneEDAnalyzer;
+    static const std::string kExtendedBaseForOneEDProducer;
+    static const std::string kExtendedBaseForOneEDFilter;
+    static const std::string kExtendedBaseForOneOutputModule;
+    static const std::string kExtendedBaseForStreamEDAnalyzer;
+    static const std::string kExtendedBaseForStreamEDProducer;
+    static const std::string kExtendedBaseForStreamEDFilter;
+    static const std::string kExtendedBaseForGlobalEDAnalyzer;
+    static const std::string kExtendedBaseForGlobalEDProducer;
+    static const std::string kExtendedBaseForGlobalEDFilter;
+    static const std::string kExtendedBaseForGlobalOutputModule;
+    static const std::string kExtendedBaseForLimitedEDAnalyzer;
+    static const std::string kExtendedBaseForLimitedEDProducer;
+    static const std::string kExtendedBaseForLimitedEDFilter;
+    static const std::string kExtendedBaseForLimitedOutputModule;
+
+    static const std::string& extendedBaseType(one::EDAnalyzerBase const*) { return kExtendedBaseForOneEDAnalyzer; }
+    static const std::string& extendedBaseType(one::EDProducerBase const*) { return kExtendedBaseForOneEDProducer; }
+    static const std::string& extendedBaseType(one::EDFilterBase const*) { return kExtendedBaseForOneEDFilter; }
+    static const std::string& extendedBaseType(one::OutputModuleBase const*) { return kExtendedBaseForOneOutputModule; }
+    static const std::string& extendedBaseType(stream::EDAnalyzerBase const*) {
+      return kExtendedBaseForStreamEDAnalyzer;
+    }
+    static const std::string& extendedBaseType(stream::EDProducerBase const*) {
+      return kExtendedBaseForStreamEDProducer;
+    }
+    static const std::string& extendedBaseType(stream::EDFilterBase const*) { return kExtendedBaseForStreamEDFilter; }
+    static const std::string& extendedBaseType(global::EDAnalyzerBase const*) {
+      return kExtendedBaseForGlobalEDAnalyzer;
+    }
+    static const std::string& extendedBaseType(global::EDProducerBase const*) {
+      return kExtendedBaseForGlobalEDProducer;
+    }
+    static const std::string& extendedBaseType(global::EDFilterBase const*) { return kExtendedBaseForGlobalEDFilter; }
+    static const std::string& extendedBaseType(global::OutputModuleBase const*) {
+      return kExtendedBaseForGlobalOutputModule;
+    }
+    static const std::string& extendedBaseType(limited::EDAnalyzerBase const*) {
+      return kExtendedBaseForLimitedEDAnalyzer;
+    }
+    static const std::string& extendedBaseType(limited::EDProducerBase const*) {
+      return kExtendedBaseForLimitedEDProducer;
+    }
+    static const std::string& extendedBaseType(limited::EDFilterBase const*) { return kExtendedBaseForLimitedEDFilter; }
+    static const std::string& extendedBaseType(limited::OutputModuleBase const*) {
+      return kExtendedBaseForLimitedOutputModule;
+    }
+    static const std::string& extendedBaseType(void const*) { return kEmpty; }
+
+  private:
+    // ---------- member data --------------------------------
+  };
+
+}  // namespace edm
 #endif

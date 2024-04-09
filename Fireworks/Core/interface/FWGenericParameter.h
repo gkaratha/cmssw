@@ -28,77 +28,59 @@
 // forward declarations
 
 template <class T>
-class FWGenericParameter : public FWParameterBase
-{
+class FWGenericParameter : public FWParameterBase {
 public:
-   typedef T value_type;
+  typedef T value_type;
 
-   FWGenericParameter() :
-      FWParameterBase(0, "invalid")
-   {}
+  FWGenericParameter() : FWParameterBase(nullptr, "invalid") {}
 
-   FWGenericParameter(FWParameterizable* iParent,
-                      const std::string& iName,
-                      const T &iDefault=T()) :
-      FWParameterBase(iParent,iName),
-      m_value(iDefault)
-   {}
+  FWGenericParameter(FWParameterizable* iParent, const std::string& iName, const T& iDefault = T())
+      : FWParameterBase(iParent, iName), m_value(iDefault) {}
 
-   template <class K>
-   FWGenericParameter(FWParameterizable* iParent,
-                      const std::string& iName,
-                      K iCallback,
-                      const T &iDefault=T()) :
-      FWParameterBase(iParent,iName),
-      m_value(iDefault)
-   {
-      changed_.connect(iCallback);
-   }
+  template <class K>
+  FWGenericParameter(FWParameterizable* iParent, const std::string& iName, K iCallback, const T& iDefault = T())
+      : FWParameterBase(iParent, iName), m_value(iDefault) {
+    changed_.connect(iCallback);
+  }
 
-   //virtual ~FWBoolParameter();
+  //virtual ~FWBoolParameter();
 
+  // ---------- const member functions ---------------------
 
-   // ---------- const member functions ---------------------
+  T value() const { return m_value; }
 
-   T value() const { return m_value; }
+  void addTo(FWConfiguration& iTo) const override {
+    std::ostringstream s;
+    s << m_value;
+    iTo.addKeyValue(name(), FWConfiguration(s.str()));
+  }
 
-   virtual void addTo(FWConfiguration& iTo) const 
-   {
-      std::ostringstream s;
-      s<<m_value;
-      iTo.addKeyValue(name(),FWConfiguration(s.str()));
-   }
+  // ---------- static member functions --------------------
 
-   // ---------- static member functions --------------------
+  // ---------- member functions ---------------------------
 
-   // ---------- member functions ---------------------------
+  void setFrom(const FWConfiguration& iFrom) override {
+    if (const FWConfiguration* config = iFrom.valueForKey(name())) {
+      std::istringstream s(config->value());
+      s >> m_value;
+    }
+    changed_(m_value);
+  }
 
-   virtual void setFrom(const FWConfiguration&iFrom)
-   {
-      if (const FWConfiguration* config = iFrom.valueForKey(name()))
-      {
-         std::istringstream s(config->value());
-         s>>m_value;
-      }
-      changed_(m_value);
-   }
+  void set(T iValue) {
+    m_value = iValue;
+    changed_(iValue);
+  }
 
-   void set(T iValue)
-   {
-      m_value = iValue;
-      changed_(iValue);
-   }
+  sigc::signal<void(T)> changed_;
 
-   sigc::signal<void,T> changed_;
+  FWGenericParameter(const FWGenericParameter&) = delete;                   // stop default
+  const FWGenericParameter& operator=(const FWGenericParameter&) = delete;  // stop default
 
 private:
-   FWGenericParameter(const FWGenericParameter&);                  // stop default
-   const FWGenericParameter& operator=(const FWGenericParameter&); // stop default
+  // ---------- member data --------------------------------
 
-   // ---------- member data --------------------------------
-
-   T m_value;
+  T m_value;
 };
-
 
 #endif

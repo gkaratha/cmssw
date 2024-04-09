@@ -6,16 +6,17 @@ from RecoEgamma.EgammaElectronProducers.electronPFIsolationValues_cff import *
 from RecoEgamma.EgammaElectronProducers.gedGsfElectronFinalizer_cfi import *
 
 # The following should be removed up to  <--- when moving to GED only
-pfBasedElectronIsoSequence = cms.Sequence(
-    pfParticleSelectionSequence +
-    electronPFIsolationDepositsSequence +
-    electronPFIsolationValuesSequence
+pfBasedElectronIsoTask = cms.Task(
+    pfParticleSelectionTask,
+    electronPFIsolationDepositsTask,
+    electronPFIsolationValuesTask
     )
+pfBasedElectronIsoSequence = cms.Sequence(pfBasedElectronIsoTask)
 # <---- Up to here
 
-gedElectronPFIsoSequence = cms.Sequence(
-    pfParticleSelectionSequence +
-    gedElectronPFIsolationDepositsSequence+
-    gedElectronPFIsolationValuesSequence+
+gedElectronPFIsoTask = cms.Task(
+    pfParticleSelectionTask,
     gedGsfElectrons
 )
+gedElectronPFIsoSequence = cms.Sequence(gedElectronPFIsoTask)
+

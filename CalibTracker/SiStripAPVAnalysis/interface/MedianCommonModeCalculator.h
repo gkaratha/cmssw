@@ -9,37 +9,30 @@
  */
 
 class MedianCommonModeCalculator : public TkCommonModeCalculator {
-public:  
-    
+public:
   MedianCommonModeCalculator();
 
-  virtual ~MedianCommonModeCalculator();
+  ~MedianCommonModeCalculator() override;
 
-  ApvAnalysis::PedestalType doIt(const ApvAnalysis::PedestalType&); 
-  
-  void setCM(TkCommonMode* in) {theTkCommonMode = in;}
-  void setCM(const std::vector<float>& in) {theTkCommonMode->setCommonMode(in);}
-  TkCommonMode* commonMode() {return theTkCommonMode;}
+  ApvAnalysis::PedestalType doIt(const ApvAnalysis::PedestalType&) override;
 
-  void newEvent();
-  float getCMSlope() { return slope;}
-  
+  void setCM(TkCommonMode* in) override { theTkCommonMode = in; }
+  void setCM(const std::vector<float>& in) override { theTkCommonMode->setCommonMode(in); }
+  TkCommonMode* commonMode() override { return theTkCommonMode; }
+
+  void newEvent() override;
+  float getCMSlope() override { return slope; }
+
 protected:
-  
   void calculateCommonMode(ApvAnalysis::PedestalType&);
-  
-  TkCommonMode*        theTkCommonMode;
-  std::vector<float>        theCommonModeValues;
+
+  TkCommonMode* theTkCommonMode;
+  std::vector<float> theCommonModeValues;
   bool alreadyUsedEvent;
   float slope;
 
   ///  TkNoiseCalculator*   theNoiseCalculator;
   ///  TkApvMask*           theApvMask;
   ///  float cutToAvoidSignal;
-
-}; 
+};
 #endif
-
-
-
-

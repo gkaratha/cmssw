@@ -15,56 +15,40 @@
 #include "OuterDetCompatibility.h"
 #include "OuterHitCompatibility.h"
 
-#include "FWCore/Framework/interface/EventSetup.h"
-
-
 #include "FWCore/Utilities/interface/Visibility.h"
 
-
+template <typename Algo>
 class dso_internal OuterEstimator final : public MeasurementEstimator {
-
 public:
-  OuterEstimator(
-      const OuterDetCompatibility & detCompatibility,
-      const OuterHitCompatibility & hitCompatibility,  
-      const edm::EventSetup& iSetup) 
-   : theDetCompatibility(detCompatibility), 
-     theHitCompatibility (hitCompatibility) { }
-  virtual ~OuterEstimator(){}
-  virtual std::pair<bool,double> estimate(
-      const TrajectoryStateOnSurface& ts, 
-      const TrackingRecHit& hit)  
-    const {
-       return theHitCompatibility(hit) ? std::make_pair(true,1.) : std::make_pair(false,0.) ;
+  using OuterHitCompat = OuterHitCompatibility<Algo>;
+
+  OuterEstimator(const OuterDetCompatibility& detCompatibility, const OuterHitCompat& hitCompatibility)
+      : theDetCompatibility(detCompatibility), theHitCompatibility(hitCompatibility) {}
+
+  ~OuterEstimator() override {}
+
+  std::pair<bool, double> estimate(const TrajectoryStateOnSurface& ts, const TrackingRecHit& hit) const override {
+    return theHitCompatibility(hit) ? std::make_pair(true, 1.) : std::make_pair(false, 0.);
   }
 
-  virtual bool estimate(
-      const TrajectoryStateOnSurface& ts, 
-      const BoundPlane& plane
-) const {
+  bool estimate(const TrajectoryStateOnSurface& ts, const BoundPlane& plane) const override {
     return theDetCompatibility(plane);
   }
 
   GlobalPoint center() { return theDetCompatibility.center(); }
 
-  virtual OuterEstimator* clone() const {
-    return new OuterEstimator(*this);
+  OuterEstimator* clone() const override { return new OuterEstimator(*this); }
+
+  MeasurementEstimator::Local2DVector maximalLocalDisplacement(const TrajectoryStateOnSurface& ts,
+                                                               const BoundPlane& plane) const override {
+    return theDetCompatibility.maximalLocalDisplacement(ts.globalPosition(), plane);
   }
 
-  virtual MeasurementEstimator::Local2DVector maximalLocalDisplacement( 
-      const TrajectoryStateOnSurface& ts, const BoundPlane& plane) const {
-    return theDetCompatibility.maximalLocalDisplacement(
-        ts.globalPosition(),plane);
- }
-
-  const OuterDetCompatibility & detCompatibility() const 
-    {return theDetCompatibility; }
-  const OuterHitCompatibility & hitCompatibility() const 
-    {return theHitCompatibility; }
+  const OuterDetCompatibility& detCompatibility() const { return theDetCompatibility; }
+  const OuterHitCompat& hitCompatibility() const { return theHitCompatibility; }
 
 private:
   OuterDetCompatibility theDetCompatibility;
-  OuterHitCompatibility theHitCompatibility; 
-
+  OuterHitCompat theHitCompatibility;
 };
 #endif

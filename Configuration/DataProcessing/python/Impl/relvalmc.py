@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 _relvalmc_
 
@@ -14,6 +14,8 @@ import FWCore.ParameterSet.Config as cms
 
 
 class relvalmc(Scenario):
+    def __init__(self):
+        Scenario.__init__(self)
     """
     _relvalmc_
 
@@ -41,7 +43,7 @@ class relvalmc(Scenario):
         options.evt_type = ""
         options.filein = []
  
-        process = cms.Process("HARVESTING")
+        process = cms.Process("HARVESTING", self.eras)
         process.source = cms.Source("PoolSource")
         configBuilder = ConfigBuilder(options, process = process)
         configBuilder.prepare()
@@ -53,8 +55,5 @@ class relvalmc(Scenario):
         process.source.fileNames = cms.untracked(cms.vstring())
         process.maxEvents.input = -1
         process.dqmSaver.workflow = datasetName
-        if 'referenceFile' in args and args.get('referenceFile', ''):
-            process.DQMStore.referenceFileName = \
-                                cms.untracked.string(args['referenceFile'])
         
         return process

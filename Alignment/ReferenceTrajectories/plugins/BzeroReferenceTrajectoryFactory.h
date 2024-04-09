@@ -1,9 +1,10 @@
 #include "Alignment/ReferenceTrajectories/interface/TrajectoryFactoryBase.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
 namespace edm {
   class ParameterSet;
   class EventSetup;
-}
+}  // namespace edm
 namespace reco {
   class BeamSpot;
 }
@@ -11,27 +12,25 @@ namespace reco {
 /// A factory that produces instances of class BzeroReferenceTrajectory from a
 /// given TrajTrackPairCollection.
 
-class BzeroReferenceTrajectoryFactory : public TrajectoryFactoryBase
-{
+class BzeroReferenceTrajectoryFactory : public TrajectoryFactoryBase {
 public:
-  BzeroReferenceTrajectoryFactory(const edm::ParameterSet &config);
-  virtual ~BzeroReferenceTrajectoryFactory();
-
+  BzeroReferenceTrajectoryFactory(const edm::ParameterSet &config, edm::ConsumesCollector &iC);
+  ~BzeroReferenceTrajectoryFactory() override;
   /// Produce the reference trajectories.
-  virtual const ReferenceTrajectoryCollection trajectories(const edm::EventSetup &setup,
-							   const ConstTrajTrackPairCollection &tracks,
-							   const reco::BeamSpot &beamSpot) const;
+  const ReferenceTrajectoryCollection trajectories(const edm::EventSetup &setup,
+                                                   const ConstTrajTrackPairCollection &tracks,
+                                                   const reco::BeamSpot &beamSpot) const override;
 
-  virtual const ReferenceTrajectoryCollection trajectories(const edm::EventSetup &setup,
-							   const ConstTrajTrackPairCollection &tracks,
-							   const ExternalPredictionCollection &external,
-							   const reco::BeamSpot &beamSpot) const;
+  const ReferenceTrajectoryCollection trajectories(const edm::EventSetup &setup,
+                                                   const ConstTrajTrackPairCollection &tracks,
+                                                   const ExternalPredictionCollection &external,
+                                                   const reco::BeamSpot &beamSpot) const override;
 
-  virtual BzeroReferenceTrajectoryFactory* clone() const { return new BzeroReferenceTrajectoryFactory( *this ); }
+  BzeroReferenceTrajectoryFactory *clone() const override { return new BzeroReferenceTrajectoryFactory(*this); }
+
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> m_MagFieldToken;
 
 private:
-
   double theMass;
   double theMomentumEstimate;
 };
-

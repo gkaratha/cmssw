@@ -2,7 +2,6 @@
 #define CSCChannelMapperESProducer_H
 
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 #include "FWCore/Framework/interface/ESProducer.h"
 
@@ -10,16 +9,15 @@
 #include "CalibMuon/CSCCalibration/interface/CSCChannelMapperRecord.h"
 
 class CSCChannelMapperESProducer : public edm::ESProducer {
+public:
+  typedef std::unique_ptr<CSCChannelMapperBase> BSP_TYPE;
 
- public:
-  typedef boost::shared_ptr<CSCChannelMapperBase> BSP_TYPE;
+  CSCChannelMapperESProducer(const edm::ParameterSet &);
+  ~CSCChannelMapperESProducer() override;
 
-  CSCChannelMapperESProducer(const edm::ParameterSet&);
-  ~CSCChannelMapperESProducer();
+  BSP_TYPE produce(const CSCChannelMapperRecord &);
 
-  BSP_TYPE produce(const CSCChannelMapperRecord&);
-
- private:
+private:
   std::string algoName;
 };
 

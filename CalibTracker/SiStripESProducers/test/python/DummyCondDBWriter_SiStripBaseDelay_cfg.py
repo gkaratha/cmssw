@@ -9,11 +9,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Builder")
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     debugModules = cms.untracked.vstring('siStripBaseDelayDummyDBWriter'),
-    threshold = cms.untracked.string('INFO'),
-    destinations = cms.untracked.vstring('BaseDelayBuilder.log')
+    files = cms.untracked.PSet(
+        BaseDelayBuilder = cms.untracked.PSet(
+
+        )
+    ),
+    threshold = cms.untracked.string('INFO')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -27,8 +33,10 @@ process.source = cms.Source("EmptySource",
 process.load("CalibTracker.SiStripESProducers.fake.SiStripBaseDelayFakeESSource_cfi")
 process.load("CalibTracker.SiStripESProducers.DBWriter.SiStripBaseDelayDummyDBWriter_cfi")
 
-process.SiStripBaseDelayGenerator.CoarseDelay = 0
-process.SiStripBaseDelayGenerator.FineDelay = 0
+from CalibTracker.SiStripESProducers.fake.SiStripBaseDelayFakeESSource_cfi import siStripBaseDelayFakeESSource
+
+siStripBaseDelayFakeESSource.CoarseDelay = 0
+siStripBaseDelayFakeESSource.FineDelay = 0
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),

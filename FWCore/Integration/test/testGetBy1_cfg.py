@@ -3,29 +3,23 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("PROD1")
 
 process.Tracer = cms.Service('Tracer',
-                             dumpContextForLabels = cms.untracked.vstring('intProducerA'),
+                             dumpContextForLabels = cms.untracked.vstring('intProducerA', 'a1'),
                              dumpNonModuleContext = cms.untracked.bool(True)
 )
 
 process.MessageLogger = cms.Service("MessageLogger",
-    destinations   = cms.untracked.vstring('cout',
-                                           'cerr'
-    ),
-    categories = cms.untracked.vstring(
-        'Tracer'
-    ),
     cout = cms.untracked.PSet(
-        default = cms.untracked.PSet (
+        Tracer = cms.untracked.PSet(
+            limit = cms.untracked.int32(100000000)
+        ),
+        default = cms.untracked.PSet(
             limit = cms.untracked.int32(0)
         ),
-        Tracer = cms.untracked.PSet(
-            limit=cms.untracked.int32(100000000)
-        )
+        enable = cms.untracked.bool(True)
     )
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
     numberOfStreams = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
     numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
@@ -46,12 +40,28 @@ process.out = cms.OutputModule("PoolOutputModule",
 
 process.a1 = cms.EDAnalyzer("TestFindProduct",
   inputTags = cms.untracked.VInputTag( cms.InputTag("source") ),
-  expectedSum = cms.untracked.int32(12),
+  expectedSum = cms.untracked.int32(530021),
   inputTagsNotFound = cms.untracked.VInputTag(
     cms.InputTag("source", processName=cms.InputTag.skipCurrentProcess()),
     cms.InputTag("intProducer", processName=cms.InputTag.skipCurrentProcess()),
     cms.InputTag("intProducerU", processName=cms.InputTag.skipCurrentProcess())
-  )
+  ),
+  inputTagsBeginProcessBlock = cms.untracked.VInputTag(
+    cms.InputTag("intProducerBeginProcessBlock"),
+  ),
+  inputTagsEndProcessBlock = cms.untracked.VInputTag(
+    cms.InputTag("intProducerEndProcessBlock"),
+  ),
+  inputTagsEndProcessBlock2 = cms.untracked.VInputTag(
+    cms.InputTag("intProducerEndProcessBlock", "two"),
+  ),
+  inputTagsEndProcessBlock3 = cms.untracked.VInputTag(
+    cms.InputTag("intProducerEndProcessBlock", "three"),
+  ),
+  inputTagsEndProcessBlock4 = cms.untracked.VInputTag(
+    cms.InputTag("intProducerEndProcessBlock", "four"),
+  ),
+  testGetterOfProducts = cms.untracked.bool(True)
 )
 
 process.a2 = cms.EDAnalyzer("TestFindProduct",
@@ -82,7 +92,21 @@ process.intVectorProducer = cms.EDProducer("IntVectorProducer",
   ivalue = cms.int32(11)
 )
 
-process.p = cms.Path(process.intProducer * process.a1 * process.a2 * process.a3)
+process.intProducerB = cms.EDProducer("IntProducer", ivalue = cms.int32(1000))
+
+process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(10000))
+
+process.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(100000))
+
+process.t = cms.Task(process.intProducerU,
+                     process.intProducerA,
+                     process.intProducerB,
+                     process.intVectorProducer,
+                     process.intProducerBeginProcessBlock,
+                     process.intProducerEndProcessBlock
+)
+
+process.p = cms.Path(process.intProducer * process.a1 * process.a2 * process.a3, process.t)
 
 process.e = cms.EndPath(process.out)
 

@@ -5,26 +5,20 @@
  ** @version 1.0 02.04.2015
 */
 
-
 #ifndef __PARTONSHOWERBSHEPMCFILTER__
 #define __PARTONSHOWERBSHEPMCFILTER__
-
 
 #include "GeneratorInterface/Core/interface/BaseHepMCFilter.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-class PartonShowerBsHepMCFilter : public BaseHepMCFilter{
-
+class PartonShowerBsHepMCFilter : public BaseHepMCFilter {
 public:
+  PartonShowerBsHepMCFilter(const edm::ParameterSet&);
+  ~PartonShowerBsHepMCFilter() override;
 
-  PartonShowerBsHepMCFilter( const edm::ParameterSet & );
-  ~PartonShowerBsHepMCFilter();
-
-  virtual bool filter(const HepMC::GenEvent* evt);
+  bool filter(const HepMC::GenEvent* evt) override;
 
 private:
-
 };
-
 
 #endif

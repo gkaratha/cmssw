@@ -10,24 +10,17 @@
 #ifndef __EcalAlignmentXMLTranslator_h_
 #define __EcalAlignmentXMLTranslator_h_
 
-
-#include "CondTools/Ecal/interface/XercesString.h"
 #include "CondTools/Ecal/interface/EcalCondHeader.h"
 #include <string>
 
-
-class AlignTransform;
+class Alignments;
 
 class EcalAlignmentXMLTranslator {
-
 public:
+  static int writeXML(const std::string& filename, const EcalCondHeader& header, const Alignments& record);
 
-  static int writeXML (const std::string& filename,
-		       const EcalCondHeader& header,
-		       const Alignments& record);
-
-  static std::string dumpXML(const EcalCondHeader& header,
-			     const Alignments& record);
+private:
+  static std::string dumpXML(const EcalCondHeader& header, const Alignments& record);
 };
 
-#endif // __EcalAlignmentXMLTranslator_h_
+#endif  // __EcalAlignmentXMLTranslator_h_

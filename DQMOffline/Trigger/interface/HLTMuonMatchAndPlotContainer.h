@@ -34,17 +34,16 @@
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-#include<vector>
-#include<string>
-
+#include <vector>
+#include <string>
 
 //////////////////////////////////////////////////////////////////////////////
 ///Container Class Definition (this is what is used by the DQM module) ///////
 
-class HLTMuonMatchAndPlotContainer 
-{
-
- public:
+class HLTMuonMatchAndPlotContainer {
+public:
+  typedef dqm::legacy::DQMStore DQMStore;
+  typedef dqm::legacy::MonitorElement MonitorElement;
 
   /// Constructor
   HLTMuonMatchAndPlotContainer(edm::ConsumesCollector &&, const edm::ParameterSet &);
@@ -53,16 +52,14 @@ class HLTMuonMatchAndPlotContainer
   ~HLTMuonMatchAndPlotContainer() { plotters_.clear(); };
 
   /// Add a HLTMuonMatchAndPlot for a given path
-  void addPlotter(const edm::ParameterSet &, std::string,
-		  const std::vector<std::string>&);
+  void addPlotter(const edm::ParameterSet &, std::string, std::string, bool);
 
   // Analyzer Methods
   void beginRun(DQMStore::IBooker &, const edm::Run &, const edm::EventSetup &);
   void analyze(const edm::Event &, const edm::EventSetup &);
   void endRun(const edm::Run &, const edm::EventSetup &);
 
- private:
-
+private:
   std::vector<HLTMuonMatchAndPlot> plotters_;
 
   edm::EDGetTokenT<reco::BeamSpot> bsToken_;
@@ -70,10 +67,7 @@ class HLTMuonMatchAndPlotContainer
   edm::EDGetTokenT<reco::VertexCollection> pvToken_;
 
   edm::EDGetTokenT<trigger::TriggerEvent> trigSummaryToken_;
-  edm::EDGetTokenT<edm::TriggerResults>   trigResultsToken_;
-  
+  edm::EDGetTokenT<edm::TriggerResults> trigResultsToken_;
 };
 
 #endif
- 
-

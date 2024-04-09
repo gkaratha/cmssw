@@ -13,6 +13,7 @@ PoolSource: This is an InputSource
 #include "FWCore/Framework/interface/ProcessingController.h"
 #include "FWCore/Framework/interface/ProductSelectorRules.h"
 #include "FWCore/Framework/interface/InputSource.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 #include "IOPool/Common/interface/RootServiceChecker.h"
 
 #include <array>
@@ -31,50 +32,54 @@ namespace edm {
   class PoolSource : public InputSource {
   public:
     explicit PoolSource(ParameterSet const& pset, InputSourceDescription const& desc);
-    virtual ~PoolSource();
+    ~PoolSource() override;
     using InputSource::processHistoryRegistryForUpdate;
     using InputSource::productRegistryUpdate;
 
     // const accessors
-    bool skipBadFiles() const {return skipBadFiles_;}
-    bool dropDescendants() const {return dropDescendants_;}
-    bool bypassVersionCheck() const {return bypassVersionCheck_;}
-    bool labelRawDataLikeMC() const {return labelRawDataLikeMC_;}
-    unsigned int nStreams() const {return nStreams_;}
-    int treeMaxVirtualSize() const {return treeMaxVirtualSize_;}
-    ProductSelectorRules const& productSelectorRules() const {return productSelectorRules_;}
-    RunHelperBase* runHelper() {return runHelper_.get();}
+    bool skipBadFiles() const { return skipBadFiles_; }
+    bool dropDescendants() const { return dropDescendants_; }
+    bool bypassVersionCheck() const { return bypassVersionCheck_; }
+    bool labelRawDataLikeMC() const { return labelRawDataLikeMC_; }
+    unsigned int nStreams() const { return nStreams_; }
+    int treeMaxVirtualSize() const { return treeMaxVirtualSize_; }
+    ProductSelectorRules const& productSelectorRules() const { return productSelectorRules_; }
+    RunHelperBase* runHelper() { return runHelper_.get(); }
 
     static void fillDescriptions(ConfigurationDescriptions& descriptions);
 
-  private:
-    virtual void readEvent_(EventPrincipal& eventPrincipal) override;
-    virtual std::shared_ptr<LuminosityBlockAuxiliary> readLuminosityBlockAuxiliary_() override;
-    virtual void readLuminosityBlock_(LuminosityBlockPrincipal& lumiPrincipal) override;
-    virtual std::shared_ptr<RunAuxiliary> readRunAuxiliary_() override;
-    virtual void readRun_(RunPrincipal& runPrincipal) override;
-    virtual std::unique_ptr<FileBlock> readFile_() override;
-    virtual void closeFile_() override;
-    virtual void endJob() override;
-    virtual ItemType getNextItemType() override;
-    virtual bool readIt(EventID const& id, EventPrincipal& eventPrincipal, StreamContext& streamContext) override;
-    virtual void skip(int offset) override;
-    virtual bool goToEvent_(EventID const& eventID) override;
-    virtual void rewind_() override;
-    virtual void preForkReleaseResources() override;
-    virtual bool randomAccess_() const override;
-    virtual ProcessingController::ForwardState forwardState_() const override;
-    virtual ProcessingController::ReverseState reverseState_() const override;
+  protected:
+    ItemTypeInfo getNextItemType() override;
+    void readLuminosityBlock_(LuminosityBlockPrincipal& lumiPrincipal) override;
+    std::shared_ptr<LuminosityBlockAuxiliary> readLuminosityBlockAuxiliary_() override;
+    void readEvent_(EventPrincipal& eventPrincipal) override;
 
-    SharedResourcesAcquirer* resourceSharedWithDelayedReader_() const override;
-    
+  private:
+    std::shared_ptr<RunAuxiliary> readRunAuxiliary_() override;
+    void readRun_(RunPrincipal& runPrincipal) override;
+    void fillProcessBlockHelper_() override;
+    bool nextProcessBlock_(ProcessBlockPrincipal&) override;
+    void readProcessBlock_(ProcessBlockPrincipal&) override;
+    std::shared_ptr<FileBlock> readFile_() override;
+    void closeFile_() override;
+    void endJob() override;
+    bool readIt(EventID const& id, EventPrincipal& eventPrincipal, StreamContext& streamContext) override;
+    void skip(int offset) override;
+    bool goToEvent_(EventID const& eventID) override;
+    void rewind_() override;
+    bool randomAccess_() const override;
+    ProcessingController::ForwardState forwardState_() const override;
+    ProcessingController::ReverseState reverseState_() const override;
+
+    std::pair<SharedResourcesAcquirer*, std::recursive_mutex*> resourceSharedWithDelayedReader_() override;
+
     RootServiceChecker rootServiceChecker_;
     InputFileCatalog catalog_;
     InputFileCatalog secondaryCatalog_;
-    std::shared_ptr<RunPrincipal> secondaryRunPrincipal_;
-    std::shared_ptr<LuminosityBlockPrincipal> secondaryLumiPrincipal_;
-    std::vector<std::unique_ptr<EventPrincipal>> secondaryEventPrincipals_;
-    std::array<std::vector<BranchID>, NumBranchTypes>  branchIDsToReplace_;
+    edm::propagate_const<std::shared_ptr<RunPrincipal>> secondaryRunPrincipal_;
+    edm::propagate_const<std::shared_ptr<LuminosityBlockPrincipal>> secondaryLumiPrincipal_;
+    std::vector<edm::propagate_const<std::unique_ptr<EventPrincipal>>> secondaryEventPrincipals_;
+    std::array<std::vector<BranchID>, NumBranchTypes> branchIDsToReplace_;
 
     unsigned int nStreams_;
     bool skipBadFiles_;
@@ -83,11 +88,14 @@ namespace edm {
     ProductSelectorRules productSelectorRules_;
     bool dropDescendants_;
     bool labelRawDataLikeMC_;
-    
-    std::unique_ptr<RunHelperBase> runHelper_;
-    std::unique_ptr<SharedResourcesAcquirer> resourceSharedWithDelayedReaderPtr_;
-    std::unique_ptr<RootPrimaryFileSequence> primaryFileSequence_;
-    std::unique_ptr<RootSecondaryFileSequence> secondaryFileSequence_;
-  }; // class PoolSource
-}
+    bool delayReadingEventProducts_;
+
+    edm::propagate_const<std::unique_ptr<RunHelperBase>> runHelper_;
+    std::unique_ptr<SharedResourcesAcquirer>
+        resourceSharedWithDelayedReaderPtr_;  // We do not use propagate_const because the acquirer is itself mutable.
+    std::shared_ptr<std::recursive_mutex> mutexSharedWithDelayedReader_;
+    edm::propagate_const<std::unique_ptr<RootPrimaryFileSequence>> primaryFileSequence_;
+    edm::propagate_const<std::unique_ptr<RootSecondaryFileSequence>> secondaryFileSequence_;
+  };  // class PoolSource
+}  // namespace edm
 #endif

@@ -1,139 +1,118 @@
 #ifndef FWCore_Framework_UnscheduledCallProducer_h
 #define FWCore_Framework_UnscheduledCallProducer_h
 
-#include "FWCore/Framework/interface/UnscheduledHandler.h"
+// -*- C++ -*-
+//
+// Package:     FWCore/Framework
+// Class  :     UnscheduledCallProducer
+//
+/**\class UnscheduledCallProducer UnscheduledCallProducer.h "UnscheduledCallProducer.h"
+
+ Description: Handles calling of EDProducers which are unscheduled
+
+ Usage:
+ <usage>
+
+ */
 
 #include "FWCore/Framework/interface/BranchActionType.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/OccurrenceTraits.h"
-#include "FWCore/Framework/src/Worker.h"
+#include "FWCore/Framework/interface/maker/Worker.h"
+#include "FWCore/Framework/interface/UnscheduledAuxiliary.h"
+#include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
 #include "FWCore/ServiceRegistry/interface/ParentContext.h"
+#include "FWCore/ServiceRegistry/interface/ActivityRegistry.h"
 
 #include <vector>
 #include <unordered_map>
 #include <string>
 #include <sstream>
+#include <cassert>
 
 namespace edm {
 
+  class EventTransitionInfo;
   class ModuleCallingContext;
 
-  class UnscheduledCallProducer : public UnscheduledHandler {
+  class UnscheduledCallProducer {
   public:
-    
-    class WorkerLookup {
-      //Compact way to quickly find workers or to iterate through all of them
-    public:
-      WorkerLookup() = default;
-      
-      using worker_container = std::vector<Worker*>;
-      using const_iterator = worker_container::const_iterator;
+    using worker_container = std::vector<Worker*>;
+    using const_iterator = worker_container::const_iterator;
 
-      void add(Worker* iWorker) {
-        auto const& label = iWorker->description().moduleLabel();
-        size_t index = m_values.size();
-        m_values.push_back(iWorker);
-        if( not m_keys.emplace(label.c_str(),index).second) {
-        //make sure keys are unique
-          throw cms::Exception("WorkersWithSameLabel")<<"multiple workers use the label "<<label;
-        }
-      }
-      
-      Worker* find(std::string const& iLabel) const {
-        auto found = m_keys.find(iLabel);
-        if(found == m_keys.end()) {
-          return nullptr;
-        }
-        return m_values[found->second];
-      }
-      
-      const_iterator begin() const { return m_values.begin(); }
-      const_iterator end() const { return m_values.end(); }
-      
-    private:
-      //second element is the index of the key in m_values
-      std::unordered_map<std::string, size_t> m_keys;
-      worker_container m_values;
-    };
-    
-    UnscheduledCallProducer() : UnscheduledHandler(), workerLookup_() {}
+    UnscheduledCallProducer(ActivityRegistry& iReg) : unscheduledWorkers_() {
+      aux_.preModuleDelayedGetSignal_.connect(std::cref(iReg.preModuleEventDelayedGetSignal_));
+      aux_.postModuleDelayedGetSignal_.connect(std::cref(iReg.postModuleEventDelayedGetSignal_));
+    }
     void addWorker(Worker* aWorker) {
-      assert(0 != aWorker);
-      workerLookup_.add(aWorker);
+      assert(nullptr != aWorker);
+      unscheduledWorkers_.push_back(aWorker);
+      if (aWorker->hasAccumulator()) {
+        accumulatorWorkers_.push_back(aWorker);
+      }
     }
 
+    void removeWorker(Worker const* worker) {
+      unscheduledWorkers_.erase(std::remove(unscheduledWorkers_.begin(), unscheduledWorkers_.end(), worker),
+                                unscheduledWorkers_.end());
+      accumulatorWorkers_.erase(std::remove(accumulatorWorkers_.begin(), accumulatorWorkers_.end(), worker),
+                                accumulatorWorkers_.end());
+    }
+
+    void setEventTransitionInfo(EventTransitionInfo const& info) { aux_.setEventTransitionInfo(info); }
+
+    UnscheduledAuxiliary const& auxiliary() const { return aux_; }
+
+    const_iterator begin() const { return unscheduledWorkers_.begin(); }
+    const_iterator end() const { return unscheduledWorkers_.end(); }
+    worker_container const& workers() const { return unscheduledWorkers_; }
+
     template <typename T, typename U>
-    void runNow(typename T::MyPrincipal& p, EventSetup const& es, StreamID streamID,
-                typename T::Context const* topContext, U const* context) const {
+    void runNowAsync(WaitingTaskHolder task,
+                     typename T::TransitionInfoType const& info,
+                     ServiceToken const& token,
+                     StreamID streamID,
+                     typename T::Context const* topContext,
+                     U const* context) const {
       //do nothing for event since we will run when requested
-      if(!T::isEvent_) {
-        for(auto worker: workerLookup_) {
-          try {
-            ParentContext parentContext(context);
-            worker->doWork<T>(p, es, streamID, parentContext, topContext);
-          }
-          catch (cms::Exception & ex) {
-            std::ostringstream ost;
-            if (T::isEvent_) {
-              ost << "Calling event method";
-            }
-            else if (T::begin_ && T::branchType_ == InRun) {
-              ost << "Calling beginRun";
-            }
-            else if (T::begin_ && T::branchType_ == InLumi) {
-              ost << "Calling beginLuminosityBlock";
-            }
-            else if (!T::begin_ && T::branchType_ == InLumi) {
-              ost << "Calling endLuminosityBlock";
-            }
-            else if (!T::begin_ && T::branchType_ == InRun) {
-              ost << "Calling endRun";
-            }
-            else {
-              // It should be impossible to get here ...
-              ost << "Calling unknown function";
-            }
-            ost << " for unscheduled module " << worker->description().moduleName()
-                << "/'" << worker->description().moduleLabel() << "'";
-            ex.addContext(ost.str());
-            ost.str("");
-            ost << "Processing " << p.id();
-            ex.addContext(ost.str());
-            throw;
-          }
+      if (!T::isEvent_) {
+        for (auto worker : unscheduledWorkers_) {
+          ParentContext parentContext(context);
+
+          // We do not need to run prefetching here because this only handles
+          // stream transitions for runs and lumis. There are no products put
+          // into the runs or lumis in stream transitions, so there can be
+          // no data dependencies which require prefetching. Prefetching is
+          // needed for global transitions, but they are run elsewhere.
+          worker->doWorkNoPrefetchingAsync<T>(task, info, token, streamID, parentContext, topContext);
         }
+      }
+    }
+
+    template <typename T>
+    void runAccumulatorsAsync(WaitingTaskHolder task,
+                              typename T::TransitionInfoType const& info,
+                              ServiceToken const& token,
+                              StreamID streamID,
+                              ParentContext const& parentContext,
+                              typename T::Context const* context) {
+      for (auto worker : accumulatorWorkers_) {
+        worker->doWorkAsync<T>(task, info, token, streamID, parentContext, context);
       }
     }
 
   private:
-    virtual bool tryToFillImpl(std::string const& moduleLabel,
-                               EventPrincipal const& event,
-                               EventSetup const& eventSetup,
-                               ModuleCallingContext const* mcc) const override {
-      auto worker =
-        workerLookup_.find(moduleLabel);
-      if(worker != nullptr) {
-        try {
-          ParentContext parentContext(mcc);
-          worker->doWork<OccurrenceTraits<EventPrincipal, BranchActionStreamBegin> >(event,
-              eventSetup, event.streamID(), parentContext, mcc->getStreamContext());
-        }
-        catch (cms::Exception & ex) {
-          std::ostringstream ost;
-          ost << "Calling produce method for unscheduled module " 
-              << worker->description().moduleName() << "/'"
-              << worker->description().moduleLabel() << "'";
-          ex.addContext(ost.str());
-          throw;
-        }
-        return true;
-      }
-      return false;
+    template <typename T, typename ID>
+    void addContextToException(cms::Exception& ex, Worker const* worker, ID const& id) const {
+      std::ostringstream ost;
+      ost << "Processing " << T::transitionName() << " " << id;
+      ex.addContext(ost.str());
     }
-    WorkerLookup workerLookup_;
+    worker_container unscheduledWorkers_;
+    worker_container accumulatorWorkers_;
+    UnscheduledAuxiliary aux_;
   };
 
-}
+}  // namespace edm
 
 #endif
-

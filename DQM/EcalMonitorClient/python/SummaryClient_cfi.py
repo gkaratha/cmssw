@@ -27,8 +27,11 @@ ecalSummaryClient = cms.untracked.PSet(
         RawData = ecalRawDataClient.MEs.QualitySummary,
         DesyncByLumi = ecalRawDataTask.MEs.DesyncByLumi,
         FEByLumi = ecalRawDataTask.MEs.FEByLumi,
+        FEStatusErrMapByLumi = ecalRawDataTask.MEs.FEStatusErrMapByLumi,
         TriggerPrimitives = ecalTrigPrimClient.MEs.EmulQualitySummary,
-        HotCell = ecalOccupancyClient.MEs.QualitySummary
+        HotCell = ecalOccupancyClient.MEs.QualitySummary,
+        BXSRP = ecalRawDataTask.MEs.BXSRP,
+        BXTCC = ecalRawDataTask.MEs.BXTCC
     ),
     MEs = cms.untracked.PSet(
         ReportSummaryMap = cms.untracked.PSet(
@@ -43,7 +46,7 @@ ecalSummaryClient = cms.untracked.PSet(
             kind = cms.untracked.string('REAL'),
             otype = cms.untracked.string('SM'),
             btype = cms.untracked.string('Report'),
-            perLumi = cms.untracked.bool(True),
+            perLumi = cms.untracked.bool(False),
             description = cms.untracked.string('')
         ),
         GlobalSummary = cms.untracked.PSet(
@@ -85,7 +88,7 @@ ecalSummaryClient = cms.untracked.PSet(
             kind = cms.untracked.string('REAL'),
             otype = cms.untracked.string('Ecal'),
             btype = cms.untracked.string('Report'),
-            perLumi = cms.untracked.bool(True),
+            perLumi = cms.untracked.bool(False),
             description = cms.untracked.string('')
         )
     )

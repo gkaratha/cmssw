@@ -6,12 +6,16 @@
 #define EcalBarrelNumberingScheme_h
 
 #include "Geometry/EcalCommonData/interface/EcalNumberingScheme.h"
+#include <string>
 
 class EcalBarrelNumberingScheme : public EcalNumberingScheme {
- public:
+public:
   EcalBarrelNumberingScheme();
-  ~EcalBarrelNumberingScheme();
-  virtual uint32_t getUnitID(const EcalBaseNumber& baseNumber) const ;
+  ~EcalBarrelNumberingScheme() override;
+  uint32_t getUnitID(const EcalBaseNumber& baseNumber) const override;
+
+private:
+  std::pair<int, int> numbers(const std::string&) const;
 };
 
 #endif

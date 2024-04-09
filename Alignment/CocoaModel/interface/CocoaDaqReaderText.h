@@ -7,20 +7,18 @@
 #include "Alignment/CocoaUtilities/interface/ALIFileIn.h"
 class OpticalAlignMeasurementInfo;
 
+class CocoaDaqReaderText : public CocoaDaqReader {
+public:
+  CocoaDaqReaderText(const std::string& fileName);
+  ~CocoaDaqReaderText() override;
 
-class CocoaDaqReaderText : public CocoaDaqReader
-{
- public:
-  CocoaDaqReaderText(const std::string& fileName );
-  virtual ~CocoaDaqReaderText();
+  bool ReadNextEvent() override;
+  void BuildMeasurementsFromOptAlign(std::vector<OpticalAlignMeasurementInfo>& measList) override;
 
-  virtual bool ReadNextEvent();
-  virtual void BuildMeasurementsFromOptAlign( std::vector<OpticalAlignMeasurementInfo>& measList );
-
- public:
+public:
   int GetNEvents() const { return nev; }
 
- protected:
+protected:
   int nev;
   int nextEvent;
   ALIFileIn theFilein;

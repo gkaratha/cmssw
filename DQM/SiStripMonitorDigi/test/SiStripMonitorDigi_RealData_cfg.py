@@ -23,11 +23,14 @@ process.maxEvents = cms.untracked.PSet(
 # Message Logger
 #-------------------------------------------------
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('siStripDigis'),
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
         threshold = cms.untracked.string('ERROR')
     ),
-    destinations = cms.untracked.vstring('cout')
+    debugModules = cms.untracked.vstring('siStripDigis')
 )
 
 #-------------------------------------------------
@@ -51,13 +54,7 @@ process.siStripDigis.ProductLabel = 'source'
 #--------------------------
 # DQM Services
 #--------------------------
-process.DQMStore = cms.Service("DQMStore",
-    referenceFileName = cms.untracked.string(''),
-    verbose = cms.untracked.int32(0)
-)
-
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 #--------------------------
 # SiStrip MonitorDigi
@@ -68,24 +65,24 @@ process.SiStripMonitorDigi.CreateTrendMEs = True
 
 process.SiStripMonitorDigi.TkHistoMap_On = True
 process.SiStripMonitorDigi.TkHistoMapNApvShots_On = True
-process.SiStripMonitorDigi.TkHistoMapNStripApvShots_On= True
-process.SiStripMonitorDigi.TkHistoMapMedianChargeApvShots_On= True
+process.SiStripMonitorDigi.TkHistoMapNStripApvShots_On= False
+process.SiStripMonitorDigi.TkHistoMapMedianChargeApvShots_On= False
 
 
 process.SiStripMonitorDigi.TH1NApvShots.subdetswitchon = True
 process.SiStripMonitorDigi.TH1NApvShots.globalswitchon = True
 
-process.SiStripMonitorDigi.TH1ChargeMedianApvShots.subdetswitchon = True
-process.SiStripMonitorDigi.TH1ChargeMedianApvShots.globalswitchon = True
+process.SiStripMonitorDigi.TH1ChargeMedianApvShots.subdetswitchon = False
+process.SiStripMonitorDigi.TH1ChargeMedianApvShots.globalswitchon = False
 
-process.SiStripMonitorDigi.TH1NStripsApvShots.subdetswitchon = True
-process.SiStripMonitorDigi.TH1NStripsApvShots.globalswitchon = True
+process.SiStripMonitorDigi.TH1NStripsApvShots.subdetswitchon = False
+process.SiStripMonitorDigi.TH1NStripsApvShots.globalswitchon = False
 
-process.SiStripMonitorDigi.TH1ApvNumApvShots.subdetswitchon = True
-process.SiStripMonitorDigi.TH1ApvNumApvShots.globalswitchon = True
+process.SiStripMonitorDigi.TH1ApvNumApvShots.subdetswitchon = False
+process.SiStripMonitorDigi.TH1ApvNumApvShots.globalswitchon = False
 
-process.SiStripMonitorDigi.TProfNShotsVsTime.subdetswitchon = True
-process.SiStripMonitorDigi.TProfNShotsVsTime.globalswitchon = True
+process.SiStripMonitorDigi.TProfNShotsVsTime.subdetswitchon = False
+process.SiStripMonitorDigi.TProfNShotsVsTime.globalswitchon = False
 
 process.SiStripMonitorDigi.TProfTotalNumberOfDigis.subdetswitchon = True
 process.SiStripMonitorDigi.TProfDigiApvCycle.subdetswitchon = True

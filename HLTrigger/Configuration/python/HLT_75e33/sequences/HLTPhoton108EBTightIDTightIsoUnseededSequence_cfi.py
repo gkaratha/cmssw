@@ -1,0 +1,19 @@
+import FWCore.ParameterSet.Config as cms
+
+from ..modules.hltEG108EtUnseededFilter_cfi import *
+from ..modules.hltEgammaCandidatesWrapperUnseeded_cfi import *
+from ..modules.hltEGL1SeedsForSinglePhotonIsolatedFilter_cfi import *
+from ..modules.hltPhoton108EBTightIDTightIsoClusterShapeUnseededFilter_cfi import *
+from ..modules.hltPhoton108EBTightIDTightIsoEcalIsoUnseededFilter_cfi import *
+from ..modules.hltPhoton108EBTightIDTightIsoHcalIsoUnseededFilter_cfi import *
+from ..modules.hltPhoton108EBTightIDTightIsoHEUnseededFilter_cfi import *
+from ..sequences.HLTDoFullUnpackingEgammaEcalSequence_cfi import *
+from ..sequences.HLTEGammaDoLocalHcalSequence_cfi import *
+from ..sequences.HLTFastJetForEgammaSequence_cfi import *
+from ..sequences.HLTHgcalTiclPFClusteringForEgammaUnseededSequence_cfi import *
+from ..sequences.HLTL1Sequence_cfi import *
+from ..sequences.HLTPFClusteringForEgammaUnseededSequence_cfi import *
+from ..sequences.HLTPFHcalClusteringForEgammaSequence_cfi import *
+from ..sequences.HLTPhoton108EBTightIDTightIsoUnseededInnerSequence_cfi import *
+
+HLTPhoton108EBTightIDTightIsoUnseededSequence = cms.Sequence(HLTL1Sequence+hltEGL1SeedsForSinglePhotonIsolatedFilter+HLTDoFullUnpackingEgammaEcalSequence+HLTEGammaDoLocalHcalSequence+HLTPFClusteringForEgammaUnseededSequence+HLTHgcalTiclPFClusteringForEgammaUnseededSequence+HLTFastJetForEgammaSequence+HLTPFHcalClusteringForEgammaSequence+HLTPhoton108EBTightIDTightIsoUnseededInnerSequence+hltEgammaCandidatesWrapperUnseeded+hltEG108EtUnseededFilter+hltPhoton108EBTightIDTightIsoClusterShapeUnseededFilter+hltPhoton108EBTightIDTightIsoHEUnseededFilter+hltPhoton108EBTightIDTightIsoEcalIsoUnseededFilter+hltPhoton108EBTightIDTightIsoHcalIsoUnseededFilter)

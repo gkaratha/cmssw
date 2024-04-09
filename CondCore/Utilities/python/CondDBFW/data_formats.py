@@ -7,7 +7,7 @@ Note: may also contain a decorator that can wrap a class around a function that 
 
 """
 
-from data_sources import json_data_node, json_list, json_dict, json_basic
+from .data_sources import json_data_node, json_list, json_dict, json_basic
 
 # decorators
 
@@ -21,7 +21,7 @@ def to_array_of_dicts(script):
 			array_of_dicts = _to_array_of_dicts(data)
 			return json_data_node.make(array_of_dicts)
 		except (KeyError, TypeError) as e:
-			exit("The data you gave wasn't in the correct format: %s" % str(e))
+			raise Exception("The data you gave wasn't in the correct format: %s" % str(e))
 	return new_script
 
 # convert {{header:value}, ..., {header:value}} to {headers:[], data:[[]]}
@@ -33,7 +33,7 @@ def to_datatables(script):
 				data = _json_data_node.make(data)
 			return to_datatables(data)
 		except (KeyError, TypeError) as e:
-			exit("The data you gave wasn't in the correct format: %s" % str(e))
+			raise Exception("The data you gave wasn't in the correct format: %s" % str(e))
 	return new_script
 
 def query(script):
@@ -42,7 +42,7 @@ def query(script):
 			data = script(self, connection)
 			return _to_sql_query(data)
 		except (KeyError, TypeError) as e:
-			exit("The data you gave wasn't in the correct format: %s" % str(e))
+			raise Exception("The data you gave wasn't in the correct format: %s" % str(e))
 	return new_script
 
 def objects_to_dicts(script):
@@ -51,7 +51,7 @@ def objects_to_dicts(script):
 			data = script(self, connection)
 			return _objects_to_dicts(data)
 		except (KeyError, TypeError) as e:
-			exit("The data you gave wasn't in the correct format: %s" % str(e))
+			raise Exception("The data you gave wasn't in the correct format: %s" % str(e))
 	return new_script
 
 # functions used in decorators
@@ -63,19 +63,19 @@ def _to_array_of_dicts(data):
 	headers = data.get("headers").data()
 	data_list = data.get("data").data()
 	def unicode_to_str(string):
-		return str(string) if type(string) == unicode else string
-	headers = map(unicode_to_str, headers)
+		return str(string) if type(string) == str else string
+	headers = list(map(unicode_to_str, headers))
 	def row_to_dict(row):
-		row = map(unicode_to_str, row)
-		return dict(zip(headers, row))
-	array_of_dicts = map(row_to_dict, data_list)
+		row = list(map(unicode_to_str, row))
+		return dict(list(zip(headers, row)))
+	array_of_dicts = list(map(row_to_dict, data_list))
 	return json_data_node.make(array_of_dicts)
 
 def _to_datatables(data):
-	headers = map(str, data.get(0).data().keys())
+	headers = list(map(str, list(data.get(0).data().keys())))
 	new_data = []
 	for n in range(0, len(data.data())):
-		new_data.append(map(lambda entry : str(entry) if type(entry) == unicode else entry, data.get(n).data().values()))
+		new_data.append([str(entry) if type(entry) == str else entry for entry in list(data.get(n).data().values())])
 	return json_data_node.make({
 		"headers" : headers,
 		"data" : new_data

@@ -1,11 +1,18 @@
 # used by cmsDriver when called like
-#   cmsDiver.py hlt -s HLT:@relval
+#   cmsDriver.py hlt -s HLT:@relval
 
 autoHLT = {
-  'frozen25ns' : '25ns14e33_v4',
-  'relval25ns' : '25ns14e33_v4',
-  'frozen50ns' : '50ns_5e33_v3',
-  'relval50ns' : '50ns_5e33_v3',
   'fake'       : 'Fake',
+  'fake1'      : 'Fake1',
+  'fake2'      : 'Fake2',
+  'relval50ns' : 'Fake',
+  'relval25ns' : 'Fake1',
+  'relval2016' : 'Fake2',
+  'relval2017' : 'Fake2',
+  'relval2018' : 'Fake2',
+  'relval2022' : 'Fake2',
+  'relval2023' : 'Fake2',
+  'relval2024' : 'GRun',
+  'relval2026' : '75e33',
   'test'       : 'GRun',
 }

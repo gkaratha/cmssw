@@ -79,30 +79,23 @@ process.load('Configuration/EventContent/EventContent_cff')
 #process.GlobalTag.globaltag = 'GR10_H_V4::All'
 #process.GlobalTag.globaltag = 'GR10_H_V8::All'
 process.GlobalTag.globaltag = 'GR_H_V20::All'
-process.GlobalTag.connect = "frontier://(proxyurl=http://localhost:3128)(serverurl=http://localhost:8000/FrontierOnProd)(serverurl=http://localhost:8000/FrontierOnProd)(retrieve-ziplevel=0)(failovertoserver=no)/CMS_COND_31X_GLOBALTAG"
 
 process.GlobalTag.toGet = cms.VPSet()
 process.GlobalTag.toGet.append(
     cms.PSet(
-    record = cms.string('DTCCBConfigRcd'),
-    tag = cms.string('DT_config_V04'),
-    connect = cms.untracked.string('frontier://(proxyurl=http://localhost:3128)(serverurl=http://localhost:8000/FrontierOnProd)(serverurl=http://localhost:8000/FrontierOnProd)(retrieve-ziplevel=0)(failovertoserver=no)/CMS_COND_31X_DT')
-    )
-    )
+        record = cms.string('DTCCBConfigRcd'),
+        tag = cms.string('DT_config_V04'),
+    ) )
 process.GlobalTag.toGet.append(
     cms.PSet(
-    record = cms.string('DTKeyedConfigListRcd'),
-    tag = cms.string('DT_keyedConfListIOV_V01'),
-    connect = cms.untracked.string('frontier://(proxyurl=http://localhost:3128)(serverurl=http://localhost:8000/FrontierOnProd)(serverurl=http://localhost:8000/FrontierOnProd)(retrieve-ziplevel=0)(failovertoserver=no)/CMS_COND_31X_DT')
-    )
-    )
+        record = cms.string('DTKeyedConfigListRcd'),
+        tag = cms.string('DT_keyedConfListIOV_V01'),
+    ) )
 process.GlobalTag.toGet.append(
     cms.PSet(
-    record = cms.string('DTKeyedConfigContainerRcd'),
-    tag = cms.string('DT_keyedConfBricks_V01'),
-    connect = cms.untracked.string('frontier://(proxyurl=http://localhost:3128)(serverurl=http://localhost:8000/FrontierOnProd)(serverurl=http://localhost:8000/FrontierOnProd)(retrieve-ziplevel=0)(failovertoserver=no)/CMS_COND_31X_DT')
-    )
-    )
+        record = cms.string('DTKeyedConfigContainerRcd'),
+        tag = cms.string('DT_keyedConfBricks_V01'),
+    ) )
 
 process.p = cms.Path(
     process.ecalDigis * process.hcalDigis 
@@ -116,9 +109,10 @@ process.p = cms.Path(
 # Message Logger
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.debugModules = ['*']
-process.MessageLogger.categories = ['*']
-process.MessageLogger.destinations = ['cout']
+
+process.MessageLogger.cerr.enable = False
 process.MessageLogger.cout = cms.untracked.PSet(
+    enable = cms.untracked.bool(True),
     threshold = cms.untracked.string('INFO'),
     DEBUG=cms.untracked.PSet(
         limit=cms.untracked.int32(-1)

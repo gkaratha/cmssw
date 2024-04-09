@@ -1,11 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
 externalLHEProducer = cms.EDProducer("ExternalLHEProducer",
-    args = cms.vstring('/cvmfs/cms.cern.ch/phys_generator/gridpacks/slc6_amd64_gcc481/13TeV/madgraph/V5_2.2.2/WJets_HT_LO_MLM/WJetsToLNu_HT-incl/V1/WJetsToLNu_HT-incl_tarball.tar.xz'),
+    args = cms.vstring('/cvmfs/cms.cern.ch/phys_generator/gridpacks/UL/13TeV/madgraph/V5_2.6.5/WJetsToLNu/WJetsToLNu_13TeV-madgraphMLM-pythia8_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.tar.xz','false','slc6_amd64_gcc630','CMSSW_9_3_16'),
     nEvents = cms.untracked.uint32(5000),
-    numberOfParameters = cms.uint32(1),
+    numberOfParameters = cms.uint32(4),
     outputFile = cms.string('cmsgrid_final.lhe'),
-    scriptName = cms.FileInPath('GeneratorInterface/LHEInterface/data/run_generic_tarball_cvmfs.sh')
+    scriptName = cms.FileInPath('GeneratorInterface/LHEInterface/data/run_generic_tarball_cvmfs.sh'),
+    generateConcurrently = cms.untracked.bool(True),
 )
 
 #Link to datacards:

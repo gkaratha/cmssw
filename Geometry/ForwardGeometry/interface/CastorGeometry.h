@@ -11,75 +11,67 @@
 
 #include <vector>
 
-class CastorGeometry : public CaloSubdetectorGeometry 
-{
-   public:
+class CastorGeometry : public CaloSubdetectorGeometry {
+public:
+  typedef std::vector<IdealCastorTrapezoid> CellVec;
 
-      typedef std::vector<IdealCastorTrapezoid> CellVec ;
+  typedef CaloCellGeometry::CCGFloat CCGFloat;
+  typedef CaloCellGeometry::Pt3D Pt3D;
+  typedef CaloCellGeometry::Pt3DVec Pt3DVec;
+  typedef CaloCellGeometry::Tr3D Tr3D;
 
-      typedef CaloCellGeometry::CCGFloat CCGFloat ;
-      typedef CaloCellGeometry::Pt3D     Pt3D     ;
-      typedef CaloCellGeometry::Pt3DVec  Pt3DVec  ;
-      typedef CaloCellGeometry::Tr3D     Tr3D     ;
+  typedef CastorAlignmentRcd AlignmentRecord;
+  typedef CastorGeometryRecord AlignedRecord;
+  typedef PCastorRcd PGeometryRecord;
+  typedef HcalCastorDetId DetIdType;
 
-      typedef CastorAlignmentRcd   AlignmentRecord ;
-      typedef CastorGeometryRecord AlignedRecord   ;
-      typedef PCastorRcd           PGeometryRecord ;
-      typedef HcalCastorDetId      DetIdType       ;
+  static constexpr int k_NumberOfCellsForCorners = HcalCastorDetId::kSizeForDenseIndexing;
 
-      enum { k_NumberOfCellsForCorners = HcalCastorDetId::kSizeForDenseIndexing } ;
+  static constexpr int k_NumberOfShapes = 4;
 
-      enum { k_NumberOfShapes = 4 } ;
+  static constexpr int k_NumberOfParametersPerShape = 6;
 
-      enum { k_NumberOfParametersPerShape = 6 } ;
+  static std::string dbString() { return "PCastorRcd"; }
 
-      static std::string dbString() { return "PCastorRcd" ; }
+  unsigned int numberOfTransformParms() const override { return 3; }
 
-      virtual unsigned int numberOfTransformParms() const { return 3 ; }
+  unsigned int numberOfShapes() const override { return k_NumberOfShapes; }
+  unsigned int numberOfParametersPerShape() const override { return k_NumberOfParametersPerShape; }
 
-      virtual unsigned int numberOfShapes() const { return k_NumberOfShapes ; }
-      virtual unsigned int numberOfParametersPerShape() const { return k_NumberOfParametersPerShape ; }
+  CastorGeometry();
 
-      CastorGeometry() ;
+  explicit CastorGeometry(const CastorTopology* topology);
+  ~CastorGeometry() override;
 
-      explicit CastorGeometry(const CastorTopology * topology);
-      virtual ~CastorGeometry();
+  DetId getClosestCell(const GlobalPoint& r) const override;
 
-      virtual DetId getClosestCell(const GlobalPoint& r) const ;
+  static std::string producerTag() { return "CASTOR"; }
 
-      static std::string producerTag() { return "CASTOR" ; }
+  static unsigned int numberOfAlignments() { return 1; }
 
-      static unsigned int numberOfAlignments() { return 1 ; }
+  static unsigned int alignmentTransformIndexLocal(const DetId& id);
 
-      static unsigned int alignmentTransformIndexLocal( const DetId& id ) ;
+  static unsigned int alignmentTransformIndexGlobal(const DetId& id);
 
-      static unsigned int alignmentTransformIndexGlobal( const DetId& id ) ;
+  static void localCorners(Pt3DVec& lc, const CCGFloat* pv, unsigned int i, Pt3D& ref);
 
-      static void localCorners( Pt3DVec&        lc  ,
-				const CCGFloat* pv , 
-				unsigned int    i  ,
-				Pt3D&           ref  ) ;
+  void newCell(const GlobalPoint& f1,
+               const GlobalPoint& f2,
+               const GlobalPoint& f3,
+               const CCGFloat* parm,
+               const DetId& detId) override;
 
-      virtual void newCell( const GlobalPoint& f1 ,
-			    const GlobalPoint& f2 ,
-			    const GlobalPoint& f3 ,
-			    const CCGFloat*    parm,
-			    const DetId&       detId     ) ;
-
-   protected:
-
-      virtual const CaloCellGeometry* cellGeomPtr( uint32_t index ) const ;
-
+protected:
+  // Modify the RawPtr class
+  const CaloCellGeometry* getGeometryRawPtr(uint32_t index) const override;
 
 private:
+  const CastorTopology* theTopology;
+  mutable DetId::Detector lastReqDet_;
+  mutable int lastReqSubdet_;
+  bool m_ownsTopology;
 
-      const CastorTopology * theTopology;
-      mutable DetId::Detector lastReqDet_;
-      mutable int lastReqSubdet_;
-      bool m_ownsTopology ;
-
-      CellVec m_cellVec ;
+  CellVec m_cellVec;
 };
-
 
 #endif

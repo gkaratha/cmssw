@@ -1,17 +1,15 @@
-#ifndef DD_DividedGeometryObject_H
-#define DD_DividedGeometryObject_H
-//
-// ********************************************************************
-// 25.04.04 - M.Case ported algorithm from G4VDivisionParameterisation.hh. to 
-//            DDD version
-//---------------------------------------------------------------------
+#ifndef DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_GEOMETRY_OBJECT_H
+#define DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_GEOMETRY_OBJECT_H
 
+#include <string>
+
+#include "DetectorDescription/Core/interface/DDRotationMatrix.h"
+#include "DetectorDescription/Core/interface/DDTranslation.h"
 #include "DetectorDescription/Core/interface/DDAxes.h"
-#include "DetectorDescription/Core/interface/DDDivision.h"
 #include "DetectorDescription/Core/interface/DDCompactView.h"
+#include "DetectorDescription/Core/interface/DDDivision.h"
 
-#include "DetectorDescription/Base/interface/DDRotationMatrix.h"
-#include "DetectorDescription/Base/interface/DDTranslation.h"
+class DDCompactView;
 
 enum DivisionType { DivNDIVandWIDTH, DivNDIV, DivWIDTH };
 
@@ -19,42 +17,37 @@ class DDLogicalPart;
 class DDRotation;
 class DDSolid;
 
-class DDDividedGeometryObject
-{ 
+class DDDividedGeometryObject {
 public:
-  
-  DDDividedGeometryObject( const DDDivision& div, DDCompactView* cpv );
-  
-  virtual ~DDDividedGeometryObject( void );
-  
-  virtual DDTranslation makeDDTranslation( const int copyNo ) const;
-  virtual DDRotation    makeDDRotation   ( const int copyNo ) const ;
-  virtual DDLogicalPart makeDDLogicalPart( const int copyNo ) const;
+  DDDividedGeometryObject(const DDDivision& div, DDCompactView* cpv);
 
-  virtual const std::string& getType( void ) const;
+  virtual ~DDDividedGeometryObject(void) = default;  // inline
 
-  virtual void setType( const std::string& type );
+  virtual DDTranslation makeDDTranslation(int copyNo) const;
+  virtual DDRotation makeDDRotation(int copyNo) const;
+  virtual DDLogicalPart makeDDLogicalPart(int copyNo) const;
 
-  int volumeFirstCopyNo( void ) const;
+  virtual const std::string& getType(void) const;
 
-  virtual void execute( void );
+  virtual void setType(const std::string& type);
 
-  static const double tolerance( void );
-  
+  int volumeFirstCopyNo(void) const;
+
+  virtual void execute(void);
+
+  static const double tolerance(void);
+
 protected:
-  
-  DDRotationMatrix* changeRotMatrix( double rotZ = 0. ) const;
-  int calculateNDiv( double motherDim, double width,
-		     double offset ) const;
-  double calculateWidth( double motherDim, int nDiv,
-			 double offset ) const;
+  std::unique_ptr<DDRotationMatrix> changeRotMatrix(double rotZ = 0.) const;
+  int calculateNDiv(double motherDim, double width, double offset) const;
+  double calculateWidth(double motherDim, int nDiv, double offset) const;
 
-  virtual void checkParametersValidity( void );
+  virtual void checkParametersValidity(void);
 
-  void checkOffset( double maxPar );
-  void checkNDivAndWidth( double maxPar );
+  void checkOffset(double maxPar);
+  void checkNDivAndWidth(double maxPar);
 
-  virtual double getMaxParameter( void ) const;
+  virtual double getMaxParameter(void) const;
 
 protected:
   DDDivision div_;

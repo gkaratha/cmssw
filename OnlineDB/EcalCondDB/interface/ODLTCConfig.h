@@ -13,13 +13,13 @@
 #define BUFSIZE 200;
 
 class ODLTCConfig : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODLTCConfig();
-  ~ODLTCConfig();
+  ~ODLTCConfig() override;
 
   // User data methods
-  inline std::string getTable() { return "ECAL_LTC_CONFIGURATION"; }
+  inline std::string getTable() override { return "ECAL_LTC_CONFIGURATION"; }
 
   inline void setId(int id) { m_ID = id; }
   inline int getId() const { return m_ID; }
@@ -33,24 +33,22 @@ class ODLTCConfig : public IODConfig {
   inline void setLTCClob(unsigned char* x) { m_ltc_clob = x; }
   inline unsigned char* getLTCClob() const { return m_ltc_clob; }
 
-  void setParameters(const std::map<std::string,std::string>& my_keys_map);
-  
- private:
-  void prepareWrite()  throw(std::runtime_error);
-  void writeDB()       throw(std::runtime_error);
+  void setParameters(const std::map<std::string, std::string>& my_keys_map);
+
+private:
+  void prepareWrite() noexcept(false) override;
+  void writeDB() noexcept(false);
   void clear();
-  void fetchData(ODLTCConfig * result)     throw(std::runtime_error);
-  int fetchID()  throw(std::runtime_error);
+  void fetchData(ODLTCConfig* result) noexcept(false);
+  int fetchID() noexcept(false);
 
-
-  int fetchNextId() throw(std::runtime_error);
+  int fetchNextId() noexcept(false);
 
   // User data
   int m_ID;
   unsigned char* m_ltc_clob;
-  std::string  m_ltc_file;
+  std::string m_ltc_file;
   int m_size;
-
 };
 
 #endif

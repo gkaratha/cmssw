@@ -5,20 +5,18 @@
 
 #include "Validation/Geometry/interface/MaterialBudgetFormat.h"
 
+class MaterialBudgetTxt : public MaterialBudgetFormat {
+public:
+  MaterialBudgetTxt(std::shared_ptr<MaterialBudgetData> data, const std::string& fileName);
+  ~MaterialBudgetTxt() override;
 
-class MaterialBudgetTxt : public MaterialBudgetFormat
-{
- public:
-  MaterialBudgetTxt( MaterialBudgetData* data, const std::string& fileName );   
-  virtual ~MaterialBudgetTxt();
+  void fillStartTrack() override;
+  void fillPerStep() override;
+  void fillEndTrack() override;
+  void endOfRun() override;
 
-  virtual void fillStartTrack();
-  virtual void fillPerStep();
-  virtual void fillEndTrack();
-
- private:
+private:
   std::ofstream* theFile;
-
 };
 
 #endif

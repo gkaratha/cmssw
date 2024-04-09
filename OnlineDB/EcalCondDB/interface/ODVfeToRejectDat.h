@@ -9,13 +9,13 @@
 #include "OnlineDB/EcalCondDB/interface/ODVfeToRejectInfo.h"
 
 class ODVfeToRejectDat : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODVfeToRejectDat();
-  ~ODVfeToRejectDat();
+  ~ODVfeToRejectDat() override;
 
   // User data methods
-  inline std::string getTable() { return "VFES_TO_REJECT_DAT"; }
+  inline std::string getTable() override { return "VFES_TO_REJECT_DAT"; }
 
   inline void setId(int dac) { m_ID = dac; }
   inline int getId() const { return m_ID; }
@@ -35,20 +35,14 @@ class ODVfeToRejectDat : public IODConfig {
   inline void setStatus(int dac) { m_sta = dac; }
   inline int getStatus() const { return m_sta; }
 
+private:
+  void prepareWrite() noexcept(false) override;
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+  void writeDB(const ODVfeToRejectDat* item, ODVfeToRejectInfo* iov) noexcept(false);
 
-  void writeDB(const ODVfeToRejectDat* item, ODVfeToRejectInfo* iov )
-    throw(std::runtime_error);
+  void writeArrayDB(const std::vector<ODVfeToRejectDat>& data, ODVfeToRejectInfo* iov) noexcept(false);
 
-  void writeArrayDB(const std::vector< ODVfeToRejectDat >& data, ODVfeToRejectInfo* iov)
-    throw(std::runtime_error);
-
-
-  void fetchData(std::vector< ODVfeToRejectDat >* fillMap, ODVfeToRejectInfo* iov)
-     throw(std::runtime_error);
+  void fetchData(std::vector<ODVfeToRejectDat>* fillMap, ODVfeToRejectInfo* iov) noexcept(false);
 
   // User data
 
@@ -58,7 +52,6 @@ class ODVfeToRejectDat : public IODConfig {
   int m_gain;
   int m_sta;
   int m_ID;
- 
 };
 
 #endif

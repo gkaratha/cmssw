@@ -6,7 +6,7 @@ class SortedKeysDict(dict):
         dict.__init__(self,*args,**kw)
         self.list = list()
         if len(args) == 1:
-            if not hasattr(args[0],'iterkeys'):
+            if not hasattr(args[0],'keys'):
                 s = set()
                 #must protect against adding the same key multiple times
                 for x,y in iter(args[0]):
@@ -14,19 +14,20 @@ class SortedKeysDict(dict):
                         self.list.append(x)
                         s.add(x)
             else:
-                self.list = list(args[0].iterkeys())
+                self.list = list(args[0].keys())
             return
-        self.list = list(super(SortedKeysDict,self).iterkeys())
+        self.list = list(super(SortedKeysDict,self).keys())
 
     def __repr__(self):
-        meat = ', '.join([ '%s: %s' % (repr(key), repr(val)) for key,val in self.iteritems() ])
+        meat = ', '.join([ '%s: %s' % (repr(key), repr(val)) for key,val in self.items() ])
         return '{' + meat + '}'
-
     def __iter__(self):
         for key in self.list:
             yield key
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)
+        if not hasattr(self,'list'):
+          self.list = list()
         if not key in self.list:
             self.list.append(key)
     def __delitem__(self, key):
@@ -46,7 +47,7 @@ class SortedKeysDict(dict):
     def keys(self):
         return self.list
     def values(self):
-        return [ dict.__getitems__(self, key) for key in self.list]
+        return [ dict.__getitem__(self, key) for key in self.list]
 
 
 class SortedAndFixedKeysDict(SortedKeysDict):

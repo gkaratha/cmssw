@@ -10,10 +10,11 @@ cd ${LOCALRT}/src/Utilities/StaticAnalyzers
 scram b -j $J
 cd ${LOCALRT}/
 export USER_CXXFLAGS="-DEDM_ML_DEBUG -w"
-export USER_LLVM_CHECKERS="-enable-checker threadsafety -enable-checker optional.ClassChecker -enable-checker cms -disable-checker cms.FunctionDumper"
+export USER_LLVM_CHECKERS="-enable-checker threadsafety -enable-checker optional.ClassChecker -enable-checker cms -enable-checker deprecated -disable-checker cms.FunctionDumper"
 scram b -k -j $J checker  SCRAM_IGNORE_PACKAGES=Fireworks/% SCRAM_IGNORE_SUBDIRS=test > ${LOCALRT}/tmp/class+function-checker.log 2>&1
 cd ${LOCALRT}/tmp/
 touch check-end
 sort -u < class-checker.txt.unsorted | grep -e"^data class">class-checker.txt
 sort -u < function-checker.txt.unsorted >function-statics-db.txt
+cat constcast-checker.txt.unsorted constcastaway-checker.txt.unsorted mutablemember-checker.txt.unsorted | sort -u >const-checker.txt
 rm *.txt.unsorted

@@ -19,18 +19,9 @@ process.TrackerGeometricDetESModule = cms.ESProducer("TrackerGeometricDetESModul
 
 process.MessageLogger = cms.Service("MessageLogger",
     destinations = cms.untracked.vstring('cout'),
-    categories = cms.untracked.vstring('FwkJob'),
-    fwkJobReports = cms.untracked.vstring('FrameworkJobReport'),
+    categories = cms.untracked.vstring(),
     cout = cms.untracked.PSet(
         threshold = cms.untracked.string('INFO')
-    ),
-    FrameworkJobReport = cms.untracked.PSet(
-        default = cms.untracked.PSet(
-            limit = cms.untracked.int32(0)
-        ),
-        FwkJob = cms.untracked.PSet(
-            limit = cms.untracked.int32(-1)
-        )
     )
 )
 
@@ -49,13 +40,6 @@ process.generator.PGunParameters.MaxPt = 50.0
 process.generator.PGunParameters.MinEta = -2.4
 process.generator.PGunParameters.MaxEta = 2.4
 process.generator.AddAntiParticle = False
-
-#process.EnableFloatingPointExceptions = cms.Service("EnableFloatingPointExceptions",
-#    enableDivByZeroEx = cms.untracked.bool(False),
-#    enableInvalidEx   = cms.untracked.bool(True),
-#    enableOverFlowEx  = cms.untracked.bool(False),
-#    enableUnderFlowEx = cms.untracked.bool(False)
-#)
 
 process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
     moduleSeeds = cms.PSet(

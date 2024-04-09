@@ -11,11 +11,11 @@
 typedef int run_t;
 
 class DCUIOV : public IIOV {
- public:
+public:
   friend class EcalCondDBInterface;
 
   DCUIOV();
-  ~DCUIOV();
+  ~DCUIOV() override;
 
   // Methods for user data
   void setSince(const Tm& since);
@@ -26,29 +26,25 @@ class DCUIOV : public IIOV {
   DCUTag getDCUTag() const;
 
   // Methods from IUniqueDBObject
-  int getID(){ return m_ID;} ;
-  int fetchID() throw(std::runtime_error);
-  void setByID(int id) throw(std::runtime_error);
+  int getID() { return m_ID; };
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
-  inline bool operator==(const DCUIOV &m) const
-    {
-      return ( m_dcuTag   == m.m_dcuTag &&
-	       m_since == m.m_since &&
-	       m_till   == m.m_till );
-    }
+  inline bool operator==(const DCUIOV& m) const {
+    return (m_dcuTag == m.m_dcuTag && m_since == m.m_since && m_till == m.m_till);
+  }
 
-  inline bool operator!=(const DCUIOV &m) const { return !(*this == m); }
+  inline bool operator!=(const DCUIOV& m) const { return !(*this == m); }
 
-
- private:
+private:
   // User data for this IOV
   Tm m_since;
   Tm m_till;
   DCUTag m_dcuTag;
 
-  int writeDB() throw(std::runtime_error);
-  void setByTm(DCUTag* tag, const Tm& time) throw(std::runtime_error);
+  int writeDB() noexcept(false);
+  void setByTm(DCUTag* tag, const Tm& time) noexcept(false);
 };
 
 #endif

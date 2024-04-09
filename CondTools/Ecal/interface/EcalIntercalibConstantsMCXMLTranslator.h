@@ -12,13 +12,6 @@
 
 #include "CondTools/Ecal/interface/EcalFloatCondObjectContainerXMLTranslator.h"
 
-typedef EcalFloatCondObjectContainerXMLTranslator  EcalIntercalibConstantsMCXMLTranslator;
+typedef EcalFloatCondObjectContainerXMLTranslator EcalIntercalibConstantsMCXMLTranslator;
 
-
-#endif // __EcalIntercalibConstantsMCXMLTranslator_h_
-
-// Configure (x)emacs for this file ...
-// Local Variables:
-// mode:c++
-// compile-command: "cd ..; scram b"
-// End:
+#endif  // __EcalIntercalibConstantsMCXMLTranslator_h_

@@ -14,15 +14,14 @@
    a few additional getters with respect to its base class.
 */
 
-class StGenEvent: public TopGenEvent {
-
- public:
-  /// empty constructor  
+class StGenEvent : public TopGenEvent {
+public:
+  /// empty constructor
   StGenEvent();
   /// default constructor
   StGenEvent(reco::GenParticleRefProd&, reco::GenParticleRefProd&);
   /// default destructor
-  virtual ~StGenEvent();
+  ~StGenEvent() override;
 
   /// return single lepton if available; 0 else
   const reco::GenParticle* singleLepton() const;
@@ -34,7 +33,7 @@ class StGenEvent: public TopGenEvent {
   const reco::GenParticle* singleTop() const;
   /// return decay b
   const reco::GenParticle* decayB() const;
-  /// return associated b 
+  /// return associated b
   const reco::GenParticle* associatedB() const;
 };
 

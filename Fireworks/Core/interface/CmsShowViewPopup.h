@@ -21,7 +21,7 @@
 // system include files
 #include <vector>
 #ifndef __CINT__
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <sigc++/sigc++.h>
 #endif
 #include "TGFrame.h"
@@ -46,78 +46,80 @@ class FWDialogBuilder;
 
 /* Helper class to organise parameters in view controller */
 
-class ViewerParameterGUI : public TGCompositeFrame,
-                           public FWParameterSetterEditorBase
-{
+class ViewerParameterGUI : public TGCompositeFrame, public FWParameterSetterEditorBase {
 public:
-   ViewerParameterGUI(const TGFrame*);
-   virtual ~ViewerParameterGUI(){}
+  ViewerParameterGUI(const TGFrame*);
+  ~ViewerParameterGUI() override {}
 
-   ViewerParameterGUI& requestTab(const char*);
-   ViewerParameterGUI& addParam(const FWParameterBase*);
-   ViewerParameterGUI& separator();
-   void reset();
-   void populateComplete();
+  ViewerParameterGUI& requestTab(const char*);
+  ViewerParameterGUI& addParam(const FWParameterBase*);
+  ViewerParameterGUI& separator();
+  void reset();
+  void populateComplete();
 
-   TGCompositeFrame* getTabContainer();
-   void addFrameToContainer(TGCompositeFrame*);
+  TGCompositeFrame* getTabContainer();
+  void addFrameToContainer(TGCompositeFrame*);
 
 private:
-   TGTab*      m_tab;
-   std::string m_selectedTabName;
+  TGTab* m_tab;
+  std::string m_selectedTabName;
 #ifndef __CINT__
-   std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
+  std::vector<std::shared_ptr<FWParameterSetterBase> > m_setters;
 #endif
-}; 
+};
 
 //==============================================================================
 
-class CmsShowViewPopup : public TGTransientFrame
-{
+class CmsShowViewPopup : public TGTransientFrame {
 public:
-   CmsShowViewPopup(const TGWindow* p = 0, UInt_t w = 200, UInt_t h = 200, FWColorManager* cm=0, FWViewBase* wb=0, TEveWindow* ew = 0);
-   virtual ~CmsShowViewPopup();
+  CmsShowViewPopup(const TGWindow* p = nullptr,
+                   UInt_t w = 200,
+                   UInt_t h = 200,
+                   FWColorManager* cm = nullptr,
+                   FWViewBase* wb = nullptr,
+                   TEveWindow* ew = nullptr);
+  ~CmsShowViewPopup() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
+  // ---------- member functions ---------------------------
 
-   virtual void CloseWindow();
-   virtual void MapWindow();
-   virtual void UnmapWindow();
+  void CloseWindow() override;
+  void MapWindow() override;
+  void UnmapWindow() override;
 
-   bool mapped() { return m_mapped; }
+  bool mapped() { return m_mapped; }
 
-   void reset(FWViewBase*, TEveWindow* ew);
+  void reset(FWViewBase*, TEveWindow* ew);
 
-   void saveImage();
-   void changeBackground();
-   void backgroundColorWasChanged();
-   TEveWindow* getEveWindow() const { return m_eveWindow; }
+  void saveImage();
+  void changeBackground();
+  void backgroundColorWasChanged();
+  TEveWindow* getEveWindow() const { return m_eveWindow; }
 #ifndef __CINT__
-   sigc::signal<void> closed_;
+  sigc::signal<void()> closed_;
 #endif
 
-   ClassDef(CmsShowViewPopup, 0);
+  ClassDefOverride(CmsShowViewPopup, 0);
 
 private:
-   CmsShowViewPopup(const CmsShowViewPopup&);                  // stop default
-   const CmsShowViewPopup& operator=(const CmsShowViewPopup&); // stop default
+  CmsShowViewPopup(const CmsShowViewPopup&);                   // stop default
+  const CmsShowViewPopup& operator=(const CmsShowViewPopup&);  // stop default
 
-   // ---------- member data --------------------------------
+  // ---------- member data --------------------------------
 
-   bool                m_mapped;
+  bool m_mapped;
 
-   TGLabel*            m_viewLabel;
-   ViewerParameterGUI* m_paramGUI;
-   TGTextButton*           m_saveImageButton;
-   TGTextButton*       m_changeBackground;
+  TGLabel* m_viewLabel;
+  ViewerParameterGUI* m_paramGUI;
+  TGTextButton* m_saveImageButton;
+  TGTextButton* m_changeBackground;
 
-   FWColorManager*     m_colorManager;
-   FWViewBase*         m_viewBase;
-   TEveWindow*         m_eveWindow;
+  FWColorManager* m_colorManager;
+  FWViewBase* m_viewBase;
+  TEveWindow* m_eveWindow;
 };
 
 #endif

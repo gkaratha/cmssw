@@ -15,33 +15,25 @@ class TH1;
 */
 
 class FedTimingAlgorithm : public CommissioningAlgorithm {
-  
- public:
-  
-  FedTimingAlgorithm( const edm::ParameterSet & pset, FedTimingAnalysis* const );
+public:
+  FedTimingAlgorithm(const edm::ParameterSet& pset, FedTimingAnalysis* const);
 
-  virtual ~FedTimingAlgorithm() {;}
-  
+  ~FedTimingAlgorithm() override { ; }
+
   inline const Histo& histo() const;
-  
- private:
 
-  FedTimingAlgorithm() {;}
-  
-  void extract( const std::vector<TH1*>& );
+private:
+  FedTimingAlgorithm() { ; }
 
-  void analyse();
-  
- private:
-  
+  void extract(const std::vector<TH1*>&) override;
+
+  void analyse() override;
+
+private:
   /** APV tick mark */
   Histo histo_;
-  
 };
 
 const FedTimingAlgorithm::Histo& FedTimingAlgorithm::histo() const { return histo_; }
 
-#endif // DQM_SiStripCommissioningAnalysis_FedTimingAlgorithm_H
-
-
-
+#endif  // DQM_SiStripCommissioningAnalysis_FedTimingAlgorithm_H

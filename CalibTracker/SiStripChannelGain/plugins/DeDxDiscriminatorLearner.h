@@ -12,67 +12,68 @@
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
-#include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
 
 #include "RecoTracker/DeDx/interface/DeDxTools.h"
 
 #include "TFile.h"
 #include "TH3F.h"
 
+#include <memory>
+
 class DeDxDiscriminatorLearner : public ConditionDBWriter<PhysicsTools::Calibration::HistogramD3D> {
-
 public:
-
   explicit DeDxDiscriminatorLearner(const edm::ParameterSet&);
-  ~DeDxDiscriminatorLearner();
+  ~DeDxDiscriminatorLearner() override;
 
 private:
-  virtual void algoBeginJob(const edm::EventSetup&) ;
-  virtual void algoAnalyze(const edm::Event&, const edm::EventSetup&);
-  virtual void algoEndJob();
+  void algoBeginJob(const edm::EventSetup&) override;
+  void algoAnalyze(const edm::Event&, const edm::EventSetup&) override;
+  void algoEndJob() override;
 
-  void         processHit(const TrackingRecHit* recHit, float trackMomentum, float& cosine,  const TrajectoryStateOnSurface& trajState);
-  void         algoAnalyzeTheTree(const edm::EventSetup& iSetup);
+  void processHit(const TrackingRecHit* recHit,
+                  float trackMomentum,
+                  float& cosine,
+                  const TrajectoryStateOnSurface& trajState);
+  void algoAnalyzeTheTree(const edm::EventSetup& iSetup);
 
-  PhysicsTools::Calibration::HistogramD3D * getNewObject();
+  std::unique_ptr<PhysicsTools::Calibration::HistogramD3D> getNewObject() override;
 
   // ----------member data ---------------------------
-  edm::EDGetTokenT<TrajTrackAssociationCollection>   m_trajTrackAssociationTag;
-  edm::EDGetTokenT<reco::TrackCollection>  m_tracksTag;
+  edm::EDGetTokenT<TrajTrackAssociationCollection> m_trajTrackAssociationTag;
+  edm::EDGetTokenT<reco::TrackCollection> m_tracksTag;
 
-  float        MinTrackMomentum;
-  float        MaxTrackMomentum;
-  float        MinTrackEta;
-  float        MaxTrackEta;
+  edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomToken;
+
+  float MinTrackMomentum;
+  float MaxTrackMomentum;
+  float MinTrackEta;
+  float MaxTrackEta;
   unsigned int MaxNrStrips;
   unsigned int MinTrackHits;
-  float        MaxTrackChiOverNdf;
+  float MaxTrackChiOverNdf;
 
   float P_Min;
   float P_Max;
-  int   P_NBins; 
+  int P_NBins;
   float Path_Min;
   float Path_Max;
-  int   Path_NBins;
+  int Path_NBins;
   float Charge_Min;
   float Charge_Max;
-  int   Charge_NBins;
+  int Charge_NBins;
 
   std::vector<std::string> VInputFiles;
-  std::string       algoMode;
-  std::string       HistoFile;
+  std::string algoMode;
+  std::string HistoFile;
 
-  TH3F*        Charge_Vs_Path;
+  TH3F* Charge_Vs_Path;
 
+  std::string m_calibrationPath;
+  bool useCalibration;
+  bool shapetest;
 
-  std::string                       m_calibrationPath;
-  bool                              useCalibration;
-  bool                              shapetest;
-
-  std::vector< std::vector<float> > calibGains;
+  std::vector<std::vector<float> > calibGains;
   unsigned int m_off;
-
 };
 
 #endif
-

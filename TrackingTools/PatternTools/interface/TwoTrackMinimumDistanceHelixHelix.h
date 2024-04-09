@@ -16,36 +16,27 @@
 class GlobalTrajectoryParameters;
 
 class TwoTrackMinimumDistanceHelixHelix {
-
 public:
   TwoTrackMinimumDistanceHelixHelix();
   ~TwoTrackMinimumDistanceHelixHelix();
 
-  bool calculate( const GlobalTrajectoryParameters &,
-      const GlobalTrajectoryParameters &,
-      const float qual=.001 ); // retval=true? error occured.
+  bool calculate(const GlobalTrajectoryParameters &,
+                 const GlobalTrajectoryParameters &,
+                 const float qual = .001);  // retval=true? error occured.
 
-  std::pair <GlobalPoint, GlobalPoint> points() const {
-    if (!pointsUpdated) finalPoints();
-    return std::pair<GlobalPoint, GlobalPoint> (pointG, pointH);
-  }
+  std::pair<GlobalPoint, GlobalPoint> points() const { return std::pair<GlobalPoint, GlobalPoint>(pointG, pointH); }
 
-  std::pair <double, double> pathLength() const {
-    if (!pointsUpdated) finalPoints();
-    return std::pair <double, double> ( pathG, pathH);
-  }
+  std::pair<double, double> pathLength() const { return std::pair<double, double>(pathG, pathH); }
 
-
-
-  double firstAngle() const {return thepG;}
-  double secondAngle() const {return thepH;}
+  double firstAngle() const { return thepG; }
+  double secondAngle() const { return thepH; }
 
 private:
-  bool updateCoeffs( const GlobalPoint & , const GlobalPoint & );
-  bool oneIteration ( double &, double & ) const;
+  bool updateCoeffs(const GlobalPoint &, const GlobalPoint &);
+  bool oneIteration(double &, double &);
 
-// bool parallelTracks () const;
-  void finalPoints() const;
+  // bool parallelTracks () const;
+  void finalPoints();
 
 private:
   GlobalTrajectoryParameters const *theH, *theG;
@@ -59,15 +50,14 @@ private:
 
   // the variable stuff
   // = the point we are currently looking at.
-  mutable double thepG, thepH;
-  mutable double thesinpG, thesinpH;
-  mutable double thecospG, thecospH;
-  mutable GlobalPoint pointG, pointH;
-  mutable double pathG, pathH;
-  mutable bool pointsUpdated;
+  double thepG, thepH;
+  double thesinpG, thesinpH;
+  double thecospG, thecospH;
+  GlobalPoint pointG, pointH;
+  double pathG, pathH;
+  bool pointsUpdated;
 
   double themaxjump, thesingjacI;
   int themaxiter;
-
 };
 #endif

@@ -9,8 +9,8 @@ namespace CLHEP {
 
 class CaloVHitCorrection {
 public:
-  virtual double delay(const PCaloHit & hit, CLHEP::HepRandomEngine*) const = 0;
+  virtual ~CaloVHitCorrection() = default;
+  virtual double delay(const PCaloHit &hit, CLHEP::HepRandomEngine *) const = 0;
 };
 
 #endif
-

@@ -1,190 +1,148 @@
-/**
- * \class StableParametersTrivialProducer
- * 
- * 
- * Description: ESProducer for L1 GT parameters.  
- *
- * Implementation:
- *    <TODO: enter implementation details>
- *   
- *
- */
 
-// this class header
-#include "StableParametersTrivialProducer.h"
+// StableParametersTrivialProducer
 
-// system include files
 #include <memory>
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
-
-// user include files
-//   base class
 #include "FWCore/Framework/interface/ESProducer.h"
-
 #include "FWCore/Framework/interface/ModuleFactory.h"
-#include "FWCore/Framework/interface/ESHandle.h"
-
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/MessageLogger/interface/MessageDrop.h"
 
-#include "CondFormats/DataRecord/interface/L1TGlobalStableParametersRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TGlobalParameters.h"
+#include "CondFormats/DataRecord/interface/L1TGlobalParametersRcd.h"
 
-// forward declarations
+#include "L1Trigger/L1TGlobal/interface/GlobalParamsHelper.h"
 
-// constructor(s)
-StableParametersTrivialProducer::StableParametersTrivialProducer(
-    const edm::ParameterSet& parSet) {
+// class declaration
+class StableParametersTrivialProducer : public edm::ESProducer {
+public:
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-    // tell the framework what data is being produced
-    setWhatProduced(
-        this, &StableParametersTrivialProducer::produceGtStableParameters);
+  /// constructor
+  StableParametersTrivialProducer(const edm::ParameterSet&);
 
-    // now do what ever other initialization is needed
+  /// destructor
+  ~StableParametersTrivialProducer() override;
 
-    // trigger decision
+  /// public methods
 
-    // number of physics trigger algorithms
-    m_numberPhysTriggers
-        = parSet.getParameter<unsigned int>("NumberPhysTriggers");
+  /// L1 GT parameters
+  std::unique_ptr<L1TGlobalParameters> produceGtStableParameters(const L1TGlobalParametersRcd&);
 
-    // additional number of physics trigger algorithms
-    m_numberPhysTriggersExtended
-        = parSet.getParameter<unsigned int>("NumberPhysTriggersExtended");
+private:
+  l1t::GlobalParamsHelper data_;
+};
 
-    // number of technical triggers
-    m_numberTechnicalTriggers
-        = parSet.getParameter<unsigned int>("NumberTechnicalTriggers");
+using namespace std;
+using namespace edm;
+using namespace l1t;
 
-    // trigger objects
+void StableParametersTrivialProducer::fillDescriptions(ConfigurationDescriptions& descriptions) {
+  ParameterSetDescription desc;
 
-    // muons
-    m_numberL1Mu = parSet.getParameter<unsigned int>("NumberL1Mu");
+  // TotalBxInEvent = cms.int32(5),
+  desc.add<int>("TotalBxInEvent", 5)->setComment("stage2");
 
-    // e/gamma and isolated e/gamma objects
-    m_numberL1NoIsoEG = parSet.getParameter<unsigned int>("NumberL1NoIsoEG");
-    m_numberL1IsoEG = parSet.getParameter<unsigned int>("NumberL1IsoEG");
+  //NumberPhysTriggers = cms.uint32(512)
+  desc.add<unsigned int>("NumberPhysTriggers", 512)->setComment("Number of physics trigger algorithms");
 
-    // central, forward and tau jets
-    m_numberL1CenJet = parSet.getParameter<unsigned int>("NumberL1CenJet");
-    m_numberL1ForJet = parSet.getParameter<unsigned int>("NumberL1ForJet");
-    m_numberL1TauJet = parSet.getParameter<unsigned int>("NumberL1TauJet");
+  //NumberL1Muon = cms.uint32(12)
+  desc.add<unsigned int>("NumberL1Muon", 12)->setComment("Number of L2 Muons");
 
-    // jet counts
-    m_numberL1JetCounts = parSet.getParameter<unsigned int>("NumberL1JetCounts");
+  //NumberL1EGamma = cms.uint32(12),
+  desc.add<unsigned int>("NumberL1EGamma", 12)->setComment("Number of L1 e/gamma objects");
 
-    // hardware
+  //NumberL1Jet = cms.uint32(12),
+  desc.add<unsigned int>("NumberL1Jet", 12)->setComment("Number of L1 jets");
 
-    // number of maximum chips defined in the xml file
-    m_numberConditionChips
-        = parSet.getParameter<unsigned int>("NumberConditionChips");
+  //NumberL1Tau = cms.uint32(8),
+  desc.add<unsigned int>("NumberL1Tau", 8)->setComment("Number of L1 taus");
 
-    // number of pins on the GTL condition chips
-    m_pinsOnConditionChip
-        = parSet.getParameter<unsigned int>("PinsOnConditionChip");
+  //NumberChips = cms.uint32(1),
+  desc.add<unsigned int>("NumberChips", 5)->setComment("Number of chips in Menu");
 
-    // correspondence "condition chip - GTL algorithm word" in the hardware
-    // e.g.: chip 2: 0 - 95;  chip 1: 96 - 128 (191)
-    m_orderConditionChip
-        = parSet.getParameter<std::vector<int> >("OrderConditionChip");
+  //PinsOnChip = cms.uint32(512),
+  desc.add<unsigned int>("PinsOnChip", 512)->setComment("Number of pins on the GTL condition chips");
 
-    // number of PSB boards in GT
-    m_numberPsbBoards = parSet.getParameter<int>("NumberPsbBoards");
+  //OrderOfChip = cms.vint32(1),
+  vector<int> tmp = {1};
+  desc.add<vector<int> >("OrderOfChip", tmp)->setComment("Chip order");
 
-    /// number of bits for eta of calorimeter objects
-    m_ifCaloEtaNumberBits
-        = parSet.getParameter<unsigned int>("IfCaloEtaNumberBits");
+  //
+  // Deprecated Parameters:  These can be removed once the HLT inteface is updated, or HLT takes these conditions from Offline DB.
+  //
 
-    /// number of bits for eta of calorimeter objects
-    m_ifMuEtaNumberBits = parSet.getParameter<unsigned int>("IfMuEtaNumberBits");
+  desc.add<unsigned int>("NumberL1IsoEG", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1JetCounts", 0)->setComment("Deprecated...");
+  desc.add<int>("UnitLength", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1ForJet", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("IfCaloEtaNumberBits", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("IfMuEtaNumberBits", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1TauJet", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1Mu", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberConditionChips", 0)->setComment("Deprecated...");
+  desc.add<int>("NumberPsbBoards", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1CenJet", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("PinsOnConditionChip", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberL1NoIsoEG", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberTechnicalTriggers", 0)->setComment("Deprecated...");
+  desc.add<unsigned int>("NumberPhysTriggersExtended", 0)->setComment("Deprecated...");
+  desc.add<int>("WordLength", 0)->setComment("Deprecated...");
+  vector<int> tmp2 = {1};
+  desc.add<vector<int> >("OrderConditionChip", tmp2)->setComment("Deprecated...");
 
-    // GT DAQ record organized in words of WordLength bits
-    m_wordLength = parSet.getParameter<int>("WordLength");
+  descriptions.add("StableParametersTrivialProducer", desc);
+}
 
-    // one unit in the word is UnitLength bits
-    m_unitLength = parSet.getParameter<int>("UnitLength");
+StableParametersTrivialProducer::StableParametersTrivialProducer(const edm::ParameterSet& parSet)
+    : data_(new L1TGlobalParameters()) {
+  // tell the framework what data is being produced
+  setWhatProduced(this, &StableParametersTrivialProducer::produceGtStableParameters);
 
+  // set the number of bx in event
+  data_.setTotalBxInEvent(parSet.getParameter<int>("TotalBxInEvent"));
+
+  // set the number of physics trigger algorithms
+  data_.setNumberPhysTriggers(parSet.getParameter<unsigned int>("NumberPhysTriggers"));
+
+  // set the number of L1 muons received by GT
+  data_.setNumberL1Mu(parSet.getParameter<unsigned int>("NumberL1Muon"));
+
+  //  set the number of L1 e/gamma objects received by GT
+  data_.setNumberL1EG(parSet.getParameter<unsigned int>("NumberL1EGamma"));
+
+  // set the number of L1 central jets received by GT
+  data_.setNumberL1Jet(parSet.getParameter<unsigned int>("NumberL1Jet"));
+
+  // set the number of L1 tau jets received by GT
+  data_.setNumberL1Tau(parSet.getParameter<unsigned int>("NumberL1Tau"));
+
+  // hardware stuff
+
+  // set the number of condition chips in GTL
+  data_.setNumberChips(parSet.getParameter<unsigned int>("NumberChips"));
+
+  // set the number of pins on the GTL condition chips
+  data_.setPinsOnChip(parSet.getParameter<unsigned int>("PinsOnChip"));
+
+  // set the correspondence "condition chip - GTL algorithm word"
+  // in the hardware
+  data_.setOrderOfChip(parSet.getParameter<std::vector<int> >("OrderOfChip"));
 }
 
 // destructor
 StableParametersTrivialProducer::~StableParametersTrivialProducer() {
-
-    // empty
-
+  // empty
 }
 
 // member functions
 
 // method called to produce the data
-boost::shared_ptr<GlobalStableParameters> 
-    StableParametersTrivialProducer::produceGtStableParameters(
-        const L1TGlobalStableParametersRcd& iRecord) {
-
-    boost::shared_ptr<GlobalStableParameters> pL1uGtStableParameters =
-        boost::shared_ptr<GlobalStableParameters>(new GlobalStableParameters());
-
-    // set the number of physics trigger algorithms
-    pL1uGtStableParameters->setGtNumberPhysTriggers(m_numberPhysTriggers);
-
-    // set the additional number of physics trigger algorithms
-    pL1uGtStableParameters->setGtNumberPhysTriggersExtended(m_numberPhysTriggersExtended);
-
-    // set the number of technical triggers
-    pL1uGtStableParameters->setGtNumberTechnicalTriggers(m_numberTechnicalTriggers);
-
-    // set the number of L1 muons received by GT
-    pL1uGtStableParameters->setGtNumberL1Mu(m_numberL1Mu);
-    
-    //  set the number of L1 e/gamma objects received by GT
-    pL1uGtStableParameters->setGtNumberL1NoIsoEG(m_numberL1NoIsoEG);
-    
-    //  set the number of L1 isolated e/gamma objects received by GT
-    pL1uGtStableParameters->setGtNumberL1IsoEG(m_numberL1IsoEG);
-    
-    // set the number of L1 central jets received by GT
-    pL1uGtStableParameters->setGtNumberL1CenJet(m_numberL1CenJet);
-    
-    // set the number of L1 forward jets received by GT
-    pL1uGtStableParameters->setGtNumberL1ForJet(m_numberL1ForJet);
-    
-    // set the number of L1 tau jets received by GT
-    pL1uGtStableParameters->setGtNumberL1TauJet(m_numberL1TauJet);
-    
-    // set the number of L1 jet counts received by GT
-    pL1uGtStableParameters->setGtNumberL1JetCounts(m_numberL1JetCounts);
-    
-    // hardware stuff
-    
-    // set the number of condition chips in GTL
-    pL1uGtStableParameters->setGtNumberConditionChips(m_numberConditionChips);
-    
-    // set the number of pins on the GTL condition chips
-    pL1uGtStableParameters->setGtPinsOnConditionChip(m_pinsOnConditionChip);
-    
-    // set the correspondence "condition chip - GTL algorithm word"
-    // in the hardware
-    pL1uGtStableParameters->setGtOrderConditionChip(m_orderConditionChip);
-    
-    // set the number of PSB boards in GT
-    pL1uGtStableParameters->setGtNumberPsbBoards(m_numberPsbBoards);
-    
-    //   set the number of bits for eta of calorimeter objects
-    pL1uGtStableParameters->setGtIfCaloEtaNumberBits(m_ifCaloEtaNumberBits);
-    
-    //   set the number of bits for eta of muon objects
-    pL1uGtStableParameters->setGtIfMuEtaNumberBits(m_ifMuEtaNumberBits);
-    
-    // set WordLength
-    pL1uGtStableParameters->setGtWordLength(m_wordLength);
-    
-    // set one UnitLength
-    pL1uGtStableParameters->setGtUnitLength(m_unitLength);
-    
-    //
-    //
-    return pL1uGtStableParameters;
-
+std::unique_ptr<L1TGlobalParameters> StableParametersTrivialProducer::produceGtStableParameters(
+    const L1TGlobalParametersRcd& iRecord) {
+  // Return copy so that we don't give away our owned pointer to framework
+  return std::make_unique<L1TGlobalParameters>(*data_.getWriteInstance());
 }
 
 DEFINE_FWK_EVENTSETUP_MODULE(StableParametersTrivialProducer);

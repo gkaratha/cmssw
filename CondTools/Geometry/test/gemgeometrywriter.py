@@ -1,9 +1,19 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("GEMGeometryWriter")
-process.load('CondCore.DBCommon.CondDBCommon_cfi')
-process.load('Configuration.Geometry.GeometryExtended2019_cff')
+process.load('CondCore.CondDB.CondDB_cfi')
+process.load('Configuration.Geometry.GeometryExtended2021_cff')
 process.load('Geometry.MuonNumbering.muonNumberingInitialization_cfi')
+process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
+process.load('Configuration.StandardSequences.DD4hep_GeometrySim_cff')
+process.load('FWCore.MessageService.MessageLogger_cfi')
+
+process.MessageLogger = cms.Service("MessageLogger",
+    destinations = cms.untracked.vstring('myLog'),
+    myLog = cms.untracked.PSet(
+        threshold = cms.untracked.string('INFO'),
+    )
+)
 
 process.source = cms.Source("EmptyIOVSource",
                             lastValue = cms.uint64(1),
@@ -14,11 +24,10 @@ process.source = cms.Source("EmptyIOVSource",
 
 process.GEMGeometryWriter = cms.EDAnalyzer("GEMRecoIdealDBLoader")
 
-process.CondDBCommon.BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService')
-process.CondDBCommon.timetype = cms.untracked.string('runnumber')
-process.CondDBCommon.connect = cms.string('sqlite_file:myfile.db')
+process.CondDB.timetype = cms.untracked.string('runnumber')
+process.CondDB.connect = cms.string('sqlite_file:myfile.db')
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
-                                          process.CondDBCommon,
+                                          process.CondDB,
                                           toPut = cms.VPSet(cms.PSet(record = cms.string('GEMRecoGeometryRcd'),tag = cms.string('GEMRECO_Geometry_Test01'))
                                                             )
                                           )

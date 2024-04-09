@@ -1,11 +1,11 @@
-#ifndef Framework_DependentRecordIntervalFinder_h
-#define Framework_DependentRecordIntervalFinder_h
+#ifndef FWCore_Framework_DependentRecordIntervalFinder_h
+#define FWCore_Framework_DependentRecordIntervalFinder_h
 // -*- C++ -*-
 //
 // Package:     Framework
 // Class  :     DependentRecordIntervalFinder
-// 
-/**\class DependentRecordIntervalFinder DependentRecordIntervalFinder.h FWCore/Framework/interface/DependentRecordIntervalFinder.h
+//
+/**\class edm::eventsetup::DependentRecordIntervalFinder
 
  Description: Finds the intersection of the ValidityInterval for several Providers
 
@@ -21,53 +21,53 @@
 //
 
 // system include files
+#include <memory>
 #include <vector>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 // forward declarations
 namespace edm {
-   namespace eventsetup {
-      class EventSetupRecordProvider;
-      
-class DependentRecordIntervalFinder : public EventSetupRecordIntervalFinder
-{
+  namespace eventsetup {
+    class EventSetupRecordProvider;
 
-   public:
+    class DependentRecordIntervalFinder : public EventSetupRecordIntervalFinder {
+    public:
       DependentRecordIntervalFinder(const EventSetupRecordKey&);
-      virtual ~DependentRecordIntervalFinder();
+      DependentRecordIntervalFinder(const DependentRecordIntervalFinder&) = delete;
+      const DependentRecordIntervalFinder& operator=(const DependentRecordIntervalFinder&) = delete;
+      ~DependentRecordIntervalFinder() override;
 
       // ---------- const member functions ---------------------
-      bool haveProviders() const {
-        return !providers_.empty();
-      }
+      bool haveProviders() const { return !providers_.empty(); }
 
       // ---------- static member functions --------------------
 
       // ---------- member functions ---------------------------
-      void addProviderWeAreDependentOn(boost::shared_ptr<EventSetupRecordProvider>);
-      
-      void setAlternateFinder(boost::shared_ptr<EventSetupRecordIntervalFinder>);
-   protected:
-      virtual void setIntervalFor(const EventSetupRecordKey&,
-                                   const IOVSyncValue& , 
-                                   ValidityInterval&);
-      
-   private:
-      DependentRecordIntervalFinder(const DependentRecordIntervalFinder&); // stop default
+      void addProviderWeAreDependentOn(std::shared_ptr<EventSetupRecordProvider>);
 
-      const DependentRecordIntervalFinder& operator=(const DependentRecordIntervalFinder&); // stop default
+      void setAlternateFinder(std::shared_ptr<EventSetupRecordIntervalFinder>);
 
+    protected:
+      void setIntervalFor(const EventSetupRecordKey&, const IOVSyncValue&, ValidityInterval&) override;
+
+    private:
+      void doResetInterval(const eventsetup::EventSetupRecordKey&) override;
+
+      // Should never be called for this class
+      bool isConcurrentFinder() const override;
+
+      bool isNonconcurrentAndIOVNeedsUpdate(const EventSetupRecordKey&, const IOVSyncValue&) const override;
       // ---------- member data --------------------------------
-      typedef std::vector< boost::shared_ptr<EventSetupRecordProvider> > Providers;
+      typedef std::vector<edm::propagate_const<std::shared_ptr<EventSetupRecordProvider>>> Providers;
       Providers providers_;
-      
-      boost::shared_ptr<EventSetupRecordIntervalFinder> alternate_;
-      std::vector<ValidityInterval> previousIOVs_;
-};
 
-   }
-}
+      edm::propagate_const<std::shared_ptr<EventSetupRecordIntervalFinder>> alternate_;
+      std::vector<ValidityInterval> previousIOVs_;
+    };
+
+  }  // namespace eventsetup
+}  // namespace edm
 #endif

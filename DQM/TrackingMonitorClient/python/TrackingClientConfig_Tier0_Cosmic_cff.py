@@ -1,7 +1,8 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 #  TrackingOfflineDQM (for Tier0 Harvesting Step) ####
-trackingOfflineAnalyser = cms.EDAnalyzer("TrackingOfflineDQM",
+trackingOfflineAnalyser = DQMEDHarvester("TrackingOfflineDQM",
     GlobalStatusFilling        = cms.untracked.int32(2),
     UsedWithEDMtoMEConverter   = cms.untracked.bool(True),
     TopFolderName              = cms.untracked.string("Tracking"),                                     
@@ -47,7 +48,8 @@ trackingOfflineAnalyser = cms.EDAnalyzer("TrackingOfflineDQM",
     )
 )
 
-trackingQTester = cms.EDAnalyzer("QualityTester",
+from DQMServices.Core.DQMQualityTester import DQMQualityTester
+trackingQTester = DQMQualityTester(
     qtList = cms.untracked.FileInPath('DQM/TrackingMonitorClient/data/tracking_qualitytest_config_tier0_cosmic.xml'),
     prescaleFactor = cms.untracked.int32(1),                               
     getQualityTestsFromFile = cms.untracked.bool(True)
@@ -57,6 +59,20 @@ from DQM.TrackingMonitor.TrackEfficiencyClient_cfi import *
 TrackEffClient.FolderName = 'Tracking/TrackParameters/TrackEfficiency'
 TrackEffClient.AlgoName   = 'CKFTk'
 
+from DQM.TrackingMonitor.TrackFoldedOccupancyClient_cfi import TrackerMapFoldedClient 
+
+TrackerMapFoldedClient_CKFTk=TrackerMapFoldedClient.clone(
+    AlgoName = 'CKFTk',
+    MeasurementState = 'default',
+    TrackQuality = ''
+)
+
+TrackerMapFoldedClient_CosmicTk=TrackerMapFoldedClient.clone(
+    AlgoName = 'CosmicTk',
+    MeasurementState = 'default',
+    TrackQuality = ''
+)
+
 # Sequence
-TrackingCosmicDQMClient = cms.Sequence(trackingQTester*trackingOfflineAnalyser*TrackEffClient)
+TrackingCosmicDQMClient = cms.Sequence(trackingQTester*trackingOfflineAnalyser*TrackEffClient*TrackerMapFoldedClient_CKFTk*TrackerMapFoldedClient_CosmicTk)
 

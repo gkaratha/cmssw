@@ -10,31 +10,19 @@
 #ifndef __EcalTimeOffsetXMLTranslator_h_
 #define __EcalTimeOffsetXMLTranslator_h_
 
-
-#include "CondTools/Ecal/interface/XercesString.h"
 #include "CondTools/Ecal/interface/EcalCondHeader.h"
 #include <string>
-
 
 class EcalTimeOffsetConstant;
 
 class EcalTimeOffsetXMLTranslator {
-
 public:
+  static int readXML(const std::string& filename, EcalCondHeader& header, EcalTimeOffsetConstant& record);
 
-  static int readXML  (const std::string& filename, 
-		       EcalCondHeader& header,
-		       EcalTimeOffsetConstant& record);
+  static int writeXML(const std::string& filename, const EcalCondHeader& header, const EcalTimeOffsetConstant& record);
 
-  static int writeXML (const std::string& filename,
-		       const EcalCondHeader& header,
-		       const EcalTimeOffsetConstant& record);
-
-  static std::string dumpXML(const EcalCondHeader& header,
-			     const EcalTimeOffsetConstant& record);
+private:
+  static std::string dumpXML(const EcalCondHeader& header, const EcalTimeOffsetConstant& record);
 };
 
-
-
-#endif // __EcalTimeOffsetXMLTranslator_h_
-
+#endif  // __EcalTimeOffsetXMLTranslator_h_

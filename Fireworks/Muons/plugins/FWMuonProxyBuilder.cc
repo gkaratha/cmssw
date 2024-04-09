@@ -17,58 +17,56 @@
 #include "Fireworks/Muons/interface/FWMuonBuilder.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 
-class FWMuonProxyBuilder : public FWSimpleProxyBuilderTemplate<reco::Muon>
-{
+class FWMuonProxyBuilder : public FWSimpleProxyBuilderTemplate<reco::Muon> {
 public:
-   FWMuonProxyBuilder( void ) {}
-   virtual ~FWMuonProxyBuilder( void ) {}
+  FWMuonProxyBuilder(void) {}
+  ~FWMuonProxyBuilder(void) override {}
 
-   virtual void setItem(const FWEventItem* iItem);
+  void setItem(const FWEventItem* iItem) override;
 
-   REGISTER_PROXYBUILDER_METHODS();
+  REGISTER_PROXYBUILDER_METHODS();
+
+  // Disable default copy constructor
+  FWMuonProxyBuilder(const FWMuonProxyBuilder&) = delete;
+  // Disable default assignment operator
+  const FWMuonProxyBuilder& operator=(const FWMuonProxyBuilder&) = delete;
 
 private:
-   // Disable default copy constructor
-   FWMuonProxyBuilder( const FWMuonProxyBuilder& );
-   // Disable default assignment operator
-   const FWMuonProxyBuilder& operator=( const FWMuonProxyBuilder& );
+  using FWSimpleProxyBuilderTemplate<reco::Muon>::build;
+  void build(const reco::Muon& iData, unsigned int iIndex, TEveElement& oItemHolder, const FWViewContext*) override;
 
+  void localModelChanges(const FWModelId& iId,
+                         TEveElement* iCompound,
+                         FWViewType::EType viewType,
+                         const FWViewContext* vc) override;
 
-   using FWSimpleProxyBuilderTemplate<reco::Muon>::build;
-   virtual void build( const reco::Muon& iData, unsigned int iIndex, TEveElement& oItemHolder, const FWViewContext* ) override;
-
-   virtual void localModelChanges( const FWModelId& iId, TEveElement* iCompound,
-                                   FWViewType::EType viewType, const FWViewContext* vc ) override;
-
-   mutable FWMuonBuilder m_builder;
+  mutable FWMuonBuilder m_builder;
 };
 
+void FWMuonProxyBuilder::setItem(const FWEventItem* iItem) {
+  FWProxyBuilderBase::setItem(iItem);
 
-void
-FWMuonProxyBuilder::setItem(const FWEventItem* iItem)
-{
-   FWProxyBuilderBase::setItem(iItem);
-   
-   if (iItem) {
-      iItem->getConfig()->assertParam("LineWidth", long(1), long(1), long(4));
-   }
+  if (iItem) {
+    iItem->getConfig()->assertParam("LineWidth", long(1), long(1), long(4));
+  }
 }
 
-void
-FWMuonProxyBuilder::build( const reco::Muon& iData, unsigned int iIndex, TEveElement& oItemHolder, const FWViewContext* ) 
-{
-   int width = item()->getConfig()->value<long>("LineWidth");
-   m_builder.setLineWidth(width);
+void FWMuonProxyBuilder::build(const reco::Muon& iData,
+                               unsigned int iIndex,
+                               TEveElement& oItemHolder,
+                               const FWViewContext*) {
+  int width = item()->getConfig()->value<long>("LineWidth");
+  m_builder.setLineWidth(width);
 
-   m_builder.buildMuon( this, &iData, &oItemHolder, true, false );
-   increaseComponentTransparency( iIndex, &oItemHolder, "Chamber", 60 );
+  m_builder.buildMuon(this, &iData, &oItemHolder, true, false);
+  increaseComponentTransparency(iIndex, &oItemHolder, "Chamber", 60);
 }
 
-void
-FWMuonProxyBuilder::localModelChanges( const FWModelId& iId, TEveElement* iCompound,
-                                       FWViewType::EType viewType, const FWViewContext* vc )
-{
-   increaseComponentTransparency( iId.index(), iCompound, "Chamber", 60 );
+void FWMuonProxyBuilder::localModelChanges(const FWModelId& iId,
+                                           TEveElement* iCompound,
+                                           FWViewType::EType viewType,
+                                           const FWViewContext* vc) {
+  increaseComponentTransparency(iId.index(), iCompound, "Chamber", 60);
 }
 
-REGISTER_FWPROXYBUILDER( FWMuonProxyBuilder, reco::Muon, "Muons", FWViewType::kAll3DBits | FWViewType::kRhoZBit );
+REGISTER_FWPROXYBUILDER(FWMuonProxyBuilder, reco::Muon, "Muons", FWViewType::kAll3DBits | FWViewType::kRhoZBit);

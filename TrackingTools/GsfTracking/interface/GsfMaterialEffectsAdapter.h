@@ -8,28 +8,19 @@
 /** Make standard (single state) MaterialEffectsUpdator usable in
  *  the context of GSF.
  */
-class GsfMaterialEffectsAdapter  final : public GsfMaterialEffectsUpdator 
-{
-  virtual GsfMaterialEffectsAdapter* clone() const
-  {
-    return new GsfMaterialEffectsAdapter(*this);
-  }
+class GsfMaterialEffectsAdapter final : public GsfMaterialEffectsUpdator {
+  GsfMaterialEffectsAdapter* clone() const override { return new GsfMaterialEffectsAdapter(*this); }
 
 public:
+  GsfMaterialEffectsAdapter(const MaterialEffectsUpdator& aMEUpdator)
+      : GsfMaterialEffectsUpdator(aMEUpdator.mass(), 1), theMEUpdator(aMEUpdator.clone()) {}
 
+  ~GsfMaterialEffectsAdapter() override {}
 
-  GsfMaterialEffectsAdapter( const MaterialEffectsUpdator& aMEUpdator ) :
-    GsfMaterialEffectsUpdator(aMEUpdator.mass(),1),
-    theMEUpdator(aMEUpdator.clone()) {}
-
-  ~GsfMaterialEffectsAdapter() {}
-
-  
   // here comes the actual computation of the values
-  virtual void compute (const TrajectoryStateOnSurface&, const PropagationDirection, Effect[]) const;
+  void compute(const TrajectoryStateOnSurface&, const PropagationDirection, Effect[]) const override;
 
-
-private:  
+private:
   DeepCopyPointerByClone<MaterialEffectsUpdator> theMEUpdator;
 };
 

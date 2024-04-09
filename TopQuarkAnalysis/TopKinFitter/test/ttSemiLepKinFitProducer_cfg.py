@@ -5,8 +5,6 @@ process = cms.Process("TEST")
 ## add message logger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.categories.append('TtSemiLepKinFitter')
-process.MessageLogger.categories.append('KinFitter')
 process.MessageLogger.cerr.TtSemiLepKinFitter = cms.untracked.PSet(
     limit = cms.untracked.int32(-1)
 )
@@ -27,7 +25,6 @@ process.maxEvents = cms.untracked.PSet(
 )
 ## configure process options
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
     wantSummary      = cms.untracked.bool(True)
 )
 
@@ -38,12 +35,17 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
+process.task = cms.Task()
+
 ## std sequence for PAT
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
+process.task.add(process.patCandidatesTask)
 process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
+process.task.add(process.selectedPatCandidatesTask)
 
 ## std sequence to produce the kinematic fit for semi-leptonic events
 process.load("TopQuarkAnalysis.TopKinFitter.TtSemiLepKinFitProducer_Muons_cfi")
+process.task.add(process.kinFitTtSemiLepEvent)
 process.kinFitTtSemiLepEvent.constraints = [1,2]
 
 ## use object resolutions from a specific config file
@@ -61,4 +63,4 @@ process.out = cms.OutputModule("PoolOutputModule",
 process.out.outputCommands += ['keep *_kinFitTtSemiLepEvent_*_*']
 
 ## output path
-process.outpath = cms.EndPath(process.out)
+process.outpath = cms.EndPath(process.out, process.task)

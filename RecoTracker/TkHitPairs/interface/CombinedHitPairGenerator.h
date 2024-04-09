@@ -7,12 +7,14 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 
-
 class TrackingRegion;
 class OrderedHitPairs;
 class HitPairGeneratorFromLayerPair;
 class SeedingLayerSetsHits;
-namespace edm { class Event; class EventSetup; }
+namespace edm {
+  class Event;
+  class EventSetup;
+}  // namespace edm
 
 #include <memory>
 
@@ -25,21 +27,20 @@ public:
   typedef LayerHitMapCache LayerCacheType;
 
 public:
-  CombinedHitPairGenerator(const edm::ParameterSet & cfg, edm::ConsumesCollector& iC);
-  virtual ~CombinedHitPairGenerator();
+  CombinedHitPairGenerator(const edm::ParameterSet& cfg, edm::ConsumesCollector& iC);
+  ~CombinedHitPairGenerator() override;
 
   /// form base class
-  virtual void hitPairs( const TrackingRegion& reg, 
-      OrderedHitPairs & result, const edm::Event& ev, const edm::EventSetup& es);
+  void hitPairs(const TrackingRegion& reg,
+                OrderedHitPairs& result,
+                const edm::Event& ev,
+                const edm::EventSetup& es) override;
 
 private:
-  CombinedHitPairGenerator(const CombinedHitPairGenerator & cb); 
-
   edm::EDGetTokenT<SeedingLayerSetsHits> theSeedingLayerToken;
 
-  LayerCacheType   theLayerCache;
+  LayerCacheType theLayerCache;
 
   std::unique_ptr<HitPairGeneratorFromLayerPair> theGenerator;
-
 };
 #endif

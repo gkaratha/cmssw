@@ -21,81 +21,67 @@ namespace edm {
 }
 
 class TrackAssociatorByHitsImpl : public reco::TrackToTrackingParticleAssociatorBaseImpl {
-  
- public:
+public:
+  enum SimToRecoDenomType { denomnone, denomsim, denomreco };
 
-  enum SimToRecoDenomType {denomnone,denomsim,denomreco};
-
-  typedef std::vector<std::pair<OmniClusterRef, TrackingParticleRef> > ClusterTPAssociationList;
   typedef std::pair<TrackingParticleRef, TrackPSimHitRef> SimHitTPPair;
   typedef std::vector<SimHitTPPair> SimHitTPAssociationList;
 
-
-  TrackAssociatorByHitsImpl( edm::EDProductGetter const& productGetter,
-                             std::unique_ptr<TrackerHitAssociator> iAssociate,
-                             TrackerTopology const* iTopo,
-                             SimHitTPAssociationList const* iSimHitsTPAssoc,
-                             SimToRecoDenomType iSimToRecoDenominator,
-                             double iQuality_SimToReco,
-                             double iPurity_SimToReco,
-                             double iCut_RecoToSim,
-                             bool iUsePixels,
-                             bool iUseGrouped,
-                             bool iUseSplitting,
-                             bool ThreeHitTracksAreSpecial,
-                             bool AbsoluteNumberOfHits);
-
+  TrackAssociatorByHitsImpl(edm::EDProductGetter const& productGetter,
+                            std::unique_ptr<TrackerHitAssociator> iAssociate,
+                            TrackerTopology const* iTopo,
+                            SimHitTPAssociationList const* iSimHitsTPAssoc,
+                            SimToRecoDenomType iSimToRecoDenominator,
+                            double iQuality_SimToReco,
+                            double iPurity_SimToReco,
+                            double iCut_RecoToSim,
+                            bool iUsePixels,
+                            bool iUseGrouped,
+                            bool iUseSplitting,
+                            bool ThreeHitTracksAreSpecial,
+                            bool AbsoluteNumberOfHits);
 
   /* Associate SimTracks to RecoTracks By Hits */
- 
+
   /// Association Reco To Sim with Collections
-  virtual
+
   reco::RecoToSimCollection associateRecoToSim(const edm::RefToBaseVector<reco::Track>&,
-					       const edm::RefVector<TrackingParticleCollection>&) const override;
+                                               const edm::RefVector<TrackingParticleCollection>&) const override;
   /// Association Sim To Reco with Collections
-  virtual
+
   reco::SimToRecoCollection associateSimToReco(const edm::RefToBaseVector<reco::Track>&,
-					       const edm::RefVector<TrackingParticleCollection>&) const override;
-  
+                                               const edm::RefVector<TrackingParticleCollection>&) const override;
+
   /// compare reco to sim the handle of reco::Track and TrackingParticle collections
-  virtual
-  reco::RecoToSimCollection associateRecoToSim(const edm::Handle<edm::View<reco::Track> >& tCH, 
-					       const edm::Handle<TrackingParticleCollection>& tPCH) const override {
-    return TrackToTrackingParticleAssociatorBaseImpl::associateRecoToSim(tCH,tPCH);
+
+  reco::RecoToSimCollection associateRecoToSim(const edm::Handle<edm::View<reco::Track> >& tCH,
+                                               const edm::Handle<TrackingParticleCollection>& tPCH) const override {
+    return TrackToTrackingParticleAssociatorBaseImpl::associateRecoToSim(tCH, tPCH);
   }
-  
+
   /// compare reco to sim the handle of reco::Track and TrackingParticle collections
-  virtual
-  reco::SimToRecoCollection associateSimToReco(const edm::Handle<edm::View<reco::Track> >& tCH, 
-					       const edm::Handle<TrackingParticleCollection>& tPCH) const override {
-    return TrackToTrackingParticleAssociatorBaseImpl::associateSimToReco(tCH,tPCH);
-  }  
+
+  reco::SimToRecoCollection associateSimToReco(const edm::Handle<edm::View<reco::Track> >& tCH,
+                                               const edm::Handle<TrackingParticleCollection>& tPCH) const override {
+    return TrackToTrackingParticleAssociatorBaseImpl::associateSimToReco(tCH, tPCH);
+  }
 
   //seed
-  virtual
-  reco::RecoToSimCollectionSeed associateRecoToSim(const edm::Handle<edm::View<TrajectorySeed> >&, 
-						   const edm::Handle<TrackingParticleCollection>&) const override;
-  
-  virtual
-  reco::SimToRecoCollectionSeed associateSimToReco(const edm::Handle<edm::View<TrajectorySeed> >&, 
-						   const edm::Handle<TrackingParticleCollection>& ) const override;
 
- private:
-  template<typename iter>
-  void getMatchedIds(std::vector<SimHitIdpr>&, 
-		     std::vector<SimHitIdpr>&, 
-		     int&, 
-		     iter,
-		     iter,
-		     TrackerHitAssociator*) const;
-  
-  int getShared(std::vector<SimHitIdpr>&, 
-		std::vector<SimHitIdpr>&,
-		TrackingParticle const&) const;
+  reco::RecoToSimCollectionSeed associateRecoToSim(const edm::Handle<edm::View<TrajectorySeed> >&,
+                                                   const edm::Handle<TrackingParticleCollection>&) const override;
 
-  template<typename iter>
-  int getDoubleCount(iter,iter,TrackerHitAssociator*,TrackingParticle const&) const;
+  reco::SimToRecoCollectionSeed associateSimToReco(const edm::Handle<edm::View<TrajectorySeed> >&,
+                                                   const edm::Handle<TrackingParticleCollection>&) const override;
 
+private:
+  template <typename iter>
+  void getMatchedIds(std::vector<SimHitIdpr>&, std::vector<SimHitIdpr>&, int&, iter, iter, TrackerHitAssociator*) const;
+
+  int getShared(std::vector<SimHitIdpr>&, std::vector<SimHitIdpr>&, TrackingParticle const&) const;
+
+  template <typename iter>
+  int getDoubleCount(iter, iter, TrackerHitAssociator*, TrackingParticle const&) const;
 
   // ----- member data
   edm::EDProductGetter const* productGetter_;
@@ -113,8 +99,8 @@ class TrackAssociatorByHitsImpl : public reco::TrackToTrackingParticleAssociator
   const bool ThreeHitTracksAreSpecial;
   const bool AbsoluteNumberOfHits;
 
-  const TrackingRecHit* getHitPtr(edm::OwnVector<TrackingRecHit>::const_iterator iter) const {return &*iter;}
-  const TrackingRecHit* getHitPtr(trackingRecHit_iterator iter) const {return &**iter;}
+  const TrackingRecHit* getHitPtr(edm::OwnVector<TrackingRecHit>::const_iterator iter) const { return &*iter; }
+  const TrackingRecHit* getHitPtr(trackingRecHit_iterator iter) const { return &**iter; }
 
   //edm::InputTag _simHitTpMapTag;
 };

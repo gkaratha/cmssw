@@ -1,16 +1,22 @@
-<use   name="SimG4CMS/HcalTestBeam"/>
-<use   name="SimG4Core/Watcher"/>
-<use   name="FWCore/Framework"/>
-<use   name="FWCore/ParameterSet"/>
-<use   name="FWCore/MessageLogger"/>
-<use   name="FWCore/ServiceRegistry"/>
-<flags   EDM_PLUGIN="1"/>
-<library   name="SimG4CMSHcalTestBeamHcalTB02Analysis" file="HcalTB02Analysis.cc">
+<use name="DataFormats/HcalDetId"/>
+<use name="DataFormats/Math"/>
+<use name="Geometry/HcalTestBeamData"/>
+<use name="SimDataFormats/HcalTestBeam"/>
+<use name="SimG4Core/Notification"/>
+<use name="SimG4Core/Watcher"/>
+<use name="SimG4CMS/Calo"/>
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/MessageLogger"/>
+<use name="CommonTools/UtilAlgos"/>
+<use name="SimG4CMS/HcalTestBeam"/>
+<use name="geant4core"/>
+<use name="hepmc"/>
+<use name="clhep"/>
+<use name="rootmath"/>
+<use name="rootphysics"/>
+<use name="root"/>
+<flags EDM_PLUGIN="1"/>
+<library file="*.cc" name="SimG4CMSHcalTestBeamPlugins">
+  <flags EDM_PLUGIN="1"/>
 </library>
-<library   name="SimG4CMSHcalTestBeamHcalTB04Analysis" file="HcalTB04Analysis.cc">
-</library>
-<library   name="SimG4CMSHcalTestBeamHcalTB06Analysis" file="HcalTB06Analysis.cc">
-</library>
-<library   name="SimG4CMSHcalTestBeamHcalModule" file="module.cc">
-</library>
-

@@ -15,12 +15,14 @@ from DQM.Physics.HiggsDQM_cfi import *
 from DQM.Physics.ExoticaDQM_cfi import *
 from DQM.Physics.B2GDQM_cfi import *
 from DQM.Physics.CentralityDQM_cfi import *
-from DQM.Physics.topJetCorrectionHelper_cfi import *
+from DQM.Physics.CentralitypADQM_cfi import *
+from DQM.Physics.FSQDQM_cfi import *
+from DQM.Physics.SMPDQM_cfi import *
 
 dqmPhysics = cms.Sequence( bphysicsOniaDQM 
-                           *ewkMuDQM
-                           *ewkElecDQM
-                           *ewkMuLumiMonitorDQM
+#                          Empty Histograms from EWK and Error log messages
+#                           *ewkMuDQM	   # errors in logs due HLTPrescaleProvider
+#                           *ewkElecDQM    # Error in determining HLT prescale set index from L1 data using L1GtUtils 
                            *qcdPhotonsDQM
 			   *topSingleMuonMediumDQM
                            *topSingleElectronMediumDQM	
@@ -33,9 +35,27 @@ dqmPhysics = cms.Sequence( bphysicsOniaDQM
                            *HiggsDQM
                            *ExoticaDQM
                            *B2GDQM
+                           *FSQDQM
+                           *SMPDQM
                            )
 
-bphysicsOniaDQMHI = bphysicsOniaDQM.clone(vertex=cms.InputTag("hiSelectedVertex"))
+from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
+phase1Pixel.toReplaceWith(dqmPhysics, dqmPhysics.copyAndExclude([ # FIXME
+    ewkMuDQM,            # Excessive printouts because 2017 doesn't have HLT yet
+    ewkElecDQM,          # Excessive printouts because 2017 doesn't have HLT yet
+    ewkMuLumiMonitorDQM, # Excessive printouts because 2017 doesn't have HLT yet
+]))
+from Configuration.Eras.Modifier_pA_2016_cff import pA_2016
+dqmPhysicspA  =  dqmPhysics.copy()
+dqmPhysicspA += CentralitypADQM
+pA_2016.toReplaceWith(dqmPhysics, dqmPhysicspA)
+from Configuration.ProcessModifiers.pp_on_AA_cff import pp_on_AA
+_dqmPhysics  =  dqmPhysics.copy()
+_dqmPhysics += CentralityDQM
+pp_on_AA.toModify(CentralityDQM, vertexcollection=cms.InputTag("offlinePrimaryVertices"))
+pp_on_AA.toReplaceWith(dqmPhysics, _dqmPhysics)
+
+bphysicsOniaDQMHI = bphysicsOniaDQM.clone(vertex="hiSelectedVertex")
 dqmPhysicsHI = cms.Sequence(bphysicsOniaDQMHI+CentralityDQM)
 
 from DQM.Physics.qcdPhotonsCosmicDQM_cff import *

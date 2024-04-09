@@ -20,42 +20,38 @@
 
 #include "RecoMET/METAlgorithms/interface/GenSpecificAlgo.h"
 
-#include <string.h>
+#include <cstring>
 
 //____________________________________________________________________________||
-namespace cms
-{
+namespace cms {
 
-//____________________________________________________________________________||
+  //____________________________________________________________________________||
   GenMETProducer::GenMETProducer(const edm::ParameterSet& iConfig)
-    : inputToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("src")))
-    , globalThreshold_(iConfig.getParameter<double>("globalThreshold"))
-    , onlyFiducial_(iConfig.getParameter<bool>("onlyFiducialParticles"))
-    , applyFiducialThresholdForFractions_(iConfig.getParameter<bool>("applyFiducialThresholdForFractions"))
-    , usePt_(iConfig.getParameter<bool>("usePt"))
-  {
+      : inputToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("src"))),
+        globalThreshold_(iConfig.getParameter<double>("globalThreshold")),
+        onlyFiducial_(iConfig.getParameter<bool>("onlyFiducialParticles")),
+        applyFiducialThresholdForFractions_(iConfig.getParameter<bool>("applyFiducialThresholdForFractions")),
+        usePt_(iConfig.getParameter<bool>("usePt")) {
     std::string alias = iConfig.exists("alias") ? iConfig.getParameter<std::string>("alias") : "";
     produces<reco::GenMETCollection>().setBranchAlias(alias);
   }
 
-
-//____________________________________________________________________________||
-  void GenMETProducer::produce(edm::Event& event, const edm::EventSetup& setup)
-  {
+  //____________________________________________________________________________||
+  void GenMETProducer::produce(edm::Event& event, const edm::EventSetup& setup) {
     edm::Handle<edm::View<reco::Candidate> > input;
     event.getByToken(inputToken_, input);
 
     CommonMETData commonMETdata;
 
     GenSpecificAlgo gen;
-    std::auto_ptr<reco::GenMETCollection> genmetcoll;
-    genmetcoll.reset(new reco::GenMETCollection);
-    genmetcoll->push_back(gen.addInfo(input, &commonMETdata, globalThreshold_, onlyFiducial_, applyFiducialThresholdForFractions_, usePt_));
-    event.put(genmetcoll);
+    auto genmetcoll = std::make_unique<reco::GenMETCollection>();
+    genmetcoll->push_back(gen.addInfo(
+        input, &commonMETdata, globalThreshold_, onlyFiducial_, applyFiducialThresholdForFractions_, usePt_));
+    event.put(std::move(genmetcoll));
   }
 
-//____________________________________________________________________________||
+  //____________________________________________________________________________||
   DEFINE_FWK_MODULE(GenMETProducer);
-}
+}  // namespace cms
 
 //____________________________________________________________________________||

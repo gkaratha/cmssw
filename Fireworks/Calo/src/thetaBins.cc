@@ -11,12 +11,11 @@
 //
 
 // system include files
-#include <math.h>
+#include <cmath>
 
 // user include files
 #include "Fireworks/Calo/interface/thetaBins.h"
 #include "Fireworks/Core/interface/fw3dlego_xbins.h"
-
 
 // NOTE:
 //       Here we assume 72 bins in phi. At high eta we have only 36 and at the
@@ -44,16 +43,13 @@
 //      iphi 31 -> 35, corresponds to 2.79253 -> -3.14159 transition
 
 namespace fireworks {
-   std::vector<std::pair<double,double> >
-   thetaBins()
-   {
-      const int n_bins = fw3dlego::xbins_n - 1;
-      std::vector<std::pair<double,double> > thetaBins(n_bins);
-      for (int i = 0; i < n_bins; ++i )
-      {
-         thetaBins[i].first  = 2*atan( exp(-fw3dlego::xbins[i]) );
-         thetaBins[i].second = 2*atan( exp(-fw3dlego::xbins[i+1]) );
-      }
-      return thetaBins;
-   }
-}
+  std::vector<std::pair<double, double> > thetaBins() {
+    const int n_bins = fw3dlego::xbins_n - 1;
+    std::vector<std::pair<double, double> > thetaBins(n_bins);
+    for (int i = 0; i < n_bins; ++i) {
+      thetaBins[i].first = 2 * atan(exp(-fw3dlego::xbins[i]));
+      thetaBins[i].second = 2 * atan(exp(-fw3dlego::xbins[i + 1]));
+    }
+    return thetaBins;
+  }
+}  // namespace fireworks

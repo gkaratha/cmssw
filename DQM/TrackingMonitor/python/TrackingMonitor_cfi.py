@@ -2,7 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 from DQM.TrackingMonitor.BXlumiParameters_cfi import BXlumiSetup
 
-TrackMon = cms.EDAnalyzer("TrackingMonitor",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+TrackMon = DQMEDAnalyzer('TrackingMonitor',
     
     # input tags
     numCut           = cms.string(" pt >= 1 & quality('highPurity') "),
@@ -11,12 +12,15 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     TrackProducer    = cms.InputTag("generalTracks"),
     SeedProducer     = cms.InputTag("initialStepSeeds"),
     TCProducer       = cms.InputTag("initialStepTrackCandidates"),
+    MVAProducers     = cms.vstring("initialStepClassifier1", "initialStepClassifier2"),
+    TrackProducerForMVA = cms.InputTag("initialStepTracks"),
     ClusterLabels    = cms.vstring('Tot'), # to decide which Seeds-Clusters correlation plots to have default is Total other options 'Strip', 'Pix'
     beamSpot         = cms.InputTag("offlineBeamSpot"),
     primaryVertex    = cms.InputTag('offlinePrimaryVertices'),
     stripCluster     = cms.InputTag('siStripClusters'),
     pixelCluster     = cms.InputTag('siPixelClusters'),                          
     BXlumiSetup      = BXlumiSetup.clone(),                              
+    genericTriggerEventPSet = cms.PSet(),
 #    lumi             = cms.InputTag('lumiProducer'),
 #  # taken from 
 #  # DPGAnalysis/SiStripTools/src/DigiLumiCorrHistogramMaker.cc
@@ -30,10 +34,8 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     pvLabels = cms.vstring(),
                           
     # output parameters
-    OutputMEsInRootFile = cms.bool(False),
     AlgoName            = cms.string('GenTk'),
     Quality             = cms.string(''),
-    OutputFileName      = cms.string('MonitorTrack.root'),
     FolderName          = cms.string('Tracking/GlobalParameters'),
     BSFolderName        = cms.string('Tracking/ParametersVsBeamSpot'),
     PVFolderName        = cms.string('Tracking/PrimaryVertices'),
@@ -59,8 +61,17 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     doDCAwrtPVPlots                     = cms.bool(False),
     doDCAwrt000Plots                    = cms.bool(False),
     doSIPPlots                          = cms.bool(False),
-    doEffFromHitPattern                 = cms.bool(False),
+    doEffFromHitPatternVsPU             = cms.bool(False),
+    doEffFromHitPatternVsBX             = cms.bool(False),
+    doEffFromHitPatternVsLUMI           = cms.bool(False),
     pvNDOF                              = cms.int32(4),
+    pixelCluster4lumi                   = cms.InputTag('siPixelClustersPreSplitting'),
+    scal                                = cms.InputTag('scalersRawToDigi'),
+    forceSCAL                           = cms.bool(True),
+    metadata                            = cms.InputTag('onlineMetaDataDigis'),
+    useBPixLayer1                       = cms.bool(False),
+    minNumberOfPixelsPerCluster         = cms.int32(2), # from DQM/PixelLumi/python/PixelLumiDQM_cfi.py
+    minPixelClusterCharge               = cms.double(15000.),
     doGeneralPropertiesPlots            = cms.bool(False),
     doHitPropertiesPlots                = cms.bool(False),              
 #    doGoodTrackPlots                    = cms.bool(False),
@@ -68,6 +79,7 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     doProfilesVsLS                      = cms.bool(False),
     doRecHitsPerTrackProfile            = cms.bool(True),              
     doRecHitVsPhiVsEtaPerTrack          = cms.bool(False),
+    doRecHitVsPtVsEtaPerTrack           = cms.bool(False),
 #    doGoodTrackRecHitVsPhiVsEtaPerTrack = cms.bool(False),                          
     doLayersVsPhiVsEtaPerTrack          = cms.bool(False),
 #    doGoodTrackLayersVsPhiVsEtaPerTrack = cms.bool(False),
@@ -77,7 +89,10 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     doPUmonitoring                      = cms.bool(False),
     doPlotsVsBXlumi                     = cms.bool(False),
     doPlotsVsGoodPVtx                   = cms.bool(True),
+    doPlotsVsLUMI                       = cms.bool(False),
+    doPlotsVsBX                         = cms.bool(False),
     doHIPlots                           = cms.bool(False),                              
+    doMVAPlots                          = cms.bool(False),
     qualityString = cms.string("highPurity"),                      
     #which seed plots to do
     doSeedNumberHisto = cms.bool(False),
@@ -94,6 +109,7 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     doSeedNRecHitsHisto= cms.bool(False),
     doSeedNVsPhiProf= cms.bool(False),
     doSeedNVsEtaProf= cms.bool(False),
+    doStopSource = cms.bool(False),
 
     TTRHBuilder = cms.string('WithTrackAngle'),
 
@@ -128,13 +144,13 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     TkSizeMin = cms.double(-0.5),
 
     # Number of seeds per Event
-    TkSeedSizeBin = cms.int32(150),
-    TkSeedSizeMax = cms.double(149.5),                        
+    TkSeedSizeBin = cms.int32(200),
+    TkSeedSizeMax = cms.double(999.5),                        
     TkSeedSizeMin = cms.double(-0.5),
 
     # Number of Track Cadidates per Event
-    TCSizeBin = cms.int32(150),
-    TCSizeMax = cms.double(149.5),
+    TCSizeBin = cms.int32(200),
+    TCSizeMax = cms.double(999.5),
     TCSizeMin = cms.double(-0.5),
 
     # num rec hits
@@ -162,7 +178,7 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     MeanHitMax = cms.double(29.5),
     MeanHitMin = cms.double(-0.5),
 
-    subdetectors = cms.vstring( "TIB", "TOB", "TID", "TEC", "PixBarrel", "PixEndcap" ),
+    subdetectors = cms.vstring( "TIB", "TOB", "TID", "TEC", "PixBarrel", "PixEndcap", "Pixel", "Strip" ),
     subdetectorBin = cms.int32(25),
 
     # num rec hits lost
@@ -299,7 +315,11 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     VZBin = cms.int32(100),
     VZMax = cms.double(30.0),                        
     VZMin = cms.double(-30.0),
-    
+
+    # PCA z position (to PV)
+    VZ_PVMax = cms.double(30.0),
+    VZ_PVMin = cms.double(-30.0),
+
     # PCA z position for profile
     VZBinProf = cms.int32(100),
     VZMaxProf = cms.double(0.2),                        
@@ -325,6 +345,10 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     DxyMax = cms.double(0.5),
     DxyMin = cms.double(-0.5),                        
 
+    AbsDxyBin = cms.int32(120),
+    AbsDxyMin = cms.double(0.),
+    AbsDxyMax = cms.double(60.),                        
+
     # Seed dxy (transverse impact parameter)
     SeedDxyBin = cms.int32(100),
     SeedDxyMax = cms.double(0.5),
@@ -345,35 +369,61 @@ TrackMon = cms.EDAnalyzer("TrackingMonitor",
     TCDzMax = cms.double(400.0),
     TCDzMin = cms.double(-400.0),                                                
 
+    # Track selection MVA
+    MVABin  = cms.int32(100),
+    MVAMin  = cms.double(-1),
+    MVAMax  = cms.double(1),
+
 #######################################
 ## needed for tracksVScluster and seedVScluster
 
     # NCluster Pixel
     NClusPxBin = cms.int32(200),
-    NClusPxMax = cms.double(19999.5),                      
+    NClusPxMax = cms.double(49999.5),                      
     NClusPxMin = cms.double(-0.5),
 
     # NCluster Strip
     NClusStrBin = cms.int32(500),
-    NClusStrMax = cms.double(99999.5),                      
+    NClusStrMax = cms.double(199999.5),                      
     NClusStrMin = cms.double(-0.5),
 
     # NCluster Vs Tracks
-    NTrk2DBin     = cms.int32(50),
-    NTrk2DMax     = cms.double(1999.5),                      
-    NTrk2DMin     = cms.double(-0.5),
-
+    NTrk2D = cms.PSet(
+        NTrk2DBin     = cms.int32(50),
+        NTrk2DMax     = cms.double(1999.5),                      
+        NTrk2DMin     = cms.double(-0.5),
+    ),
     # PU monitoring
+    # Nunmber of Tracks per Primary Vertices
+    NTrkPVtx = cms.PSet(
+        NTrkPVtxBin = cms.int32(100),
+        NTrkPVtxMin = cms.double( 0.),
+        NTrkPVtxMax = cms.double(100.)
+    ),
+
     # Nunmber of Good Primary Vertices
-    GoodPVtxBin = cms.int32(60),
-    GoodPVtxMin = cms.double( 0.),
-    GoodPVtxMax = cms.double(60.),
+    SumPtPVtx = cms.PSet(
+        SumPtPVtxBin = cms.int32(100),
+        SumPtPVtxMin = cms.double( 0.),
+        SumPtPVtxMax = cms.double(500.)
+    ),
+    # Nunmber of Good Primary Vertices
+    GoodPVtx = cms.PSet(
+        GoodPVtxBin = cms.int32(200),
+        GoodPVtxMin = cms.double( 0.),
+        GoodPVtxMax = cms.double(200.)
+    ),
+
+    LUMIBin  = cms.int32 ( 300 ),   # irrelevant
+    LUMIMin  = cms.double(  200.),
+    LUMIMax  = cms.double(20000.),
 
 #    # BXlumi                          
 #    BXlumiBin = cms.int32(400),
-#    BXlumiMin = cms.double(2000),
-#    BXlumiMax = cms.double(6000),
-                ###############################
+#    BXlumiMin = cms.double(4000),
+#    BXlumiMax = cms.double(20000),
+
+###############################
 ################## FOR HI PLOTS#####################
 #######
 TransDCABins = cms.int32(100),
@@ -384,3 +434,48 @@ LongDCABins = cms.int32(100),
 LongDCAMin = cms.double(-8.0),
 LongDCAMax = cms.double(8.0),          
 )
+
+# Overcoming the 255 arguments limit
+# binning for 2D plots (identical to 1D, but in muon tracks)
+# track eta 2D histo
+TrackMon.Eta2DBin = cms.int32(26)
+# track phi 2D histo
+TrackMon.Phi2DBin = cms.int32(32)
+# track pt 2D histo
+TrackMon.TrackPt2DBin = cms.int32(100)
+
+# TrackingRegion monitoring
+TrackMon.PVBin = cms.int32 ( 40 )
+TrackMon.PVMin = cms.double( -0.5)
+TrackMon.PVMax = cms.double( 79.5) ## it might need to be adjust if CMS asks to have lumi levelling at lower values
+
+TrackMon.DxyErrBin = cms.int32(200)
+TrackMon.DxyErrMax = cms.double(0.1)
+
+TrackMon.RegionProducer = cms.InputTag("")
+TrackMon.RegionSeedingLayersProducer = cms.InputTag("")
+TrackMon.RegionCandidates = cms.InputTag("")
+TrackMon.doRegionPlots = cms.bool(False)
+TrackMon.doRegionCandidatePlots = cms.bool(False)
+TrackMon.RegionSizeBin = cms.int32(20)
+TrackMon.RegionSizeMax = cms.double(19.5)
+TrackMon.RegionSizeMin = cms.double(-0.5)
+TrackMon.RegionCandidatePtBin = cms.int32(100)
+TrackMon.RegionCandidatePtMax = cms.double(1000)
+TrackMon.RegionCandidatePtMin = cms.double(0)
+
+# Number of candidates/seed within pattern recognition
+TrackMon.SeedCandBin = cms.int32(20)
+TrackMon.SeedCandMax = cms.double(19.5)
+TrackMon.SeedCandMin = cms.double(-0.5)
+
+from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
+from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+phase1Pixel.toModify(TrackMon, EtaBin=31, EtaMin=-3., EtaMax=3.)
+phase1Pixel.toModify(TrackMon, LUMIBin=300, LUMIMin=200., LUMIMax=20000.)
+run3_common.toModify(TrackMon, forceSCAL = False)
+run3_common.toModify(TrackMon, LUMIBin=375, LUMIMin=200., LUMIMax=25000.)
+phase2_tracker.toModify(TrackMon, EtaBin=46, EtaMin=-4.5, EtaMax=4.5)
+phase2_tracker.toModify(TrackMon, PVBin=125, PVMin=-0.5, PVMax=249.5)
+phase2_tracker.toModify(TrackMon, LUMIBin=700, LUMIMin=200., LUMIMax=70000.)

@@ -8,24 +8,18 @@ process.Tracer = cms.Service('Tracer',
 )
 
 process.MessageLogger = cms.Service("MessageLogger",
-    destinations   = cms.untracked.vstring('cout',
-                                           'cerr'
-    ),
-    categories = cms.untracked.vstring(
-        'Tracer'
-    ),
     cout = cms.untracked.PSet(
-        default = cms.untracked.PSet (
+        Tracer = cms.untracked.PSet(
+            limit = cms.untracked.int32(100000000)
+        ),
+        default = cms.untracked.PSet(
             limit = cms.untracked.int32(0)
         ),
-        Tracer = cms.untracked.PSet(
-            limit=cms.untracked.int32(100000000)
-        )
+        enable = cms.untracked.bool(True)
     )
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
     numberOfStreams = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
     numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
@@ -50,6 +44,8 @@ process.intVectorProducer = cms.EDProducer("IntVectorProducer",
   ivalue = cms.int32(21)
 )
 
-process.p = cms.Path(process.intProducer)
+process.t = cms.Task(process.intProducerU, process.intVectorProducer)
+
+process.p = cms.Path(process.intProducer, process.t)
 
 process.e = cms.EndPath(process.out)

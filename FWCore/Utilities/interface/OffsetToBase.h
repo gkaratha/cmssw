@@ -1,5 +1,6 @@
 #ifndef FWCore_Utilities_OffsetToBase_h
 #define FWCore_Utilities_OffsetToBase_h
+#include <cstddef>
 #include <typeinfo>
 
 /*
@@ -34,23 +35,20 @@
  *
 */
 
-
 namespace edm {
-  template<typename T>
+  template <typename T>
   class OffsetToBase {
   public:
-    OffsetToBase() {} 
-    size_t offsetToBase(std::type_info const& baseTypeInfo) const {
-      return 0;
-    }
+    OffsetToBase() {}
+    size_t offsetToBase(std::type_info const& baseTypeInfo) const { return 0; }
   };
 
-  template<typename T>
+  template <typename T>
   void const* pointerToBase(std::type_info const& baseTypeInfo, T const* address) {
     OffsetToBase<T> offsetToBase;
     int offset = offsetToBase.offsetToBase(baseTypeInfo);
     void const* ptr = address;
     return static_cast<char const*>(ptr) + offset;
   }
-}
+}  // namespace edm
 #endif

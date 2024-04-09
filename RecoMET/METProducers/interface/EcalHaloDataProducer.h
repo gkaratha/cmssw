@@ -6,8 +6,7 @@
   [authors]: R. Remington, The University of Florida
   [description]: EDProducer which runs EcalHaloAlgo and store the EcalHaloData object to the event.
   [date]: October 15, 2009
-*/  
-
+*/
 
 //Standard C++ classes
 #include <iostream>
@@ -24,6 +23,7 @@
 #include <cstdlib>
 
 // user include files
+#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -54,7 +54,8 @@
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
-#include "DataFormats/HepMCCandidate/interface/PdfInfo.h" 
+#include "DataFormats/HcalRecHit/interface/HcalRecHitDefs.h"
+#include "DataFormats/HepMCCandidate/interface/PdfInfo.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
 #include "DataFormats/GeometrySurface/interface/Plane.h"
 #include "DataFormats/GeometrySurface/interface/Cone.h"
@@ -89,22 +90,20 @@
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
-namespace reco
-{
+namespace reco {
   class EcalHaloDataProducer : public edm::stream::EDProducer<> {
-    
   public:
     explicit EcalHaloDataProducer(const edm::ParameterSet&);
-    ~EcalHaloDataProducer();
-    
+    ~EcalHaloDataProducer() override;
+
   private:
-    
-    virtual void produce(edm::Event&, const edm::EventSetup&) override;
-    
+    void produce(edm::Event&, const edm::EventSetup&) override;
+
     //RecHit Level
     edm::InputTag IT_EBRecHit;
     edm::InputTag IT_EERecHit;
     edm::InputTag IT_ESRecHit;
+    edm::InputTag IT_HBHERecHit;
 
     //Higher Level Reco
     edm::InputTag IT_SuperCluster;
@@ -113,19 +112,21 @@ namespace reco
     edm::EDGetTokenT<EBRecHitCollection> ebrechit_token_;
     edm::EDGetTokenT<EERecHitCollection> eerechit_token_;
     edm::EDGetTokenT<ESRecHitCollection> esrechit_token_;
+    edm::EDGetTokenT<HBHERecHitCollection> hbherechit_token_;
     edm::EDGetTokenT<reco::SuperClusterCollection> supercluster_token_;
     edm::EDGetTokenT<reco::PhotonCollection> photon_token_;
-    
-    float  EBRecHitEnergyThreshold;
-    float  EERecHitEnergyThreshold;
-    float  ESRecHitEnergyThreshold;
-    float  SumEcalEnergyThreshold;
-    int  NHitsEcalThreshold;
+    edm::ESGetToken<CaloGeometry, CaloGeometryRecord> calogeometry_token_;
+    EcalHaloAlgo EcalAlgo;
+
+    float EBRecHitEnergyThreshold;
+    float EERecHitEnergyThreshold;
+    float ESRecHitEnergyThreshold;
+    float SumEcalEnergyThreshold;
+    int NHitsEcalThreshold;
 
     double RoundnessCut;
-    double AngleCut;  
+    double AngleCut;
   };
-}
+}  // namespace reco
 
 #endif
-  

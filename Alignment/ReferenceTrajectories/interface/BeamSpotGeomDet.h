@@ -20,25 +20,18 @@
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 
 class BeamSpotGeomDet : public GeomDet {
- public:
-
+public:
   typedef GeomDetEnumerators::SubDetector SubDetector;
-  
-  explicit BeamSpotGeomDet(const ReferenceCountingPointer<BoundPlane>& plane)
-    :GeomDet(plane) {
+
+  explicit BeamSpotGeomDet(const ReferenceCountingPointer<BoundPlane>& plane) : GeomDet(plane) {
     setDetId(AlignableBeamSpot::detId());
   }
 
-  virtual ~BeamSpotGeomDet() { }
+  ~BeamSpotGeomDet() override {}
 
-  virtual SubDetector subDetector() const {
-    return GeomDetEnumerators::invalidDet;
-  }
+  SubDetector subDetector() const override { return GeomDetEnumerators::invalidDet; }
 
-  virtual std::vector< const GeomDet*> components() const {
-    return std::vector< const GeomDet*>();
-  }
+  std::vector<const GeomDet*> components() const override { return std::vector<const GeomDet*>(); }
 };
 
 #endif
-

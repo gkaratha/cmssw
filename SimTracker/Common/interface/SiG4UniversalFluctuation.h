@@ -1,69 +1,34 @@
 //
-// ********************************************************************
-// * DISCLAIMER                                                       *
-// *                                                                  *
-// * The following disclaimer summarizes all the specific disclaimers *
-// * of contributors to this software. The specific disclaimers,which *
-// * govern, are listed with their locations in:                      *
-// *   http://cern.ch/geant4/license                                  *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.                                                             *
-// *                                                                  *
-// * This  code  implementation is the  intellectual property  of the *
-// * GEANT4 collaboration.                                            *
-// * By copying,  distributing  or modifying the Program (or any work *
-// * based  on  the Program)  you indicate  your  acceptance of  this *
-// * statement, and all its terms.                                    *
-// ********************************************************************
-//
-// GEANT4 tag $Name: CMSSW_4_2_3 $
-//
-// -------------------------------------------------------------------
-//
 // GEANT4 Class header file
 //
 //
-// File name:     G4UniversalFluctuation
+// File name:   SiG4UniversalFluctuation
 //
-// Author:        Vladimir Ivanchenko
+// Author: Vladimir Ivanchenko make a class for Laszlo Urban model
 //
-// Creation date: 03.01.2002
-//
-// Modifications:
-//
-// 09-12-02 remove warnings (V.Ivanchenko)
-// 28-12-02 add method Dispersion (V.Ivanchenko)
-// 07-02-03 change signature (V.Ivanchenko)
-// 13-02-03 Add name (V.Ivanchenko)
-// 16-10-03 Changed interface to Initialisation (V.Ivanchenko)
-// 07-02-05 define problim = 5.e-3 (mma)
-//
-// Modified for standalone use in CMSSW. danek k. 2/06
+// Modified for standalone use in CMSSW. Danek K. 02/2006
 //
 // Class Description:
 //
-// Implementation of energy loss fluctuations
+// Implementation of energy loss fluctuations in Silicon
 
 // -------------------------------------------------------------------
 //
 
 #ifndef SiG4UniversalFluctuation_h
-#define SiG4UniversalFluctuation_h 
+#define SiG4UniversalFluctuation_h
 
-namespace CLHEP{
+namespace CLHEP {
   class HepRandomEngine;
 }
 
-//#include "G4VEmFluctuationModel.hh"
-
 class SiG4UniversalFluctuation {
 public:
+  explicit SiG4UniversalFluctuation();
 
-  SiG4UniversalFluctuation();
+  // hide assignment operator
+  SiG4UniversalFluctuation &operator=(const SiG4UniversalFluctuation &right) = delete;
+  SiG4UniversalFluctuation(const SiG4UniversalFluctuation &) = delete;
 
   ~SiG4UniversalFluctuation();
 
@@ -71,42 +36,19 @@ public:
   // length in mm, meanLoss eloss in MeV.
   double SampleFluctuations(const double momentum,
                             const double mass,
-                            double& tmax,
+                            double &tmax,
                             const double length,
                             const double meanLoss,
-                            CLHEP::HepRandomEngine*);
-   
-  //G4double SampleFluctuations(const G4Material*,
-  //                      const G4DynamicParticle*,
-  //			G4double&,
-  //                            G4double&,
-  //                            G4double&);
-
-  //G4double Dispersion(    const G4Material*,
-  //                      const G4DynamicParticle*,
-  //			G4double&,
-  //                           G4double&);
-  //void InitialiseMe(const G4ParticleDefinition*);
-
-protected:
+                            CLHEP::HepRandomEngine *);
 
 private:
-
-  // hide assignment operator
-  //SiG4UniversalFluctuation & operator=(const  SiG4UniversalFluctuation &right);
-  //SiG4UniversalFluctuation(const  SiG4UniversalFluctuation&);
-
-  //const G4ParticleDefinition* particle;
-  //const G4Material* lastMaterial;
-
   double particleMass;
   double chargeSquare;
 
   // data members to speed up the fluctuation calculation
   double ipotFluct;
   double electronDensity;
-  //  double zeff;
-  
+
   double f1Fluct;
   double f2Fluct;
   double e1Fluct;
@@ -130,4 +72,3 @@ private:
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-

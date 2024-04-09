@@ -561,7 +561,9 @@ if [ "${lbo}" == "LBCR" ] || [ "${lbo}" == "CRSS" ]; then
     exec_log2 ${shrun}/${outflbs}_pass${lbo}.out ${shrun}/${outflbs}_pass${lbo}.err ${sherpaexe} -p ${pth} -r ${dir2} ${SHERPAOPTS}
   else
     echo " <I> ...using MPI"
-    exec_log2 ${shrun}/${outflbs}_pass${lbo}.out ${shrun}/${outflbs}_pass${lbo}.err ${ML_MPICMD} ${ML_MPIOPT} ${sherpaexe} -p ${pth} -r ${dir2} ${SHERPAOPTS}
+    exec_log2 ${shrun}/${outflbs}_pass${lbo}.out ${shrun}/${outflbs}_pass${lbo}.err ${ML_MPICMD} ${ML_MPIOPT} ${sherpaexe} -p ${pth} -r ${dir2} "-e 0"
+    echo "<I> ...generating events without MPI"
+    exec_log2 ${shrun}/${outflbs}_pass${lbo}.out ${shrun}/${outflbs}_pass${lbo}.err ${sherpaexe} -p ${pth} -r ${dir2} ${SHERPAOPTS}
   fi
 fi
 
@@ -641,8 +643,8 @@ fi
 ## data cards
 FILES=`ls *.md5 *.dat *slha.out 2> /dev/null`
 if [ "${lbo}" == "LIBS" ]; then
-  tar -czf ${crdcfile} ${FILES}
-  mv ${crdcfile} ${shrun}/
+  tar -czf ${crdefile} ${FILES}
+  mv ${crdefile} ${shrun}/
 elif [ "${lbo}" == "LBCR" ]; then
   if [ "${FLGAMISIC}" == "TRUE" ]; then
     sed -e 's:MI_HANDLER.*:MI_HANDLER   = Amisic:' < Run.dat > Run.dat.tmp

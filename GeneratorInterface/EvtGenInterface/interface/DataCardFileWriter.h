@@ -3,13 +3,12 @@
 
 // I. M. Nugent
 
-
 // system include files
 #include <memory>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Run.h"
@@ -18,17 +17,14 @@
 
 namespace gen {
 
-class DataCardFileWriter : public  edm::EDAnalyzer {
- public:
-  DataCardFileWriter(const edm::ParameterSet&);
-  ~DataCardFileWriter(){};
+  class DataCardFileWriter : public edm::stream::EDAnalyzer<> {
+  public:
+    DataCardFileWriter(const edm::ParameterSet&);
+    ~DataCardFileWriter() override{};
 
-  virtual void beginJob(){};
-  virtual void analyze(const edm::Event&, const edm::EventSetup&){};
-  virtual void endJob(){};
+    void analyze(const edm::Event&, const edm::EventSetup&) override{};
+  };
 
-};
-
-};
+};  // namespace gen
 
 #endif

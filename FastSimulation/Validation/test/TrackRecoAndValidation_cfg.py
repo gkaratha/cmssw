@@ -23,11 +23,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('FastSimulation.Configuration.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('FastSimulation.Configuration.Geometries_MC_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('FastSimulation.Configuration.Reconstruction_BefMix_cff')
 process.load('FastSimulation.Configuration.Digi_cff')
 process.load('FastSimulation.Configuration.Validation_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(10)
@@ -84,7 +84,7 @@ process.DQMoutput = cms.OutputModule("DQMRootOutputModule",
 
 # Other statements
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 # Path and EndPath definitions
@@ -114,19 +114,7 @@ process = customisePostLS1(process)
 # End of customisation functions
 
 # BEGIN MODIFICATIONS
-# load tracker seed validator
-process.load('Validation.RecoTrack.TrackerSeedValidator_cfi')
-process.trackerSeedValidator.TTRHBuilder = "WithoutRefit"
-process.trackerSeedValidator.associators = ['quickTrackAssociatorByHits']
-process.trackerSeedValidator.label = cms.VInputTag(
-    cms.InputTag("initialStepSeeds"),
-    cms.InputTag("detachedTripletStepSeeds"),
-    cms.InputTag("lowPtTripletStepSeeds"),
-    cms.InputTag("pixelPairStepSeeds"),
-    cms.InputTag("mixedTripletStepSeeds"),
-    cms.InputTag("pixelLessStepSeeds"),
-    cms.InputTag("tobTecStepSeeds"))
 # redefine validation paths
 process.prevalidation = cms.Sequence(process.tracksPreValidation)
-process.validation = cms.Sequence(process.trackingTruthValid + process.tracksValidationFS + process.trackerSeedValidator)
+process.validation = cms.Sequence(process.trackingTruthValid + process.tracksValidationFS)
 # END MODIFICATIONS

@@ -1,5 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
+# for parabolic magnetic field
+from Configuration.ProcessModifiers.trackingParabolicMf_cff import trackingParabolicMf
+
+# to resolve the refToPSet_
+from TrackingTools.TrajectoryFiltering.TrajectoryFilter_cff import CkfBaseTrajectoryFilter_block
+
 GroupedCkfTrajectoryBuilder = cms.PSet(
     ComponentType = cms.string('GroupedCkfTrajectoryBuilder'),
     bestHitOnly = cms.bool(True),
@@ -19,10 +25,9 @@ GroupedCkfTrajectoryBuilder = cms.PSet(
     intermediateCleaning = cms.bool(True),
     # Chi2 added to track candidate if no hit found in layer
     lostHitPenalty = cms.double(30.0),
-    MeasurementTrackerName = cms.string(''),
+    foundHitBonus = cms.double(10.0),
     lockHits = cms.bool(True),
     TTRHBuilder = cms.string('WithTrackAngle'),
-    foundHitBonus = cms.double(5.0),
     updator = cms.string('KFUpdator'),
     # If true, track building will allow for possibility of no hit
     # in a given layer, even if it finds compatible hits there.
@@ -34,7 +39,13 @@ GroupedCkfTrajectoryBuilder = cms.PSet(
 #    propagatorOpposite = cms.string('PropagatorWithMaterialParabolicMfOpposite'),
     # Out-in tracking will not be attempted unless this many hits
     # are on track after in-out tracking phase.
-    minNrOfHitsForRebuild = cms.int32(5)
+    minNrOfHitsForRebuild = cms.int32(5),
+    seedAs5DHit = cms.bool(False),
+    maxPtForLooperReconstruction = cms.double(0.),
+    maxDPhiForLooperReconstruction = cms.double(2.),
 )
 
-
+GroupedCkfTrajectoryBuilderIterativeDefault = GroupedCkfTrajectoryBuilder.clone()
+trackingParabolicMf.toModify(GroupedCkfTrajectoryBuilderIterativeDefault,
+                             propagatorAlong='PropagatorWithMaterialParabolicMf',
+                             propagatorOpposite='PropagatorWithMaterialParabolicMfOpposite')

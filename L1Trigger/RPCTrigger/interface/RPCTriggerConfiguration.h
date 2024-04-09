@@ -12,6 +12,7 @@
 //f.e. which pac, or TB or TC should run given LogCone
 class RPCTriggerConfiguration {
 public:
+  virtual ~RPCTriggerConfiguration() = default;
   ///returns count of Trigger Crates in system.
   virtual int getTCsCnt() = 0;
 
@@ -37,13 +38,9 @@ public:
 
   virtual int towNum2TowNum2Comp(int towNum) = 0;
 
-  int getDebugLevel() const {
-    return m_DebugLevel;
-  }
+  int getDebugLevel() const { return m_DebugLevel; }
 
-  void setDebugLevel(int debgLevel) {
-    m_DebugLevel = debgLevel;
-  }
+  void setDebugLevel(int debgLevel) { m_DebugLevel = debgLevel; }
 
 private:
   int m_DebugLevel;

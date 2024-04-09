@@ -1,9 +1,12 @@
 #ifndef DDLSPECPAR_H
 #define DDLSPECPAR_H
 
+#include <string>
+
 #include "DDXMLElement.h"
 
-#include <string>
+class DDCompactView;
+class DDLElementRegistry;
 
 /// DDLSpecPar processes SpecPar elements.
 /** @class DDLSpecPar
@@ -20,18 +23,11 @@
  *
  */
 
-class DDLSpecPar : public DDXMLElement
-{
+class DDLSpecPar final : public DDXMLElement {
 public:
+  DDLSpecPar(DDLElementRegistry* myreg);
 
-  /// Constructor
-  DDLSpecPar( DDLElementRegistry* myreg );
-
-  /// Destructor
-  ~DDLSpecPar( void );
-
-  void processElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv ); 
+  void processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
 };
 
 #endif
-

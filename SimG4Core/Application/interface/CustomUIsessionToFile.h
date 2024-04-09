@@ -1,7 +1,7 @@
 #ifndef SimG4Core_CustomUIsessionToFile_H
-#define SimG4Core_CustomUIsessionToFile_H 
+#define SimG4Core_CustomUIsessionToFile_H
 
-#include "SimG4Core/Application/interface/CustomUIsession.h"
+#include "SimG4Core/Geometry/interface/CustomUIsession.h"
 
 #include <fstream>
 
@@ -16,13 +16,10 @@
  *   RunManagerMTWorker creates a CustomUIsessionToFile object
  *   separately for each thread).
  */
-class CustomUIsessionToFile : public CustomUIsession
-{
-
- public:
-
+class CustomUIsessionToFile : public CustomUIsession {
+public:
   CustomUIsessionToFile(const std::string& filePrefix, int threadId);
-  ~CustomUIsessionToFile();
+  ~CustomUIsessionToFile() override;
 
   G4int ReceiveG4cout(const G4String& coutString) override;
   G4int ReceiveG4cerr(const G4String& cerrString) override;

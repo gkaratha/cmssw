@@ -4,7 +4,8 @@
 #include <xercesc/dom/DOMNode.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
-#include "FWCore/Concurrency/interface/Xerces.h"
+#include "Utilities/Xerces/interface/Xerces.h"
+#include "Utilities/Xerces/interface/XercesStrUtils.h"
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/sax/SAXException.hpp>
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
@@ -24,18 +25,17 @@ using namespace XERCES_CPP_NAMESPACE;
 using namespace xuti;
 using namespace std;
 
-int  EcalTPGTowerStatusXMLTranslator::readXML(const std::string& filename, 
-					  EcalCondHeader& header,
-					  EcalTPGTowerStatus& record){
-
+int EcalTPGTowerStatusXMLTranslator::readXML(const std::string& filename,
+                                             EcalCondHeader& header,
+                                             EcalTPGTowerStatus& record) {
   std::cout << " TPGTowerStatus should not be filled out from an xml file ..." << std::endl;
   cms::concurrency::xercesInitialize();
 
   XercesDOMParser* parser = new XercesDOMParser;
-  parser->setValidationScheme( XercesDOMParser::Val_Never );
-  parser->setDoNamespaces( false );
-  parser->setDoSchema( false );
-  
+  parser->setValidationScheme(XercesDOMParser::Val_Never);
+  parser->setDoNamespaces(false);
+  parser->setDoSchema(false);
+
   parser->parse(filename.c_str());
 
   DOMDocument* xmlDoc = parser->getDocument();
@@ -46,7 +46,7 @@ int  EcalTPGTowerStatusXMLTranslator::readXML(const std::string& filename,
 
   DOMElement* elementRoot = xmlDoc->getDocumentElement();
 
-  xuti::readHeader(elementRoot,header);
+  xuti::readHeader(elementRoot, header);
 
   /*
   int chan = 0;
@@ -69,81 +69,83 @@ int  EcalTPGTowerStatusXMLTranslator::readXML(const std::string& filename,
   delete parser;
   cms::concurrency::xercesTerminate();
   return 0;
- }
-
-int EcalTPGTowerStatusXMLTranslator::writeXML(const std::string& filename, 
-					  const EcalCondHeader& header,
-					  const EcalTPGTowerStatus& record){
-  std::fstream fs(filename.c_str(),ios::out);
-  fs<< dumpXML(header,record);
-  return 0;  
 }
 
-
-std::string EcalTPGTowerStatusXMLTranslator::dumpXML(const EcalCondHeader& header,const EcalTPGTowerStatus& record){
-
+int EcalTPGTowerStatusXMLTranslator::writeXML(const std::string& filename,
+                                              const EcalCondHeader& header,
+                                              const EcalTPGTowerStatus& record) {
   cms::concurrency::xercesInitialize();
-  DOMImplementation*  impl =
-    DOMImplementationRegistry::getDOMImplementation(fromNative("LS").c_str());
 
-  DOMWriter* writer =static_cast<DOMImplementationLS*>(impl)->createDOMWriter( );
-  writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true);
+  std::fstream fs(filename.c_str(), ios::out);
+  fs << dumpXML(header, record);
 
-  DOMDocumentType* doctype = impl->createDocumentType(fromNative("XML").c_str(), 0, 0 );
-  DOMDocument *    doc = 
-    impl->createDocument( 0, fromNative(TPGTowerStatus_tag).c_str(), doctype );
+  cms::concurrency::xercesTerminate();
 
-  doc->setEncoding(fromNative("UTF-8").c_str() );
-  doc->setStandalone(true);
-  doc->setVersion(fromNative("1.0").c_str() );
+  return 0;
+}
+
+std::string EcalTPGTowerStatusXMLTranslator::dumpXML(const EcalCondHeader& header, const EcalTPGTowerStatus& record) {
+  unique_ptr<DOMImplementation> impl(DOMImplementationRegistry::getDOMImplementation(cms::xerces::uStr("LS").ptr()));
+
+  DOMLSSerializer* writer = impl->createLSSerializer();
+  if (writer->getDomConfig()->canSetParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true))
+    writer->getDomConfig()->setParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true);
+
+  DOMDocumentType* doctype = impl->createDocumentType(cms::xerces::uStr("XML").ptr(), nullptr, nullptr);
+  DOMDocument* doc = impl->createDocument(nullptr, cms::xerces::uStr(TPGTowerStatus_tag.c_str()).ptr(), doctype);
 
   DOMElement* root = doc->getDocumentElement();
 
-  xuti::writeHeader(root,header);
+  xuti::writeHeader(root, header);
   std::cout << "EcalTPGTowerStatusXMLTranslator::dumpXML" << std::endl;
-  const EcalTPGTowerStatusMap &towerMap = record.getMap();
+  const EcalTPGTowerStatusMap& towerMap = record.getMap();
   std::cout << " tower map size " << towerMap.size() << std::endl;
   EcalTPGTowerStatusMapIterator it;
-  for(it = towerMap.begin(); it != towerMap.end(); ++it) {
-    if((*it).second > 0) {
+  for (it = towerMap.begin(); it != towerMap.end(); ++it) {
+    if ((*it).second > 0) {
       EcalTrigTowerDetId ttId((*it).first);
-      std::cout << " TTDetId " << ttId << " eta " << ttId.ieta()  << " phi " << ttId.iphi() << std::endl;
+      std::cout << " TTDetId " << ttId << " eta " << ttId.ieta() << " phi " << ttId.iphi() << std::endl;
       uint32_t rawid = ttId;
-      DOMElement* cellnode=writeCell(root,rawid);
+      DOMElement* cellnode = writeCell(root, rawid);
       WriteNodeWithValue(cellnode, TPGTowerStatus_tag, 1);
     }
   }
 
-  std::string dump = toNative(writer->writeToString(*root)); 
-  doc->release(); 
+  std::string dump = cms::xerces::toString(writer->writeToString(root));
+  doc->release();
+  doctype->release();
+  writer->release();
+
   return dump;
 }
 
-void EcalTPGTowerStatusXMLTranslator::plot(std::string fn, const EcalTPGTowerStatus& record){
+void EcalTPGTowerStatusXMLTranslator::plot(std::string fn, const EcalTPGTowerStatus& record) {
   std::ofstream fout(fn.c_str());
   int valEB[34][72];
-  for(int line = 0; line < 34; line++)
-    for(int iphi = 0; iphi < 72; iphi++)
+  for (int line = 0; line < 34; line++)
+    for (int iphi = 0; iphi < 72; iphi++)
       valEB[line][iphi] = 0;
 
-  const EcalTPGTowerStatusMap &towerMap = record.getMap();
+  const EcalTPGTowerStatusMap& towerMap = record.getMap();
   std::cout << " tower map size " << towerMap.size() << std::endl;
   EcalTPGTowerStatusMapIterator it;
-  for(it = towerMap.begin(); it != towerMap.end(); ++it) {
-    if((*it).second > 0) {
+  for (it = towerMap.begin(); it != towerMap.end(); ++it) {
+    if ((*it).second > 0) {
       EcalTrigTowerDetId ttId((*it).first);
       int ieta = ttId.ieta();
       int line = 17 - ieta;
-      if(ieta < 0) line--;
+      if (ieta < 0)
+        line--;
       int iphi = ttId.iphi() - 1;  // 0 to 71
       valEB[line][iphi] = (*it).second;
     }
   }
-  for(int line = 0; line < 34; line++) {
-    for(int iphi = 0; iphi < 72; iphi++)
+  for (int line = 0; line < 34; line++) {
+    for (int iphi = 0; iphi < 72; iphi++)
       fout << valEB[line][iphi] << " ";
     fout << std::endl;
-    if(line == 16) fout << std::endl;
+    if (line == 16)
+      fout << std::endl;
   }
   /*
 

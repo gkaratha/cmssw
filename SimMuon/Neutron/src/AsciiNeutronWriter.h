@@ -8,19 +8,16 @@
  *   hits to a muon chamber
  */
 
-
-class AsciiNeutronWriter : public NeutronWriter
-{
+class AsciiNeutronWriter : public NeutronWriter {
 public:
   AsciiNeutronWriter(std::string fileNameBase);
-  virtual ~AsciiNeutronWriter();
+  ~AsciiNeutronWriter() override;
 
 protected:
-  virtual void writeCluster(int chamberType, const edm::PSimHitContainer & hits);
+  void writeCluster(int chamberType, const edm::PSimHitContainer& hits) override;
 
 private:
   std::string theFileNameBase;
 };
 
 #endif
-

@@ -6,8 +6,9 @@
 #include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistanceHelixHelix.h"
 #include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistanceLineLine.h"
 #include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistanceHelixLine.h"
+#include "FWCore/Utilities/interface/Visibility.h"
 
-  /**
+/**
    * General interface to calculate the PCA of two tracks. 
    * According to the charge of the tracks, the correct algorithm is used:<ul>
    * <li> charged-charged: TwoTrackMinimumDistanceHelixHelix
@@ -17,66 +18,58 @@
    */
 
 class TwoTrackMinimumDistance final : public ClosestApproachOnHelices {
-
 public:
+  enum Mode { FastMode = 0, SlowMode = 1 };
 
-  enum Mode { FastMode=0, SlowMode=1 };
+  TwoTrackMinimumDistance(const Mode m = FastMode) {
+    theModus = m;
+    status_ = false;
+  };
+  ~TwoTrackMinimumDistance() override {}
 
-  TwoTrackMinimumDistance( const Mode m=FastMode ) { theModus=m; status_ = false;};
-  ~TwoTrackMinimumDistance(){}
+  bool calculate(const TrajectoryStateOnSurface& sta, const TrajectoryStateOnSurface& stb) override;
 
-  virtual bool calculate(const TrajectoryStateOnSurface & sta, 
-	 const TrajectoryStateOnSurface & stb);
+  bool calculate(const FreeTrajectoryState& sta, const FreeTrajectoryState& stb) override;
 
-  virtual bool calculate(const FreeTrajectoryState & sta,
-	const FreeTrajectoryState & stb);
+  virtual bool calculate(const GlobalTrajectoryParameters& sta, const GlobalTrajectoryParameters& stb);
 
-  virtual bool calculate(const GlobalTrajectoryParameters & sta,
-	const GlobalTrajectoryParameters & stb);
-
-  virtual bool status() const {return status_;}
+  bool status() const override { return status_; }
 
   /**
    * Returns the two PCA on the trajectories.
    */
 
-  virtual std::pair<GlobalPoint, GlobalPoint> points() const;
+  std::pair<GlobalPoint, GlobalPoint> points() const override;
 
   /** arithmetic mean of the two points of closest approach */
-  virtual GlobalPoint crossingPoint() const;
+  GlobalPoint crossingPoint() const override;
 
   /** distance between the two points of closest approach in 3D */
-  virtual float distance() const;
-
+  float distance() const override;
 
   /**
    *  Clone method
    */
-  virtual TwoTrackMinimumDistance * clone() const {
-    return new TwoTrackMinimumDistance(* this);
-  }
+  TwoTrackMinimumDistance* clone() const override { return new TwoTrackMinimumDistance(*this); }
 
   double firstAngle() const;
   double secondAngle() const;
-  std::pair <double, double> pathLength() const;
+  std::pair<double, double> pathLength() const;
 
 private:
   enum Charge { hh, hl, ll };
   Mode theModus;
-  mutable Charge theCharge;
+  Charge theCharge;
   ClosestApproachInRPhi theIniAlgo;
-  mutable TwoTrackMinimumDistanceHelixHelix theTTMDhh;
-  mutable TwoTrackMinimumDistanceLineLine theTTMDll;
-  mutable TwoTrackMinimumDistanceHelixLine theTTMDhl;
+  TwoTrackMinimumDistanceHelixHelix theTTMDhh;
+  TwoTrackMinimumDistanceLineLine theTTMDll;
+  TwoTrackMinimumDistanceHelixLine theTTMDhl;
   bool status_;
   std::pair<GlobalPoint, GlobalPoint> points_;
 
-  bool pointsLineLine(const GlobalTrajectoryParameters & sta,
-	const GlobalTrajectoryParameters & stb)  dso_internal;
-  bool pointsHelixLine(const GlobalTrajectoryParameters & sta,
-	const GlobalTrajectoryParameters & stb)  dso_internal;
-  bool pointsHelixHelix(const GlobalTrajectoryParameters & sta,
-	const GlobalTrajectoryParameters & stb)  dso_internal;
+  bool pointsLineLine(const GlobalTrajectoryParameters& sta, const GlobalTrajectoryParameters& stb) dso_internal;
+  bool pointsHelixLine(const GlobalTrajectoryParameters& sta, const GlobalTrajectoryParameters& stb) dso_internal;
+  bool pointsHelixHelix(const GlobalTrajectoryParameters& sta, const GlobalTrajectoryParameters& stb) dso_internal;
 };
 
 #endif

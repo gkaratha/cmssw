@@ -1,9 +1,19 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("DTGeometryWriter")
-process.load('CondCore.DBCommon.CondDBCommon_cfi')
+process.load('CondCore.CondDB.CondDB_cfi')
 process.load('Configuration.StandardSequences.GeometryExtended_cff')
 process.load('Geometry.MuonNumbering.muonNumberingInitialization_cfi')
+process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
+process.load('Configuration.StandardSequences.DD4hep_GeometrySim_cff')
+process.load('FWCore.MessageService.MessageLogger_cfi')
+
+process.MessageLogger = cms.Service("MessageLogger",
+    destinations = cms.untracked.vstring('myLog'),
+    myLog = cms.untracked.PSet(
+        threshold = cms.untracked.string('INFO'),
+    )
+)
 
 process.source = cms.Source("EmptyIOVSource",
                             lastValue = cms.uint64(1),
@@ -12,13 +22,13 @@ process.source = cms.Source("EmptyIOVSource",
                             interval = cms.uint64(1)
                             )
 
-process.DTGeometryWriter = cms.EDAnalyzer("DTRecoIdealDBLoader")
+process.DTGeometryWriter = cms.EDAnalyzer("DTRecoIdealDBLoader",
+                                           fromDD4hep = cms.untracked.bool(False))
 
-process.CondDBCommon.BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService')
-process.CondDBCommon.timetype = cms.untracked.string('runnumber')
-process.CondDBCommon.connect = cms.string('sqlite_file:myfile.db')
+process.CondDB.timetype = cms.untracked.string('runnumber')
+process.CondDB.connect = cms.string('sqlite_file:myfile.db')
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
-                                          process.CondDBCommon,
+                                          process.CondDB,
                                           toPut = cms.VPSet(cms.PSet(record = cms.string('DTRecoGeometryRcd'),tag = cms.string('DTRECO_Geometry_Test01'))
                                                             )
                                           )

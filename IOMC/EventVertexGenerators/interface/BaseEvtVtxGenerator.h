@@ -3,57 +3,42 @@
 /*
 */
 
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 
 #include "TMatrixD.h"
 
-/*
 namespace HepMC {
-   class GenEvent;
-}
-*/
-
-namespace HepMC {
-   class FourVector ;
+  class FourVector;
 }
 
 namespace CLHEP {
-   //class Hep3Vector;
-   class HepRandomEngine;
+  class HepRandomEngine;
 }
 
-class BaseEvtVtxGenerator : public edm::EDProducer
-{
-   public:
-      
-   // ctor & dtor
-   explicit BaseEvtVtxGenerator( const edm::ParameterSet& );
-   virtual ~BaseEvtVtxGenerator();
-      
-   virtual void produce( edm::Event&, const edm::EventSetup&) override;
+namespace edm {
+  class HepMCProduct;
+}
 
-   //virtual CLHEP::Hep3Vector* newVertex() = 0;
-   virtual HepMC::FourVector* newVertex(CLHEP::HepRandomEngine*) = 0 ;
-   /** This method - and the comment - is a left-over from COBRA-OSCAR time :
+class BaseEvtVtxGenerator : public edm::stream::EDProducer<> {
+public:
+  // ctor & dtor
+  explicit BaseEvtVtxGenerator(const edm::ParameterSet&);
+  ~BaseEvtVtxGenerator() override;
+
+  void produce(edm::Event&, const edm::EventSetup&) override;
+
+  virtual HepMC::FourVector newVertex(CLHEP::HepRandomEngine*) const = 0;
+  /** This method - and the comment - is a left-over from COBRA-OSCAR time :
     *  return the last generated event vertex.
     *  If no vertex has been generated yet, a NULL pointer is returned. */
-   //virtual CLHEP::Hep3Vector* lastVertex() { return fVertex; }
-   virtual HepMC::FourVector* lastVertex() { return fVertex; }
-   
-   virtual TMatrixD* GetInvLorentzBoost() = 0;
-   
-   protected:
+  //virtual CLHEP::Hep3Vector* lastVertex() { return fVertex; }
+  //virtual HepMC::FourVector* lastVertex() { return fVertex; }
 
-   //CLHEP::Hep3Vector*       fVertex;
-   HepMC::FourVector*       fVertex ;
-   TMatrixD *boost_;
-   double fTimeOffset;
-   
-   private :
+  virtual TMatrixD const* GetInvLorentzBoost() const = 0;
 
-   edm::InputTag            sourceLabel;
-   
+private:
+  edm::EDGetTokenT<edm::HepMCProduct> sourceToken;
 };
 
 #endif

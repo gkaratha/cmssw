@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Copied from GEMCode/GEMValidation
 """
 
-from ROOT import *
+from ROOT import TFile, gStyle, TCanvas, gPad, TH1F
 
 import os
 import sys

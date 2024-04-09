@@ -4,12 +4,10 @@
 class DetId;
 class CaloSimParameters;
 
-class CaloVSimParameterMap
-{
+class CaloVSimParameterMap {
 public:
-  virtual const CaloSimParameters & simParameters(const DetId & id) const = 0;
+  virtual ~CaloVSimParameterMap() = default;
+  virtual const CaloSimParameters &simParameters(const DetId &id) const = 0;
 };
 
-
 #endif
-

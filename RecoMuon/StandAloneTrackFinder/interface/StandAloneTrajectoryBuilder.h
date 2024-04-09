@@ -12,7 +12,6 @@
 #include "RecoMuon/TrackingTools/interface/RecoMuonEnumerators.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 
-
 class TrajectorySeed;
 class StandAloneMuonFilter;
 class StandAloneMuonBackwardFilter;
@@ -20,68 +19,66 @@ class StandAloneMuonRefitter;
 class MuonServiceProxy;
 class SeedTransformer;
 
-namespace edm {class ParameterSet;}
+namespace edm {
+  class ParameterSet;
+}
 
-class StandAloneMuonTrajectoryBuilder : public MuonTrajectoryBuilder{
+class StandAloneMuonTrajectoryBuilder : public MuonTrajectoryBuilder {
+public:
+  typedef std::pair<const DetLayer*, TrajectoryStateOnSurface> DetLayerWithState;
 
- public:
-  typedef std::pair<const DetLayer*,TrajectoryStateOnSurface> DetLayerWithState;    
-  
- public:
+public:
   /// Constructor with Parameter set and MuonServiceProxy
-  StandAloneMuonTrajectoryBuilder(const edm::ParameterSet&, const MuonServiceProxy*,edm::ConsumesCollector& iC);
+  StandAloneMuonTrajectoryBuilder(const edm::ParameterSet&, const MuonServiceProxy*, edm::ConsumesCollector& iC);
 
   /// Destructor
-  virtual ~StandAloneMuonTrajectoryBuilder();
+  ~StandAloneMuonTrajectoryBuilder() override;
 
   // Returns a vector of the reconstructed trajectories compatible with
   // the given seed.
-  TrajectoryContainer trajectories(const TrajectorySeed&);
+  TrajectoryContainer trajectories(const TrajectorySeed&) override;
 
   /// dummy implementation, unused in this class
-  virtual CandidateContainer trajectories(const TrackCand&) {return CandidateContainer();}
+  CandidateContainer trajectories(const TrackCand&) override { return CandidateContainer(); }
 
   /// pre-filter
-  StandAloneMuonFilter* filter() const {return theFilter;}
+  StandAloneMuonFilter* filter() const { return theFilter.get(); }
 
   /// actual filter
-  StandAloneMuonFilter* bwfilter() const {return theBWFilter;}
+  StandAloneMuonFilter* bwfilter() const { return theBWFilter.get(); }
 
   /// refitter of the hits container
-  StandAloneMuonRefitter* refitter() const {return theRefitter;}
+  StandAloneMuonRefitter* refitter() const { return theRefitter.get(); }
 
   /// Pass the Event to the algo at each event
-  virtual void setEvent(const edm::Event& event);
-  
- protected:
+  void setEvent(const edm::Event& event) override;
 
- private:
-  
+protected:
+private:
   DetLayerWithState propagateTheSeedTSOS(TrajectoryStateOnSurface& aTSOS, DetId& aDetId);
 
- private:
-
+private:
   /// Navigation type
   /// "Direct","Standard"
   std::string theNavigationType;
 
   recoMuon::SeedPosition theSeedPosition;
-  
+
   /// Propagator for the seed extrapolation
   std::string theSeedPropagatorName;
-  
-  StandAloneMuonFilter* theFilter;
-  StandAloneMuonFilter* theBWFilter;
+
+  std::unique_ptr<StandAloneMuonFilter> theFilter;
+  std::unique_ptr<StandAloneMuonFilter> theBWFilter;
   // FIXME
   //  StandAloneMuonBackwardFilter* theBWFilter;
-  StandAloneMuonRefitter* theRefitter;
-  SeedTransformer* theSeedTransformer;
+  std::unique_ptr<StandAloneMuonRefitter> theRefitter;
+  std::unique_ptr<SeedTransformer> theSeedTransformer;
 
   bool doBackwardFilter;
   bool doRefit;
   bool doSeedRefit;
   std::string theBWSeedType;
 
-  const MuonServiceProxy *theService;
+  const MuonServiceProxy* theService;
 };
 #endif

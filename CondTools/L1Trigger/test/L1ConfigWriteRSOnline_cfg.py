@@ -5,7 +5,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("L1ConfigWriteRSOnline")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cout.placeholder = cms.untracked.bool(False)
+process.MessageLogger.cout.enable = cms.untracked.bool(True)
 process.MessageLogger.cout.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.debugModules = cms.untracked.vstring('*')
 
@@ -36,6 +36,11 @@ options.register('overwriteKeys',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Overwrite existing keys")
+options.register('forceUpdate',
+                 0, #default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "Check all record IOVs even if L1TriggerKey unchanged")
 options.register('logTransactions',
                  1, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -147,6 +152,9 @@ if options.overwriteKeys == 0:
     process.L1CondDBPayloadWriter.overwriteKeys = False
 else:
     process.L1CondDBPayloadWriter.overwriteKeys = True
+
+if options.forceUpdate == 1:
+    process.L1CondDBIOVWriter.forceUpdate = True
 
 from CondTools.L1Trigger.L1CondDBIOVWriter_cff import initIOVWriter
 initIOVWriter( process,

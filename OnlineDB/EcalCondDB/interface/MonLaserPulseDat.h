@@ -9,17 +9,17 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MonLaserPulseDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MonLaserPulseDat();
-  ~MonLaserPulseDat();
+  ~MonLaserPulseDat() override;
 
   // User data methods
-  inline std::string getTable() { return "MON_LASER_PULSE_DAT"; }
+  inline std::string getTable() override { return "MON_LASER_PULSE_DAT"; }
 
   inline void setPulseHeightMean(float p) { m_pulseHeightMean = p; }
   inline float getPulseHeightMean() const { return m_pulseHeightMean; }
-  
+
   inline void setPulseHeightRMS(float p) { m_pulseHeightRMS = p; }
   inline float getPulseHeightRMS() const { return m_pulseHeightRMS; }
 
@@ -29,18 +29,14 @@ class MonLaserPulseDat : public IDataItem {
   inline void setPulseWidthRMS(float p) { m_pulseWidthRMS = p; }
   inline float getPulseWidthRMS() const { return m_pulseWidthRMS; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const MonLaserPulseDat* item, MonRunIOV* iov )
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MonLaserPulseDat* item, MonRunIOV* iov) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, MonLaserPulseDat >* data, MonRunIOV* iov)
-    throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, MonLaserPulseDat>* data, MonRunIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, MonLaserPulseDat >* fillMap, MonRunIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, MonLaserPulseDat>* fillMap, MonRunIOV* iov) noexcept(false);
 
   // User data
   float m_pulseHeightMean;

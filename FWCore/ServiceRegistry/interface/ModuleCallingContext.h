@@ -17,7 +17,11 @@ Services as an argument to their callback functions.
 #include "FWCore/ServiceRegistry/interface/ParentContext.h"
 
 #include <iosfwd>
+#include <cstdint>
 
+namespace cms {
+  class Exception;
+}
 namespace edm {
 
   class GlobalContext;
@@ -26,10 +30,8 @@ namespace edm {
   class PlaceInPathContext;
   class StreamContext;
 
-
   class ModuleCallingContext {
   public:
-
     typedef ParentContext::Type Type;
 
     enum class State {
@@ -41,19 +43,23 @@ namespace edm {
     ModuleCallingContext(ModuleDescription const* moduleDescription);
 
     ModuleCallingContext(ModuleDescription const* moduleDescription,
+                         std::uintptr_t id,
                          State state,
                          ParentContext const& parent,
                          ModuleCallingContext const* previousOnThread);
 
-    void setContext(State state,
-                    ParentContext const& parent,
-                    ModuleCallingContext const* previousOnThread);
+    void setContext(State state, ParentContext const& parent, ModuleCallingContext const* previousOnThread);
 
     void setState(State state) { state_ = state; }
 
     ModuleDescription const* moduleDescription() const { return moduleDescription_; }
     State state() const { return state_; }
     Type type() const { return parent_.type(); }
+    /** Returns a unique id for this module to differentiate possibly concurrent calls to the module.
+        The value returned may be large so not appropriate for an index lookup.
+        A value of 0 denotes a call to produce, analyze or filter. Other values denote a transform.
+    */
+    std::uintptr_t callID() const { return id_; }
     ParentContext const& parent() const { return parent_; }
     ModuleCallingContext const* moduleCallingContext() const { return parent_.moduleCallingContext(); }
     PlaceInPathContext const* placeInPathContext() const { return parent_.placeInPathContext(); }
@@ -82,9 +88,11 @@ namespace edm {
     ModuleCallingContext const* previousModuleOnThread_;
     ModuleDescription const* moduleDescription_;
     ParentContext parent_;
+    std::uintptr_t id_;
     State state_;
   };
 
+  void exceptionContext(cms::Exception&, ModuleCallingContext const&);
   std::ostream& operator<<(std::ostream&, ModuleCallingContext const&);
-}
+}  // namespace edm
 #endif

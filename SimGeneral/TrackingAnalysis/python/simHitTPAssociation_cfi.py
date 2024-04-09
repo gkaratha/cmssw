@@ -19,10 +19,16 @@ simHitTPAssocProducer = cms.EDProducer("SimHitTPAssociationProducer",
   trackingParticleSrc = cms.InputTag('mix', 'MergedTrackTruth')
 )
 
-from Configuration.StandardSequences.Eras import eras
-if eras.fastSim.isChosen():
-    simHitTPAssocProducer.simHitSrc = cms.VInputTag(cms.InputTag('famosSimHits','TrackerHits'),
-                                                    cms.InputTag("MuonSimHits","MuonCSCHits"),
-                                                    cms.InputTag("MuonSimHits","MuonDTHits"),
-                                                    cms.InputTag("MuonSimHits","MuonRPCHits"))
+from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
+phase2_tracker.toModify(simHitTPAssocProducer, simHitSrc = ["g4SimHits:TrackerHitsPixelBarrelLowTof", "g4SimHits:TrackerHitsPixelEndcapLowTof"])
 
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(simHitTPAssocProducer,
+    simHitSrc = ["fastSimProducer:TrackerHits",
+                 "MuonSimHits:MuonCSCHits",
+                 "MuonSimHits:MuonDTHits",
+                 "MuonSimHits:MuonRPCHits"]
+)
+
+from Configuration.ProcessModifiers.premix_stage2_cff import premix_stage2
+premix_stage2.toModify(simHitTPAssocProducer, trackingParticleSrc = "mixData:MergedTrackTruth")

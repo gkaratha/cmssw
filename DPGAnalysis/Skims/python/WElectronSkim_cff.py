@@ -49,7 +49,7 @@ GsfMatchedPhotonCands = cms.EDProducer("ElectronMatchedCandidateProducer",
 PassingWP90 = goodElectrons.clone(
 cut = cms.string(
     goodElectrons.cut.value() +
-    " && (gsfTrack.hitPattern().numberOfHits(\'MISSING_INNER_HITS\')<=1 && !(-0.02<convDist<0.02 && -0.02<convDcot<0.02))" #wrt std WP90 allowing 1 numberOfMissingExpectedHits 
+    " && (gsfTrack.hitPattern().numberOfLostHits(\'MISSING_INNER_HITS\')<=1 && !(-0.02<convDist<0.02 && -0.02<convDcot<0.02))" #wrt std WP90 allowing 1 numberOfMissingExpectedHits 
     " && (ecalEnergy*sin(superClusterPosition.theta)>" + str(ELECTRON_ET_CUT_MIN) + ")"
     " && ((isEB"
     " && ( dr03TkSumPt/p4.Pt <0.12 && dr03EcalRecHitSumEt/p4.Pt < 0.09 && dr03HcalTowerSumEt/p4.Pt  < 0.1 )"
@@ -71,7 +71,7 @@ cut = cms.string(
 PassingWP80 = goodElectrons.clone(
 cut = cms.string(
     goodElectrons.cut.value() +
-    " && (gsfTrack.hitPattern().numberOfHits(\'MISSING_INNER_HITS\')==0 && !(-0.02<convDist<0.02 && -0.02<convDcot<0.02))" 
+    " && (gsfTrack.hitPattern().numberOfLostHits(\'MISSING_INNER_HITS\')==0 && !(-0.02<convDist<0.02 && -0.02<convDcot<0.02))" 
     " && (ecalEnergy*sin(superClusterPosition.theta)>" + str(ELECTRON_ET_CUT_MIN) + ")"
     " && ((isEB"
     " && ( dr03TkSumPt/p4.Pt <0.12 && dr03EcalRecHitSumEt/p4.Pt < 0.09 && dr03HcalTowerSumEt/p4.Pt  < 0.1 )" #wrt std WP80 relaxing iso cuts to WP90 
@@ -103,7 +103,21 @@ PassingHLT = cms.EDProducer("trgMatchGsfElectronProducer",
     InputProducer = cms.InputTag( ELECTRON_COLL ),                          
     hltTags = cms.untracked.string( HLTPath ),
     triggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","",HLTProcessName),
-    triggerResultsTag = cms.untracked.InputTag("TriggerResults","",HLTProcessName)   
+    triggerResultsTag = cms.untracked.InputTag("TriggerResults","",HLTProcessName),
+    stageL1Trigger = cms.uint32(1),
+    # Stage-1 L1T inputs
+    l1GtRecordInputTag = cms.InputTag('gtDigis'),
+    l1GtReadoutRecordInputTag = cms.InputTag('gtDigis'),
+)
+from Configuration.Eras.Modifier_stage2L1Trigger_cff import stage2L1Trigger
+stage2L1Trigger.toModify(PassingHLT,
+    stageL1Trigger = 2,
+    # Stage-2 L1T inputs
+    l1tAlgBlkInputTag = cms.InputTag('gtStage2Digis'),
+    l1tExtBlkInputTag = cms.InputTag('gtStage2Digis'),
+    # remove Stage-1 L1T inputs
+    l1GtRecordInputTag = None,
+    l1GtReadoutRecordInputTag = None,
 )
 
 ##    _____             ____        __ _       _ _   _             

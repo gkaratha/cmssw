@@ -13,3 +13,22 @@ photonIsolationHIProducer = cms.EDProducer(
     trackCollection = cms.InputTag("hiGeneralTracks"),
     trackQuality = cms.string("highPurity")
 )
+
+photonIsolationHIProducerpp = photonIsolationHIProducer.clone(
+    trackCollection = "generalTracks"
+)
+
+photonIsolationHIProducerppGED = photonIsolationHIProducerpp.clone(
+    photonProducer = "gedPhotons"
+)
+
+photonIsolationHIProducerppIsland = photonIsolationHIProducerpp.clone(
+    photonProducer = "islandPhotons"
+)
+
+from RecoEcal.EgammaClusterProducers.islandBasicClusters_cfi import *
+
+islandBasicClustersGED = islandBasicClusters.clone()
+photonIsolationHITask = cms.Task(islandBasicClusters , photonIsolationHIProducerpp)
+photonIsolationHITaskGED = cms.Task(islandBasicClustersGED , photonIsolationHIProducerppGED)
+photonIsolationHITaskIsland = cms.Task(islandBasicClusters , photonIsolationHIProducerppIsland)

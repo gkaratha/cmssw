@@ -14,30 +14,26 @@
 #include "fftjet/LinearInterpolator2d.hh"
 
 namespace fftjetcms {
-    class EtaDependentPileup : public AbsPileupCalculator
-    {
-    public:
-        EtaDependentPileup(const fftjet::LinearInterpolator2d& i,
-                           double inputRhoFactor, double outputRhoFactor);
+  class EtaDependentPileup : public AbsPileupCalculator {
+  public:
+    EtaDependentPileup(const fftjet::LinearInterpolator2d& i, double inputRhoFactor, double outputRhoFactor);
 
-        inline virtual ~EtaDependentPileup() {}
+    inline ~EtaDependentPileup() override {}
 
-        virtual double operator()(
-            double eta, double phi,
-            const reco::FFTJetPileupSummary& summary) const;
+    double operator()(double eta, double phi, const reco::FFTJetPileupSummary& summary) const override;
 
-        inline virtual bool isPhiDependent() const {return false;}
+    inline bool isPhiDependent() const override { return false; }
 
-    private:
-        fftjet::LinearInterpolator2d interp_;
-        double inputRhoFactor_;
-        double outputRhoFactor_;
-        double etaMin_;
-        double etaMax_;
-        double rhoMin_;
-        double rhoMax_;
-        double rhoStep_;
-    };
-}
+  private:
+    fftjet::LinearInterpolator2d interp_;
+    double inputRhoFactor_;
+    double outputRhoFactor_;
+    double etaMin_;
+    double etaMax_;
+    double rhoMin_;
+    double rhoMax_;
+    double rhoStep_;
+  };
+}  // namespace fftjetcms
 
-#endif // RecoJets_FFTJetAlgorithms_EtaDependentPileup_h
+#endif  // RecoJets_FFTJetAlgorithms_EtaDependentPileup_h

@@ -11,21 +11,19 @@
 #include <string>
 
 class CSCTriggerElectronicsMappingFromFile : public CSCTriggerElectronicsMapping {
- public:
-
+public:
   /// Constructor
-   explicit CSCTriggerElectronicsMappingFromFile( std::string filename );
-   CSCTriggerElectronicsMappingFromFile() {}
+  explicit CSCTriggerElectronicsMappingFromFile(std::string filename);
+  CSCTriggerElectronicsMappingFromFile() {}
 
   /// Destructor
-   virtual ~CSCTriggerElectronicsMappingFromFile();
+  ~CSCTriggerElectronicsMappingFromFile() override;
 
   /// Fill mapping store
-   virtual void fill( void );
+  void fill(void) override;
 
- private: 
-   std::string filename_;
-
+private:
+  std::string filename_;
 };
 
 #endif

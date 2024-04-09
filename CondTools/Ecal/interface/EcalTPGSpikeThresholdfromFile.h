@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
@@ -38,20 +38,19 @@ namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
 namespace popcon {
   class EcalTPGSpikeThresholdfromFile : public popcon::PopConSourceHandler<EcalTPGSpike> {
-
   public:
-    void getNewObjects();
-    ~EcalTPGSpikeThresholdfromFile();
-    EcalTPGSpikeThresholdfromFile(edm::ParameterSet const & ); 
-    
-    std::string id() const { return m_name;}
+    void getNewObjects() override;
+    ~EcalTPGSpikeThresholdfromFile() override;
+    EcalTPGSpikeThresholdfromFile(edm::ParameterSet const&);
+
+    std::string id() const override { return m_name; }
 
   private:
     std::string m_name;
   };
-}
+}  // namespace popcon
 #endif

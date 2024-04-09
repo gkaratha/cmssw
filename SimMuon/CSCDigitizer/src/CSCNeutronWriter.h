@@ -10,23 +10,20 @@
   \author   Rick Wilkinson, Caltech
  */
 
-class CSCNeutronWriter : public SubsystemNeutronWriter
-{
+class CSCNeutronWriter : public SubsystemNeutronWriter {
 public:
-  explicit CSCNeutronWriter(edm::ParameterSet const& pset);
-  virtual ~CSCNeutronWriter();
+  explicit CSCNeutronWriter(edm::ParameterSet const &pset);
+  ~CSCNeutronWriter() override;
 
 protected:
-  virtual int localDetId(int globalDetId) const;
+  int localDetId(int globalDetId) const override;
 
-  virtual int chamberType(int globalDetId) const;
+  int chamberType(int globalDetId) const override;
 
-  virtual int chamberId(int globalDetId) const;
+  int chamberId(int globalDetId) const override;
 
   /// decides whether this cluster is good enough to be included
-  virtual bool accept(const edm::PSimHitContainer & cluster) const {return true;}
-
+  bool accept(const edm::PSimHitContainer &cluster) const override { return true; }
 };
 
 #endif
-

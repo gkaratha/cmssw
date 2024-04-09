@@ -1,4 +1,44 @@
-#include "PFMultiDepthClusterProducer.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/InitialClusteringStepBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFCPositionCalculatorBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFClusterBuilderBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFClusterEnergyCorrectorBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/RecHitTopologicalCleanerBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/SeedFinderBase.h"
+#include "CondFormats/DataRecord/interface/HcalPFCutsRcd.h"
+#include "CondTools/Hcal/interface/HcalPFCutsHandler.h"
+
+#include <memory>
+
+class PFMultiDepthClusterProducer : public edm::stream::EDProducer<> {
+  typedef InitialClusteringStepBase ICSB;
+  typedef PFClusterBuilderBase PFCBB;
+  typedef PFCPositionCalculatorBase PosCalc;
+
+public:
+  PFMultiDepthClusterProducer(const edm::ParameterSet&);
+  ~PFMultiDepthClusterProducer() override = default;
+
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
+
+private:
+  // inputs
+  edm::EDGetTokenT<reco::PFClusterCollection> _clustersLabel;
+  edm::ESGetToken<HcalPFCuts, HcalPFCutsRcd> hcalCutsToken_;
+  // options
+  // the actual algorithm
+  std::unique_ptr<PFClusterBuilderBase> _pfClusterBuilder;
+  std::unique_ptr<PFClusterEnergyCorrectorBase> _energyCorrector;
+  bool cutsFromDB;
+  HcalPFCuts const* paramPF = nullptr;
+};
+
+DEFINE_FWK_MODULE(PFMultiDepthClusterProducer);
 
 #ifdef PFLOW_DEBUG
 #define LOGVERB(x) edm::LogVerbatim(x)
@@ -12,50 +52,52 @@
 #define LOGDRESSED(x) LogDebug(x)
 #endif
 
-PFMultiDepthClusterProducer::PFMultiDepthClusterProducer(const edm::ParameterSet& conf)
-{
-  _clustersLabel = consumes<reco::PFClusterCollection>(conf.getParameter<edm::InputTag>("clustersSource")); 
-  _pfClusterBuilder.reset(NULL);
+PFMultiDepthClusterProducer::PFMultiDepthClusterProducer(const edm::ParameterSet& conf) {
+  _clustersLabel = consumes<reco::PFClusterCollection>(conf.getParameter<edm::InputTag>("clustersSource"));
+  cutsFromDB = conf.getParameter<bool>("usePFThresholdsFromDB");
   const edm::ParameterSet& pfcConf = conf.getParameterSet("pfClusterBuilder");
-  if( !pfcConf.empty() ) {
+
+  edm::ConsumesCollector&& cc = consumesCollector();
+
+  if (cutsFromDB) {
+    hcalCutsToken_ = esConsumes<HcalPFCuts, HcalPFCutsRcd, edm::Transition::BeginRun>(edm::ESInputTag("", "withTopo"));
+  }
+
+  if (!pfcConf.empty()) {
     const std::string& pfcName = pfcConf.getParameter<std::string>("algoName");
-    PFCBB* pfcb = PFClusterBuilderFactory::get()->create(pfcName,pfcConf);
-    _pfClusterBuilder.reset(pfcb);
+    _pfClusterBuilder = PFClusterBuilderFactory::get()->create(pfcName, pfcConf, cc);
   }
   // see if new need to apply corrections, setup if there.
-  const edm::ParameterSet& cConf =  conf.getParameterSet("energyCorrector");
-  if( !cConf.empty() ) {
+  const edm::ParameterSet& cConf = conf.getParameterSet("energyCorrector");
+  if (!cConf.empty()) {
     const std::string& cName = cConf.getParameter<std::string>("algoName");
-    PFClusterEnergyCorrectorBase* eCorr =
-      PFClusterEnergyCorrectorFactory::get()->create(cName,cConf);
-    _energyCorrector.reset(eCorr);
+    _energyCorrector = PFClusterEnergyCorrectorFactory::get()->create(cName, cConf);
   }
-  
+
   produces<reco::PFClusterCollection>();
 }
 
-void PFMultiDepthClusterProducer::beginLuminosityBlock(const edm::LuminosityBlock& lumi, 
-					     const edm::EventSetup& es) {
+void PFMultiDepthClusterProducer::beginRun(const edm::Run& run, const edm::EventSetup& es) {
+  if (cutsFromDB) {
+    paramPF = &es.getData(hcalCutsToken_);
+  }
   _pfClusterBuilder->update(es);
-  
 }
 
 void PFMultiDepthClusterProducer::produce(edm::Event& e, const edm::EventSetup& es) {
   _pfClusterBuilder->reset();
 
   edm::Handle<reco::PFClusterCollection> inputClusters;
-  e.getByToken(_clustersLabel,inputClusters);  
-  
+  e.getByToken(_clustersLabel, inputClusters);
+
   std::vector<bool> seedable;
 
-  std::auto_ptr<reco::PFClusterCollection> pfClusters;
-  pfClusters.reset(new reco::PFClusterCollection);
-  _pfClusterBuilder->buildClusters(*inputClusters, seedable, *pfClusters);
+  auto pfClusters = std::make_unique<reco::PFClusterCollection>();
+  _pfClusterBuilder->buildClusters(*inputClusters, seedable, *pfClusters, paramPF);
   LOGVERB("PFMultiDepthClusterProducer::produce()") << *_pfClusterBuilder;
 
-  if( _energyCorrector ) {
+  if (_energyCorrector) {
     _energyCorrector->correctEnergies(*pfClusters);
   }
-  e.put(pfClusters);
-
+  e.put(std::move(pfClusters));
 }

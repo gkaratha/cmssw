@@ -11,10 +11,9 @@
 
 //Include DQM core
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
 
-typedef math::XYZTLorentzVectorD LV;
-typedef std::vector<LV> LVColl;
+using LV = math::XYZTLorentzVectorD;
+using LVColl = std::vector<LV>;
 
 struct HLTTauDQMOfflineObjects {
   void clear() {
@@ -32,21 +31,23 @@ struct HLTTauDQMOfflineObjects {
 //Virtual base class for HLT-Tau-DQM Plotters
 class HLTTauDQMPlotter {
 public:
-    HLTTauDQMPlotter(const edm::ParameterSet& pset, const std::string& dqmBaseFolder);
-    HLTTauDQMPlotter(const std::string& dqmFolder, const std::string& dqmBaseFolder);
-    ~HLTTauDQMPlotter();
-    bool isValid() const { return configValid_; }
+  typedef dqm::legacy::DQMStore DQMStore;
+  typedef dqm::legacy::MonitorElement MonitorElement;
+  HLTTauDQMPlotter(const edm::ParameterSet& pset, std::string dqmBaseFolder);
+  HLTTauDQMPlotter(const std::string& dqmFolder, const std::string& dqmBaseFolder);
+  ~HLTTauDQMPlotter();
+  bool isValid() const { return configValid_; }
 
 protected:
-    //Helper functions
-    std::pair<bool,LV> match( const LV&, const LVColl&, double );    
-    const std::string& triggerTag() const { return dqmFullFolder_; }
-    
-    //DQM folders
-    std::string dqmFullFolder_;
-    std::string dqmFolder_;
-    
-    //Validity check
-    bool configValid_;
+  //Helper functions
+  std::pair<bool, LV> match(const LV&, const LVColl&, double);
+  const std::string& triggerTag() const { return dqmFullFolder_; }
+
+  //DQM folders
+  std::string dqmFullFolder_;
+  std::string dqmFolder_;
+
+  //Validity check
+  bool configValid_;
 };
 #endif

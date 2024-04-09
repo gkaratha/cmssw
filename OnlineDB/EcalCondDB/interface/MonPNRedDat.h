@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MonPNRedDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MonPNRedDat();
-  ~MonPNRedDat();
+  ~MonPNRedDat() override;
 
   // User data methods
-  inline std::string getTable() { return "MON_PN_RED_DAT"; }
+  inline std::string getTable() override { return "MON_PN_RED_DAT"; }
 
   inline void setADCMeanG1(float mean) { m_adcMeanG1 = mean; }
   inline float getADCMeanG1() const { return m_adcMeanG1; }
@@ -44,19 +44,15 @@ class MonPNRedDat : public IDataItem {
 
   inline void setTaskStatus(bool status) { m_taskStatus = status; }
   inline bool getTaskStatus() const { return m_taskStatus; }
-  
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
 
-  void writeDB(const EcalLogicID* ecid, const MonPNRedDat* item, MonRunIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, MonPNRedDat >* data, MonRunIOV* iov)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MonPNRedDat* item, MonRunIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, MonPNRedDat >* fillVec, MonRunIOV* iov)
-     throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, MonPNRedDat>* data, MonRunIOV* iov) noexcept(false);
+
+  void fetchData(std::map<EcalLogicID, MonPNRedDat>* fillVec, MonRunIOV* iov) noexcept(false);
 
   // User data
   float m_adcMeanG1;

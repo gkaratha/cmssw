@@ -8,11 +8,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Builder")
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     debugModules = cms.untracked.vstring('siStripThresholdDummyDBWriter'),
-    threshold = cms.untracked.string('DEBUG'),
-    destinations = cms.untracked.vstring('ClusterThresholdBuilder.log')
+    files = cms.untracked.PSet(
+        ClusterThresholdBuilder = cms.untracked.PSet(
+
+        )
+    ),
+    threshold = cms.untracked.string('DEBUG')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -25,9 +31,10 @@ process.source = cms.Source("EmptySource",
 
 process.load("CalibTracker.SiStripESProducers.fake.SiStripThresholdFakeESSource_cfi")
 process.load("CalibTracker.SiStripESProducers.DBWriter.SiStripThresholdDummyDBWriter_cfi")
-process.SiStripThresholdGenerator.ClusTh=5.0
-process.SiStripThresholdGenerator.HighTh=3.0
-process.SiStripThresholdGenerator.LowTh=2.0
+from CalibTracker.SiStripESProducers.fake.SiStripThresholdFakeESSource_cfi import siStripThresholdFakeESSource
+siStripThresholdFakeESSource.ClusTh = 5.0
+siStripThresholdFakeESSource.HighTh = 3.0
+siStripThresholdFakeESSource.LowTh  = 2.0
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),

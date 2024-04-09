@@ -19,7 +19,7 @@
 //
 
 // system include files
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 
 // user include files
@@ -29,32 +29,27 @@ class FWItemAccessorBase;
 class TClass;
 
 class FWItemAccessorFactory {
-
 public:
-   FWItemAccessorFactory();
-   virtual ~FWItemAccessorFactory();
+  FWItemAccessorFactory();
+  virtual ~FWItemAccessorFactory();
 
-   // ---------- const member functions ---------------------
-   boost::shared_ptr<FWItemAccessorBase> accessorFor(const TClass*) const;
-   static bool hasAccessor(const TClass *iClass, std::string &result);
-   static bool hasTVirtualCollectionProxy(const TClass *iClass);
-   static bool hasMemberTVirtualCollectionProxy(const TClass *iClass,
-                                                TClass *&oMember,
-                                                size_t& oOffset);
-   
-   static bool classAccessedAsCollection(const TClass*);
-   
-   // ---------- static member functions --------------------
+  // ---------- const member functions ---------------------
+  std::shared_ptr<FWItemAccessorBase> accessorFor(const TClass *) const;
+  static bool hasAccessor(const TClass *iClass, std::string &result);
+  static bool hasTVirtualCollectionProxy(const TClass *iClass);
+  static bool hasMemberTVirtualCollectionProxy(const TClass *iClass, TClass *&oMember, size_t &oOffset);
 
-   // ---------- member functions ---------------------------
+  static bool classAccessedAsCollection(const TClass *);
 
-private:
-   FWItemAccessorFactory(const FWItemAccessorFactory&); // stop default
+  // ---------- static member functions --------------------
 
-   const FWItemAccessorFactory& operator=(const FWItemAccessorFactory&); // stop default
+  // ---------- member functions ---------------------------
 
-   // ---------- member data --------------------------------
+  FWItemAccessorFactory(const FWItemAccessorFactory &) = delete;  // stop default
 
+  const FWItemAccessorFactory &operator=(const FWItemAccessorFactory &) = delete;  // stop default
+
+  // ---------- member data --------------------------------
 };
 
 #endif

@@ -13,21 +13,19 @@
  *           from the HLTriggerOffline/Muon package.
  */
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DQMServices/Core/interface/DQMOneEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 
 #include "HLTriggerOffline/Exotica/interface/HLTExoticaSubAnalysis.h"
 
-#include <vector>
 #include <cstring>
+#include <vector>
 
-
-class EVTColContainer;
+struct EVTColContainer;
 
 /// The HLTExoticaValidator module is the main module of the
 /// package. It books a vector of auxiliary classes
@@ -35,36 +33,35 @@ class EVTColContainer;
 /// of one single analysis. Each of those, in turn, books a
 /// vector if HLTExoticaPlotters to make plots for each
 /// HLT path
-class HLTExoticaValidator : public DQMEDAnalyzer {
+class HLTExoticaValidator : public DQMOneEDAnalyzer<> {
 public:
-    /// Constructor and destructor
-    HLTExoticaValidator(const edm::ParameterSet &);
-    ~HLTExoticaValidator();
+  /// Constructor and destructor
+  HLTExoticaValidator(const edm::ParameterSet &);
+  ~HLTExoticaValidator() override;
 
 protected:
-    /// Method called by the framework to book histograms.
-    void bookHistograms(DQMStore::IBooker &iBooker, const edm::Run &iRun, const edm::EventSetup &iSetup) override;
+  /// Method called by the framework to book histograms.
+  void bookHistograms(DQMStore::IBooker &iBooker, const edm::Run &iRun, const edm::EventSetup &iSetup) override;
 
 private:
-    virtual void beginJob();
-    /// Method called by the framework just before dqmBeginRun()
-    virtual void dqmBeginRun(const edm::Run &iRun, const edm::EventSetup & iSetup);
-    /// Method called for each event.
-    virtual void analyze(const edm::Event & iEvent, const edm::EventSetup & iSetup);
-    virtual void endRun(const edm::Run & iRun, const edm::EventSetup & iSetup);
-    virtual void endJob();
+  void beginJob() override;
+  /// Method called by the framework just before dqmBeginRun()
+  void dqmBeginRun(const edm::Run &iRun, const edm::EventSetup &iSetup) override;
+  /// Method called for each event.
+  void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
+  void dqmEndRun(const edm::Run &iRun, const edm::EventSetup &iSetup) override;
+  void endJob() override;
 
-    /// Copy (to be modified) of the input ParameterSet from configuration file.
-    edm::ParameterSet _pset;
-    /// The names of the subanalyses
-    std::vector<std::string> _analysisnames;
+  /// Copy (to be modified) of the input ParameterSet from configuration file.
+  edm::ParameterSet _pset;
+  /// The names of the subanalyses
+  std::vector<std::string> _analysisnames;
 
-    /// The instances of the class which do the real work
-    std::vector<HLTExoticaSubAnalysis> _analyzers;
+  /// The instances of the class which do the real work
+  std::vector<HLTExoticaSubAnalysis> _analyzers;
 
-    /// Centralized point of access to all collections used
-    EVTColContainer * _collections;
-
+  /// Centralized point of access to all collections used
+  EVTColContainer *_collections;
 };
 
 #endif

@@ -18,9 +18,6 @@ newAk4CaloL2L3CorrectorChain = cms.Sequence(
     newAk4CaloL2L3Corrector
 )
 
-#from JetMETCorrections.Configuration.JetCorrectionServicesAllAlgos_cff import ak7CaloL2L3,ak7CaloL2Relative,ak7CaloL3Absolute
-#newAk7CaloL2L3 = ak7CaloL2L3.clone()
-
 from JetMETCorrections.Configuration.JetCorrectors_cff import ak4PFL1FastL2L3CorrectorChain,ak4PFL1FastL2L3Corrector,ak4PFL3AbsoluteCorrector,ak4PFL2RelativeCorrector,ak4PFL1FastjetCorrector
 
 newAk4PFL1FastL2L3Corrector = ak4PFL1FastL2L3Corrector.clone()
@@ -28,9 +25,6 @@ newAk4PFL1FastL2L3CorrectorChain = cms.Sequence(
     #ak4PFL1FastjetCorrector * ak4PFL2RelativeCorrector * ak4PFL3AbsoluteCorrector * 
     newAk4PFL1FastL2L3Corrector
 )
-
-#from JetMETCorrections.Configuration.JetCorrectionServices_cff import ak4JPTL1FastL2L3,ak4JPTL1Fastjet,ak4JPTL2Relative,ak4JPTL3Absolute
-#newAk4JPTL1FastL2L3 = ak4JPTL1FastL2L3.clone()
 
 from JetMETCorrections.Configuration.JetCorrectors_cff import ak4PFCHSL1FastL2L3CorrectorChain,ak4PFCHSL1FastL2L3Corrector,ak4PFCHSL3AbsoluteCorrector,ak4PFCHSL2RelativeCorrector,ak4PFCHSL1FastjetCorrector
 
@@ -40,9 +34,16 @@ newAk4PFCHSL1FastL2L3CorrectorChain = cms.Sequence(
     newAk4PFCHSL1FastL2L3Corrector
 )
 
-jetPreValidSeq=cms.Sequence(ak4CaloL2RelativeCorrector * ak4CaloL3AbsoluteCorrector 
-                            * ak4PFL1FastjetCorrector * ak4PFL2RelativeCorrector * ak4PFL3AbsoluteCorrector
-                            * ak4PFCHSL1FastjetCorrector * ak4PFCHSL2RelativeCorrector * ak4PFCHSL3AbsoluteCorrector)
+jetPreValidSeqTask = cms.Task(ak4CaloL2RelativeCorrector,
+                              ak4CaloL3AbsoluteCorrector,
+                              ak4PFL1FastjetCorrector,
+                              ak4PFL2RelativeCorrector,
+                              ak4PFL3AbsoluteCorrector,
+                              ak4PFCHSL1FastjetCorrector,
+                              ak4PFCHSL2RelativeCorrector,
+                              ak4PFCHSL3AbsoluteCorrector
+)
+jetPreValidSeq=cms.Sequence(jetPreValidSeqTask)
 
 JetValidation = cms.Sequence(
 #    JetAnalyzerKt6PF*
@@ -61,4 +62,4 @@ JetValidation = cms.Sequence(
     )
 
 
-JetValidationMiniAOD=cms.Sequence(JetAnalyzerAk4PFCHSMiniAOD*JetAnalyzerAk4PFPUPPIMiniAOD*JetAnalyzerAk8PFCHSMiniAOD)
+JetValidationMiniAOD=cms.Sequence(JetAnalyzerAk4PFCHSMiniAOD*JetAnalyzerAk4PFPUPPIMiniAOD*JetAnalyzerAk8PFPUPPIMiniAOD)

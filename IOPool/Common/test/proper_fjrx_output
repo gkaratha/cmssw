@@ -64,11 +64,11 @@
 
 <Runs>
 <Run ID="100">
-   <LumiSection ID="1"/>
+   <LumiSection ID="1" NEvents="10"/>
 </Run>
 
 <Run ID="200">
-   <LumiSection ID="1"/>
+   <LumiSection ID="1" NEvents="15"/>
 </Run>
 
 </Runs>
@@ -85,11 +85,12 @@
 </Inputs>
 </File>
 <ReadBranches>
-<Branch Name="edmTriggerResults_TriggerResults__TESTPROD." ReadCount="35" />
-<Branch Name="edmtestOtherThings_AOtherThing_testUserTag_TESTPROD." ReadCount="10" />
-<Branch Name="edmtestOtherThings_OtherThing_testUserTag_TESTPROD." ReadCount="10" />
-<Branch Name="edmtestOtherThings_ZOtherThing_testUserTag_TESTPROD." ReadCount="10" />
-<Branch Name="edmtestThings_Thing__TESTPROD." ReadCount="35" />
+<Branch Name="edmTriggerResults_TriggerResults__TESTPROD." ReadCount="35"/>
+<Branch Name="edmtestOtherThings_AOtherThing_testUserTag_TESTPROD." ReadCount="10"/>
+<Branch Name="edmtestOtherThings_OtherThing_testUserTag_TESTPROD." ReadCount="10"/>
+<Branch Name="edmtestOtherThings_ZOtherThing_testUserTag_TESTPROD." ReadCount="10"/>
+<Branch Name="edmtestThings_Thing__TESTPROD." ReadCount="35"/>
 </ReadBranches>
 
+<!--                                                            -->
 </FrameworkJobReport>

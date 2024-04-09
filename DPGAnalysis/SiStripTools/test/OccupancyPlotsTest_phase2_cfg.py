@@ -34,17 +34,13 @@ process.options = cms.untracked.PSet(
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.MessageLogger.destinations.extend(cms.vstring("detids"))
-process.MessageLogger.categories.extend(cms.vstring("GeometricDetBuilding","DuplicateHitFinder","BuildingTrackerDetId",
-                                                    "SubDetectorGeometricDetType","BuildingGeomDetUnits","LookingForFirstStrip",
-                                                    "BuildingSubDetTypeMap","SubDetTypeMapContent","NumberOfLayers","IsThereTest"))
-process.MessageLogger.cout.placeholder = cms.untracked.bool(False)
+process.MessageLogger.cout.enable = True
 process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
 process.MessageLogger.debugModules = cms.untracked.vstring("*")
 process.MessageLogger.cout.default = cms.untracked.PSet(
     limit = cms.untracked.int32(0)
     )
-process.MessageLogger.detids = cms.untracked.PSet(
+process.MessageLogger.files = dict( detids = cms.untracked.PSet(
     default = cms.untracked.PSet(
         limit = cms.untracked.int32(0)
         ),
@@ -77,6 +73,7 @@ process.MessageLogger.detids = cms.untracked.PSet(
         ),
     threshold = cms.untracked.string("DEBUG")
     )    
+)
 process.MessageLogger.cout.DuplicateHitFinder = cms.untracked.PSet(
     limit = cms.untracked.int32(100000000)
     )
@@ -87,7 +84,6 @@ process.MessageLogger.cout.FwkReport = cms.untracked.PSet(
     reportEvery = cms.untracked.int32(10000)
     )
 
-process.MessageLogger.cerr.placeholder = cms.untracked.bool(False)
 process.MessageLogger.cerr.threshold = cms.untracked.string("WARNING")
 process.MessageLogger.cerr.default = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000)
@@ -170,7 +166,7 @@ process.seqMultProd = cms.Sequence(#process.ssclusmultprod + process.ssclusoccup
 
 process.load("DPGAnalysis.SiStripTools.occupancyplots_cfi")
 #process.occupancyplots.wantedSubDets = OccupancyPlotsStripWantedSubDets
-process.occupancyplots.file = cms.untracked.FileInPath("SLHCUpgradeSimulations/Geometry/data/PhaseII/Pixel10D/PixelSkimmedGeometry.txt")
+process.occupancyplots.file = cms.untracked.FileInPath("SLHCUpgradeSimulations/Geometry/data/PhaseII/Tilted/PixelSkimmedGeometry.txt")
 
 process.pixeloccupancyplots = process.occupancyplots.clone()
 process.pixeloccupancyplots.wantedSubDets = process.spclusmultprod.wantedSubDets
@@ -247,16 +243,16 @@ process.load("DPGAnalysis.SiStripTools.duplicaterechits_cfi")
 
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
 #process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10DReco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023MuonReco_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
 #process.load("Configuration.Geometry.GeometryExtendedPhaseIPixelReco_cff")
 #process.load("Configuration.Geometry.GeometryExtendedPhaseIPixel_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 from SLHCUpgradeSimulations.Configuration.phase2TkCustomsBE5DPixel10D import *
 
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
 #from Configuration.AlCa.GlobalTag import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
@@ -270,8 +266,6 @@ process.siStripQualityESProducer.ListOfRecordToMerge=cms.VPSet(
     cms.PSet( record = cms.string("SiStripBadFiberRcd"),   tag    = cms.string("") ),
     cms.PSet( record = cms.string("SiStripBadModuleRcd"),  tag    = cms.string("") )
 )
-
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 
 process.TFileService = cms.Service('TFileService',
 #                                   fileName = cms.string('OccupancyPlotsTest_newschema.root')

@@ -12,35 +12,44 @@
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalUncalibRecHitWorkerBaseClass.h"
 #include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalUncalibRecHitRecWeightsAlgo.h"
 #include "DataFormats/HGCDigi/interface/HGCDataFrame.h"
-#include "DataFormats/ForwardDetId/interface/HGCEEDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCHEDetId.h"
 #include "DataFormats/HGCDigi/interface/HGCSample.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 namespace edm {
   class Event;
   class EventSetup;
   class ParameterSet;
-}
+}  // namespace edm
 
 class HGCalUncalibRecHitWorkerWeights : public HGCalUncalibRecHitWorkerBaseClass {
-  
- public:
-  HGCalUncalibRecHitWorkerWeights(const edm::ParameterSet&);
-  virtual ~HGCalUncalibRecHitWorkerWeights() {};
-  
-  void set(const edm::EventSetup& es);
-  bool run1(const edm::Event& evt, const HGCEEDigiCollection::const_iterator & digi, HGCeeUncalibratedRecHitCollection & result);
-  bool run2(const edm::Event& evt, const HGCHEDigiCollection::const_iterator & digi, HGChefUncalibratedRecHitCollection & result);
-  bool run3(const edm::Event& evt, const HGCHEDigiCollection::const_iterator & digi, HGChebUncalibratedRecHitCollection & result);
+public:
+  HGCalUncalibRecHitWorkerWeights(const edm::ParameterSet&, edm::ConsumesCollector iC);
+  ~HGCalUncalibRecHitWorkerWeights() override{};
 
- protected:
-    
-  HGCalUncalibRecHitRecWeightsAlgo<HGCDataFrame<HGCEEDetId,HGCSample>> uncalibMaker_ee_;
-  HGCalUncalibRecHitRecWeightsAlgo<HGCDataFrame<HGCHEDetId,HGCSample>> uncalibMaker_hef_;
-  HGCalUncalibRecHitRecWeightsAlgo<HGCDataFrame<HGCHEDetId,HGCSample>> uncalibMaker_heb_;
+  bool runHGCEE(const edm::ESHandle<HGCalGeometry>& geom,
+                const HGCalDigiCollection& digis,
+                HGCeeUncalibratedRecHitCollection& result) override;
+  bool runHGCHEsil(const edm::ESHandle<HGCalGeometry>& geom,
+                   const HGCalDigiCollection& digis,
+                   HGChefUncalibratedRecHitCollection& result) override;
+  bool runHGCHEscint(const edm::ESHandle<HGCalGeometry>& geom,
+                     const HGCalDigiCollection& digis,
+                     HGChebUncalibratedRecHitCollection& result) override;
+  bool runHGCHFNose(const edm::ESHandle<HGCalGeometry>& geom,
+                    const HGCalDigiCollection& digis,
+                    HGChfnoseUncalibratedRecHitCollection& result) override;
 
+protected:
+  HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame> uncalibMaker_ee_;
+  HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame> uncalibMaker_hef_;
+  HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame> uncalibMaker_heb_;
+  HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame> uncalibMaker_hfnose_;
+
+  bool run(const edm::ESHandle<HGCalGeometry>& geom,
+           const HGCalDigiCollection& digis,
+           HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame>& uncalibMaker,
+           edm::SortedCollection<HGCUncalibratedRecHit>& result);
 };
 
 #endif

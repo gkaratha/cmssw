@@ -7,22 +7,19 @@
 namespace edm {
 
   class FileRandomKEThetaGunProducer : public FlatBaseThetaGunProducer {
-  
   public:
     FileRandomKEThetaGunProducer(const ParameterSet &);
-    virtual ~FileRandomKEThetaGunProducer();
+    ~FileRandomKEThetaGunProducer() override;
 
   private:
-   
-    virtual void produce(Event &e, const EventSetup& es) override;
-    
-  protected :
-  
+    void produce(Event &e, const EventSetup &es) override;
+
+  protected:
     // data members
-    
+
     std::vector<double> kineticE, fdistn;
-    int                 particleN;
+    int particleN;
   };
-} 
+}  // namespace edm
 
 #endif

@@ -14,45 +14,37 @@
 #include "DataFormats/GeometryVector/interface/LocalPoint.h"
 
 class CSCNonslantedWireGeometry : public CSCWireGeometry {
- public:
-  virtual ~CSCNonslantedWireGeometry() {}
-  
+public:
+  ~CSCNonslantedWireGeometry() override {}
+
   /**
    * Constructor from wire spacing
    */
-  CSCNonslantedWireGeometry( double wireSpacing, double yOfFirstWire, 
-              double narrow, double wide, double length ) :
-       CSCWireGeometry( wireSpacing, yOfFirstWire, narrow, wide, length ) {}
+  CSCNonslantedWireGeometry(double wireSpacing, double yOfFirstWire, double narrow, double wide, double length)
+      : CSCWireGeometry(wireSpacing, yOfFirstWire, narrow, wide, length) {}
 
   /**
    * The angle of the wires w.r.t local x axis (in radians)
    */
-  float wireAngle() const { return 0.; }
+  float wireAngle() const override { return 0.; }
 
   /**
    * The nearest (virtual) wire to a given LocalPoint.
    * Beware that this wire might not exist or be read out!
    */
-  int nearestWire(const LocalPoint& lp) const {
-    return 1 + nint( (lp.y()-yOfFirstWire())/wireSpacing() ) ;
-  }
+  int nearestWire(const LocalPoint& lp) const override { return 1 + nint((lp.y() - yOfFirstWire()) / wireSpacing()); }
 
   /**
    * Local y of a given wire 'number' (float) at given x
    * For nonslanted wires this y is independent of x.
    */
-  float yOfWire(float wire, float x=0.) const {
-    return yOfFirstWire() + (wire-1.)*wireSpacing();
-  }
+  float yOfWire(float wire, float x = 0.) const override { return yOfFirstWire() + (wire - 1.) * wireSpacing(); }
 
   /**
    * Clone to handle correct copy of component objects referenced
    * by base class pointer.
    */
-  CSCWireGeometry* clone() const {
-    return new CSCNonslantedWireGeometry(*this);
-  }
-
+  CSCWireGeometry* clone() const override { return new CSCNonslantedWireGeometry(*this); }
 };
 
 #endif

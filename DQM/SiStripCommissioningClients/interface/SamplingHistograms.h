@@ -4,27 +4,21 @@
 #include "DQM/SiStripCommissioningClients/interface/CommissioningHistograms.h"
 #include "DQM/SiStripCommissioningSummary/interface/SamplingSummaryFactory.h"
 #include "CondFormats/SiStripObjects/interface/SamplingAnalysis.h"
-
-class DQMStore;
+#include "DQMServices/Core/interface/DQMStore.h"
 
 class SamplingHistograms : virtual public CommissioningHistograms {
+public:
+  SamplingHistograms(const edm::ParameterSet& pset, DQMStore*, const sistrip::RunType& task = sistrip::APV_LATENCY);
+  ~SamplingHistograms() override;
 
- public:
-  
-  SamplingHistograms( const edm::ParameterSet& pset, DQMStore*, const sistrip::RunType& task = sistrip::APV_LATENCY );
-  virtual ~SamplingHistograms();
-  
-  void histoAnalysis( bool debug );
+  void histoAnalysis(bool debug) override;
 
-  virtual void configure( const edm::ParameterSet&, const edm::EventSetup& );
+  void configure(const edm::ParameterSet&, const edm::EventSetup&) override;
 
- private:
-  
+private:
   float sOnCut_;
 
   int latencyCode_;
-
 };
 
-#endif // DQM_SiStripCommissioningClients_SamplingHistograms_H
-
+#endif  // DQM_SiStripCommissioningClients_SamplingHistograms_H

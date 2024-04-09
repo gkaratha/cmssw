@@ -1,5 +1,5 @@
-#ifndef GlobalTrigger_EnergySumCondition_h
-#define GlobalTrigger_EnergySumCondition_h
+#ifndef L1Trigger_L1TGlobal_EnergySumCondition_h
+#define L1Trigger_L1TGlobal_EnergySumCondition_h
 
 /**
  * \class EnergySumCondition
@@ -24,75 +24,63 @@
 #include "L1Trigger/L1TGlobal/interface/ConditionEvaluation.h"
 
 // forward declarations
-class GtCondition;
+class GlobalCondition;
 class EnergySumTemplate;
 
 namespace l1t {
 
-class L1Candidate;
+  class L1Candidate;
 
-class GtBoard;
+  class GlobalBoard;
 
-// class declaration
-class EnergySumCondition : public ConditionEvaluation
-{
-
-public:
-
+  // class declaration
+  class EnergySumCondition : public ConditionEvaluation {
+  public:
     /// constructors
     ///     default
     EnergySumCondition();
 
     ///     from base template condition (from event setup usually)
-    EnergySumCondition(const GtCondition*, const GtBoard*);
+    EnergySumCondition(const GlobalCondition*, const GlobalBoard*);
 
     // copy constructor
     EnergySumCondition(const EnergySumCondition&);
 
     // destructor
-    virtual ~EnergySumCondition();
+    ~EnergySumCondition() override;
 
     // assign operator
     EnergySumCondition& operator=(const EnergySumCondition&);
 
-public:
-
+  public:
     /// the core function to check if the condition matches
-    const bool evaluateCondition(const int bxEval) const;
+    const bool evaluateCondition(const int bxEval) const override;
 
     /// print condition
-     void print(std::ostream& myCout) const;
+    void print(std::ostream& myCout) const override;
 
-public:
-
+  public:
     ///   get / set the pointer to a L1GtCondition
-    inline const EnergySumTemplate* gtEnergySumTemplate() const {
-        return m_gtEnergySumTemplate;
-    }
+    inline const EnergySumTemplate* gtEnergySumTemplate() const { return m_gtEnergySumTemplate; }
 
     void setGtEnergySumTemplate(const EnergySumTemplate*);
 
-    ///   get / set the pointer to uGt GtBoard
-    inline const GtBoard* getuGtB() const {
-        return m_uGtB;
-    }
+    ///   get / set the pointer to uGt GlobalBoard
+    inline const GlobalBoard* getuGtB() const { return m_uGtB; }
 
-    void setuGtB(const GtBoard*);
+    void setuGtB(const GlobalBoard*);
 
-private:
-
+  private:
     /// copy function for copy constructor and operator=
     void copy(const EnergySumCondition& cp);
 
-private:
-
+  private:
     /// pointer to a EnergySumTemplate
     const EnergySumTemplate* m_gtEnergySumTemplate;
 
-    /// pointer to uGt GtBoard, to be able to get the trigger objects
-    const GtBoard* m_uGtB;
+    /// pointer to uGt GlobalBoard, to be able to get the trigger objects
+    const GlobalBoard* m_uGtB;
+  };
 
-};
-
-}
+}  // namespace l1t
 #endif

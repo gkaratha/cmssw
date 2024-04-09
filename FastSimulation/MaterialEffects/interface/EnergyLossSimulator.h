@@ -17,21 +17,18 @@
  *
  * \author Patrick Janot
  * $Date: 8-Jan-2004
- */ 
-
+ */
 
 class RandomEngineAndDistribution;
 class LandauFluctuationGenerator;
 
-class EnergyLossSimulator : public MaterialEffectsSimulator
-{
- public:
-
+class EnergyLossSimulator : public MaterialEffectsSimulator {
+public:
   /// Constructor
   EnergyLossSimulator(double A, double Z, double density, double radLen);
 
   /// Default Destructor
-  ~EnergyLossSimulator();
+  ~EnergyLossSimulator() override;
 
   /// Return most probable energy loss
   inline double mostLikelyLoss() const { return mostProbableLoss; }
@@ -39,19 +36,18 @@ class EnergyLossSimulator : public MaterialEffectsSimulator
   /// Returns the actual energy lost
   inline const XYZTLorentzVector& deltaMom() const { return deltaP; }
 
- private:
+private:
   /// The Landau Fluctuation generator
   LandauFluctuationGenerator* theGenerator;
 
   /// The real dE/dx generation and particle update
-  void compute(ParticlePropagator &Particle, RandomEngineAndDistribution const*);
+  void compute(ParticlePropagator& Particle, RandomEngineAndDistribution const*) override;
 
   /// The most probable enery loss
   double mostProbableLoss;
 
   /// The actual energy loss
   XYZTLorentzVector deltaP;
-
 };
 
 #endif

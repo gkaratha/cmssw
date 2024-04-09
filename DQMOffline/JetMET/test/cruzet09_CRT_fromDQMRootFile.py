@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 process = cms.Process("Demo")
 
@@ -32,14 +33,13 @@ process.dqmSaver.referenceHandling = cms.untracked.string('all')
 #-----------------------------
 # Specify root file including reference histograms
 #-----------------------------
-process.DQMStore.referenceFileName = 'jetMETMonitoring_cruzet100945.root'
 #process.DQMStore.verbose = 5
-#process.DQMStore.collateHistograms = True
 
 #-----------------------------
 # Locate a directory in DQMStore
 #-----------------------------
-process.dqmInfoJetMET = cms.EDAnalyzer("DQMEventInfo",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+process.dqmInfoJetMET = DQMEDAnalyzer('DQMEventInfo',
                 subSystemFolder = cms.untracked.string('JetMET')
                 )
 
@@ -47,9 +47,8 @@ process.dqmInfoJetMET = cms.EDAnalyzer("DQMEventInfo",
 # JetMET Certification Module 
 #-----------------------------
 process.load("DQMOffline.JetMET.dataCertificationJetMET_cff")
-process.dataCertificationJetMET = cms.EDAnalyzer('DataCertificationJetMET',
+process.dataCertificationJetMET = DQMEDHarvester('DataCertificationJetMET',
 #
-#--- Always define reference root file by process.DQMStore.referenceFileName
                               refFileName    = cms.untracked.string(""),
 #
 #--- 0: harvest EDM files, 1: read in DQM root file

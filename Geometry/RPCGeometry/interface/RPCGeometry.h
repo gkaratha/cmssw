@@ -15,40 +15,36 @@
 #include <vector>
 #include <map>
 
-
 class GeomDetType;
 
-
 class RPCGeometry : public TrackingGeometry {
-
- public:
+public:
   /// Default constructor
   RPCGeometry();
 
   /// Destructor
-  virtual ~RPCGeometry();
+  ~RPCGeometry() override;
 
   // Return a vector of all det types
-  virtual const DetTypeContainer&  detTypes() const override;
+  const DetTypeContainer& detTypes() const override;
 
   // Return a vector of all GeomDetUnit
-  virtual const DetUnitContainer& detUnits() const override;
+  const DetContainer& detUnits() const override;
 
   // Return a vector of all GeomDet
-  virtual const DetContainer& dets() const override;
-  
+  const DetContainer& dets() const override;
+
   // Return a vector of all GeomDetUnit DetIds
-  virtual const DetIdContainer& detUnitIds() const override;
+  const DetIdContainer& detUnitIds() const override;
 
   // Return a vector of all GeomDet DetIds
-  virtual const DetIdContainer& detIds() const override;
+  const DetIdContainer& detIds() const override;
 
   // Return the pointer to the GeomDetUnit corresponding to a given DetId
-  virtual const GeomDetUnit* idToDetUnit(DetId) const override;
+  const GeomDet* idToDetUnit(DetId) const override;
 
   // Return the pointer to the GeomDet corresponding to a given DetId
-  virtual const GeomDet* idToDet(DetId) const override;
-
+  const GeomDet* idToDet(DetId) const override;
 
   //---- Extension of the interface
 
@@ -70,19 +66,18 @@ class RPCGeometry : public TrackingGeometry {
   /// Add a RPC roll to the Geometry
   void add(RPCChamber* ch);
 
- private:
-  DetUnitContainer theRolls;
+private:
+  DetContainer theRolls;
   DetContainer theDets;
   DetTypeContainer theRollTypes;
   DetIdContainer theRollIds;
   DetIdContainer theDetIds;
-  
-  // Map for efficient lookup by DetId 
+
+  // Map for efficient lookup by DetId
   mapIdToDet theMap;
 
-  std::vector<const RPCRoll*> allRolls; // Are not owned by this class; are owned by their chamber.
-  std::vector<const RPCChamber*> allChambers; // Are owned by this class.
-
+  std::vector<const RPCRoll*> allRolls;        // Are not owned by this class; are owned by their chamber.
+  std::vector<const RPCChamber*> allChambers;  // Are owned by this class.
 };
 
 #endif

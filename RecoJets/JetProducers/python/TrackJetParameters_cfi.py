@@ -4,7 +4,6 @@ TrackJetParameters = cms.PSet(
     src            = cms.InputTag('trackRefsForJets'),
     srcPVs         = cms.InputTag('offlinePrimaryVertices'),
     jetType        = cms.string('TrackJet'),
-    doOutputJets   = cms.bool(True),
     jetPtMin       = cms.double(3.0),
     inputEMin      = cms.double(0.0),
     inputEtMin     = cms.double(0.0),
@@ -36,5 +35,6 @@ TrackJetParameters = cms.PSet(
     # maximum z distance to origin to call a PV a good vertex
     MaxVtxZ             = cms.double(15.),
     useDeterministicSeed= cms.bool( True ),
-    minSeed             = cms.uint32( 14327 )
+    minSeed             = cms.uint32( 14327 ),
+    applyWeight         = cms.bool( False )
 )

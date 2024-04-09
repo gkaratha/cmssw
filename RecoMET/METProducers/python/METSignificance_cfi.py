@@ -13,6 +13,11 @@ METSignificance = cms.EDProducer(
     srcPfJets            = cms.InputTag('slimmedJets'),
     srcMet               = cms.InputTag('slimmedMETs'),
     srcPFCandidates      = cms.InputTag('packedPFCandidates'),
+    srcJetSF             = cms.string('AK4PFchs'),
+    srcJetResPt          = cms.string('AK4PFchs_pt'),
+    srcJetResPhi         = cms.string('AK4PFchs_phi'),
+    srcRho               = cms.InputTag('fixedGridRhoAll'),
+    srcWeights           = cms.InputTag(''),
     
     parameters = METSignificanceParams
     )

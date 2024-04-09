@@ -3,9 +3,9 @@ import FWCore.ParameterSet.Config as cms
 #
 # This object is used to make changes for different running scenarios
 #
-from Configuration.StandardSequences.Eras import eras
 
-SiPixelDigiSource = cms.EDAnalyzer("SiPixelDigiSource",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+SiPixelDigiSource = DQMEDAnalyzer('SiPixelDigiSource',
     TopFolderName = cms.string('Pixel'),
     src = cms.InputTag("siPixelDigis"),
     outputFile = cms.string('Pixel_DQM_Digi.root'),
@@ -13,6 +13,7 @@ SiPixelDigiSource = cms.EDAnalyzer("SiPixelDigiSource",
     isPIB = cms.untracked.bool(False),
     slowDown = cms.untracked.bool(False),
     modOn = cms.untracked.bool(True),
+    perLSsaving = cms.untracked.bool(False), #driven by DQMServices/Core/python/DQMStore_cfi.py
     twoDimOn = cms.untracked.bool(True),	
     twoDimModOn = cms.untracked.bool(True),     
     #allows to have no twoD plots on Mod level (but possibly on other levels),
@@ -32,5 +33,6 @@ SiPixelDigiSource = cms.EDAnalyzer("SiPixelDigiSource",
 )
 
 # Modify for if the phase 1 pixel detector is active
-eras.phase1Pixel.toModify( SiPixelDigiSource, isUpgrade=cms.untracked.bool(True) )
+from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
+phase1Pixel.toModify( SiPixelDigiSource, isUpgrade=cms.untracked.bool(True) )
 

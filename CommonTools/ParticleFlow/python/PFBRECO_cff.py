@@ -6,22 +6,27 @@ from RecoParticleFlow.PFProducer.pfLinker_cff import particleFlowPtrs
 from CommonTools.ParticleFlow.pfPileUp_cfi import *
 from CommonTools.ParticleFlow.TopProjectors.pfNoPileUp_cfi import *
 pfPileUpIsoPFBRECO = pfPileUp.clone( PFCandidates = 'particleFlowPtrs' )
+from Configuration.ProcessModifiers.pp_on_AA_cff import pp_on_AA
+pp_on_AA.toModify(pfPileUpIsoPFBRECO, enable = False)
+
 pfNoPileUpIsoPFBRECO = pfNoPileUp.clone( topCollection = 'pfPileUpIsoPFBRECO',
                                          bottomCollection = 'particleFlowPtrs')
-pfNoPileUpIsoPFBRECOSequence = cms.Sequence(
-    pfPileUpIsoPFBRECO +
+pfNoPileUpIsoPFBRECOTask = cms.Task(
+    pfPileUpIsoPFBRECO,
     pfNoPileUpIsoPFBRECO
     )
+pfNoPileUpIsoPFBRECOSequence = cms.Sequence(pfNoPileUpIsoPFBRECOTask)
 
 from CommonTools.ParticleFlow.pfNoPileUpJME_cff import *
 
 pfPileUpPFBRECO = pfPileUp.clone( PFCandidates = 'particleFlowPtrs' )
 pfNoPileUpPFBRECO = pfNoPileUp.clone( topCollection = 'pfPileUpPFBRECO',
                                       bottomCollection = 'particleFlowPtrs')
-pfNoPileUpPFBRECOSequence = cms.Sequence(
-    pfPileUpPFBRECO +
+pfNoPileUpPFBRECOTask = cms.Task(
+    pfPileUpPFBRECO,
     pfNoPileUpPFBRECO
     )
+pfNoPileUpPFBRECOSequence = cms.Sequence(pfNoPileUpPFBRECOTask)
 
 from CommonTools.ParticleFlow.ParticleSelectors.pfAllNeutralHadrons_cfi import *
 pfAllNeutralHadronsPFBRECO = pfAllNeutralHadrons.clone( src = 'pfNoPileUpIsoPFBRECO' )
@@ -40,69 +45,76 @@ pfAllChargedParticlesPFBRECO = pfAllChargedParticles.clone( src = 'pfNoPileUpIso
 from CommonTools.ParticleFlow.ParticleSelectors.pfAllNeutralHadronsAndPhotons_cfi import *
 pfAllNeutralHadronsAndPhotonsPFBRECO = pfAllNeutralHadronsAndPhotons.clone( src = 'pfNoPileUpIsoPFBRECO' )
 pfPileUpAllChargedParticlesPFBRECO = pfAllChargedParticles.clone( src = 'pfPileUpIsoPFBRECO' )
-pfSortByTypePFBRECOSequence = cms.Sequence(
-    pfAllNeutralHadronsPFBRECO+
-    pfAllChargedHadronsPFBRECO+
-    pfAllPhotonsPFBRECO+
-    # charged hadrons + electrons + muons
-    pfAllChargedParticlesPFBRECO+
+pfSortByTypePFBRECOTask = cms.Task(
+    pfAllNeutralHadronsPFBRECO,
+    pfAllChargedHadronsPFBRECO,
+    pfAllPhotonsPFBRECO,
+    # charged hadrons , electrons , muons
+    pfAllChargedParticlesPFBRECO,
     # same, but from pile up
-    pfPileUpAllChargedParticlesPFBRECO+
+    pfPileUpAllChargedParticlesPFBRECO,
     pfAllNeutralHadronsAndPhotonsPFBRECO
-#    +
-#    pfAllElectronsPFBRECO+
+#    ,
+#    pfAllElectronsPFBRECO,
 #    pfAllMuonsPFBRECO
     )
+pfSortByTypePFBRECOSequence = cms.Sequence(pfSortByTypePFBRECOTask)
 
-pfParticleSelectionPFBRECOSequence = cms.Sequence(
-    pfNoPileUpIsoPFBRECOSequence +
+pfParticleSelectionPFBRECOTask = cms.Task(
+    pfNoPileUpIsoPFBRECOTask,
     # In principle JME sequence should go here, but this is used in RECO
     # in addition to here, and is used in the "first-step" PF process
     # so needs to go later.
-    #pfNoPileUpJMESequence +
-    pfNoPileUpPFBRECOSequence +
-    pfSortByTypePFBRECOSequence
+    #pfNoPileUpJMETask ,
+    pfNoPileUpPFBRECOTask,
+    pfSortByTypePFBRECOTask
     )
+pfParticleSelectionPFBRECOSequence = cms.Sequence(pfParticleSelectionPFBRECOTask)
 
 from CommonTools.ParticleFlow.ParticleSelectors.pfSelectedPhotons_cfi import *
 pfSelectedPhotonsPFBRECO = pfSelectedPhotons.clone( src = 'pfAllPhotonsPFBRECO' )
 from CommonTools.ParticleFlow.Isolation.pfPhotonIsolationPFBRECO_cff import *
 from CommonTools.ParticleFlow.Isolation.pfIsolatedPhotons_cfi import *
-pfIsolatedPhotonsPFBRECO = pfIsolatedPhotons.clone( src = 'pfSelectedPhotonsPFBRECO',
-                                                    isolationValueMapsCharged = cms.VInputTag( cms.InputTag("phPFIsoValueCharged04PFIdPFBRECO") ),
-                                                    isolationValueMapsNeutral = cms.VInputTag( cms.InputTag("phPFIsoValueNeutral04PFIdPFBRECO"),
-                                                                                               cms.InputTag("phPFIsoValueGamma04PFIdPFBRECO") ),
-                                                    deltaBetaIsolationValueMap = 'phPFIsoValuePU04PFIdPFBRECO' )
-pfPhotonPFBRECOSequence = cms.Sequence(
-    pfSelectedPhotonsPFBRECO +
-    pfPhotonIsolationPFBRECOSequence +
+pfIsolatedPhotonsPFBRECO = pfIsolatedPhotons.clone( 
+    src = 'pfSelectedPhotonsPFBRECO',
+    isolationValueMapsCharged = ["phPFIsoValueCharged04PFIdPFBRECO"],
+    isolationValueMapsNeutral = ["phPFIsoValueNeutral04PFIdPFBRECO",
+                                 "phPFIsoValueGamma04PFIdPFBRECO"],
+    deltaBetaIsolationValueMap = 'phPFIsoValuePU04PFIdPFBRECO' 
+)
+pfPhotonPFBRECOTask = cms.Task(
+    pfSelectedPhotonsPFBRECO ,
+    pfPhotonIsolationPFBRECOTask ,
     # selecting isolated photons:
     pfIsolatedPhotonsPFBRECO
     )
+pfPhotonPFBRECOSequence = cms.Sequence(pfPhotonPFBRECOTask)
 
 from CommonTools.ParticleFlow.ParticleSelectors.pfMuonsFromVertex_cfi import *
 pfMuonsFromVertexPFBRECO = pfMuonsFromVertex.clone( src = 'pfAllMuonsPFBRECO' )
 from CommonTools.ParticleFlow.Isolation.pfIsolatedMuons_cfi import *
 pfIsolatedMuonsPFBRECO = pfIsolatedMuons.clone( src = 'pfMuonsFromVertexPFBRECO' )
-pfMuonsPFBRECO = pfIsolatedMuonsPFBRECO.clone(cut = cms.string("pt > 5 & muonRef.isAvailable()"))
-pfMuonPFBRECOSequence = cms.Sequence(
-    pfAllMuonsPFBRECO +
-    pfMuonsFromVertexPFBRECO +
-    pfIsolatedMuonsPFBRECO+
+pfMuonsPFBRECO = pfIsolatedMuonsPFBRECO.clone(cut = "pt > 5 & muonRef.isAvailable()")
+pfMuonPFBRECOTask = cms.Task(
+    pfAllMuonsPFBRECO ,
+    pfMuonsFromVertexPFBRECO ,
+    pfIsolatedMuonsPFBRECO,
     pfMuonsPFBRECO
     )
+pfMuonPFBRECOSequence = cms.Sequence(pfMuonPFBRECOTask)
 
 from CommonTools.ParticleFlow.ParticleSelectors.pfElectronsFromVertex_cfi import *
 pfElectronsFromVertexPFBRECO = pfElectronsFromVertex.clone( src = 'pfAllElectronsPFBRECO' )
 from CommonTools.ParticleFlow.Isolation.pfIsolatedElectrons_cfi import *
 pfIsolatedElectronsPFBRECO = pfIsolatedElectrons.clone( src = 'pfElectronsFromVertexPFBRECO' )
-pfElectronsPFBRECO = pfIsolatedElectronsPFBRECO.clone( cut = cms.string(" pt > 5 & gsfElectronRef.isAvailable() & gsfTrackRef.hitPattern().numberOfLostHits('MISSING_INNER_HITS')<2"))
-pfElectronPFBRECOSequence = cms.Sequence(
-    pfAllElectronsPFBRECO +
-    pfElectronsFromVertexPFBRECO +
-    pfIsolatedElectronsPFBRECO +
+pfElectronsPFBRECO = pfIsolatedElectronsPFBRECO.clone( cut = " pt > 5 & gsfElectronRef.isAvailable() & gsfTrackRef.hitPattern().numberOfLostHits('MISSING_INNER_HITS')<2")
+pfElectronPFBRECOTask = cms.Task(
+    pfAllElectronsPFBRECO ,
+    pfElectronsFromVertexPFBRECO ,
+    pfIsolatedElectronsPFBRECO ,
     pfElectronsPFBRECO
     )
+pfElectronPFBRECOSequence = cms.Sequence(pfElectronPFBRECOTask)
 
 from CommonTools.ParticleFlow.Tools.jetTools import jetAlgo
 pfJetsPFBRECO = jetAlgo('AK4')
@@ -110,15 +122,16 @@ pfJetsPFBRECO.src = 'pfNoElectronJMEPFBRECO'
 pfJetsPtrsPFBRECO = cms.EDProducer("PFJetFwdPtrProducer",
                                    src=cms.InputTag("pfJetsPFBRECO")
                                    )
-pfJetPFBRECOSequence = cms.Sequence(
-    pfJetsPFBRECO +
+pfJetPFBRECOTask = cms.Task(
+    pfJetsPFBRECO ,
     pfJetsPtrsPFBRECO
     )
+pfJetPFBRECOSequence = cms.Sequence(pfJetPFBRECOTask)
 
 from CommonTools.ParticleFlow.pfTaus_cff import *
 
 from CommonTools.ParticleFlow.pfMET_cfi import *
-pfMETPFBRECO = pfMET.clone( jets = 'pfJetsPFBRECO' )
+pfMETPFBRECO = pfMET.clone( srcJets = 'pfJetsPFBRECO' )
 
 ##delta beta weighting
 #from CommonTools.ParticleFlow.deltaBetaWeights_cfi import *
@@ -128,7 +141,8 @@ pfMETPFBRECO = pfMET.clone( jets = 'pfJetsPFBRECO' )
 #pfWeightedNeutralHadronsPFBRECO = pfWeightedNeutralHadrons.clone( src = 'pfAllNeutralHadronsPFBRECO',
                                                                   #chargedFromPV = 'pfAllChargedParticlesPFBRECO',
                                                                   #chargedFromPU = 'pfPileUpAllChargedParticlesPFBRECO' )
-#pfDeltaBetaWeightingPFBRECOSequence = cms.Sequence(pfWeightedPhotonsPFBRECO+pfWeightedNeutralHadronsPFBRECO)
+#pfDeltaBetaWeightingPFBRECOTask = cms.Task(pfWeightedPhotonsPFBRECO+pfWeightedNeutralHadronsPFBRECO)
+#pfDeltaBetaWeightingPFBRECOSequence = cms.Sequence(pfDeltaBetaWeightingPFBRECOTask)
 
 # sequential top projection cleaning
 from CommonTools.ParticleFlow.TopProjectors.pfNoMuon_cfi import *
@@ -151,22 +165,24 @@ pfNoTauClonesPFBRECO = pfNoTauClones.clone ( src = 'pfNoTauPFBRECO' )
 # generator tools
 from CommonTools.ParticleFlow.genForPF2PAT_cff import *
 
-PFBRECO = cms.Sequence(
-    particleFlowPtrs +
-    pfParticleSelectionPFBRECOSequence +
-    pfNoPileUpJMESequence +
-#    pfDeltaBetaWeightingPFBRECOSequence +
-    pfPhotonPFBRECOSequence +
-    pfMuonPFBRECOSequence +
-    pfNoMuonPFBRECO +
-    pfNoMuonJMEPFBRECO +
-    pfElectronPFBRECOSequence +
-    pfNoElectronPFBRECO +
-    pfNoElectronJMEPFBRECO +
-    pfNoElectronJMEClonesPFBRECO+
-    pfJetPFBRECOSequence +
-    pfNoJetPFBRECO +
-    pfTauSequence +
-    pfNoTauPFBRECO +
+PFBRECOTask = cms.Task(
+    particleFlowPtrs ,
+    pfParticleSelectionPFBRECOTask ,
+    pfNoPileUpJMETask ,
+#    pfDeltaBetaWeightingPFBRECOTask ,
+    pfPhotonPFBRECOTask ,
+    pfMuonPFBRECOTask ,
+    pfNoMuonPFBRECO ,
+    pfNoMuonJMEPFBRECO ,
+    pfElectronPFBRECOTask ,
+    pfNoElectronPFBRECO ,
+    pfNoElectronJMEPFBRECO ,
+    pfNoElectronJMEClonesPFBRECO,
+    pfJetPFBRECOTask ,
+    pfNoJetPFBRECO ,
+    pfTauTask ,
+    pfNoTauPFBRECO ,
     pfMETPFBRECO
     )
+PFBRECO = cms.Sequence(PFBRECOTask)
+

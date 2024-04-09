@@ -26,16 +26,13 @@
 
 #include <string>
 
-class Type0PFMETcorrInputProducer : public edm::stream::EDProducer<>  
-{
- public:
-
+class Type0PFMETcorrInputProducer : public edm::stream::EDProducer<> {
+public:
   explicit Type0PFMETcorrInputProducer(const edm::ParameterSet&);
-  ~Type0PFMETcorrInputProducer();
-    
- private:
+  ~Type0PFMETcorrInputProducer() override;
 
-  void produce(edm::Event&, const edm::EventSetup&);
+private:
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
   std::string moduleLabel_;
 
@@ -48,8 +45,3 @@ class Type0PFMETcorrInputProducer : public edm::stream::EDProducer<>
 };
 
 #endif
-
-
-
- 
-

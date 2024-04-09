@@ -1,9 +1,11 @@
+from __future__ import print_function
+from builtins import range
 __author__="Aurelija"
 __date__ ="$2010-09-23 15.00.20$"
 
 import re
 
-declarator = '(\*|&)?(\w|<|>|$|::)+'
+declarator = '(\*|&)?(\w|<|,|>|$|::)+'
 cv_decl = '\s*(const|volatile|noexcept)\s*'
 exception = 'throw\(((::)|\w|\s|,|<|>)*\)'
 decl_param = '\s((\(%s\))|(%s))\s*\((\w|\s|\*|&|\.|=|\'|\"|-|<|>|,|(::))*\)'%(declarator, declarator)
@@ -30,7 +32,7 @@ def filterFile(file):
     lines = ""
 
     if type(file).__name__ != 'list':
-        lines = open(file).read()
+        lines = open(file, errors='replace').read()
     else:
         for line in file:
             lines += line
@@ -54,7 +56,7 @@ def filterFile(file):
                         endPosition = m.end() + i + 1
                         break
             if openBracket != closeBracket:#if there is error in file
-                print "Error in file. To much open brackets. Run commentSkipper before you run functionSkipper."
+                print("Error in file. To much open brackets. Run commentSkipper before you run functionSkipper.")
                 break
             else:
                 #print "LINES: \n" + lines[startPosition:endPosition] 

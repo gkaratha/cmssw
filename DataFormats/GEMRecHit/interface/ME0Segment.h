@@ -10,83 +10,91 @@
  *  \author Marcello Maggi
  */
 
-#include <DataFormats/TrackingRecHit/interface/RecSegment.h>
-#include <DataFormats/GEMRecHit/interface/ME0RecHitCollection.h>
+#include "DataFormats/TrackingRecHit/interface/RecSegment.h"
+#include "DataFormats/GEMRecHit/interface/ME0RecHitCollection.h"
 
 #include <iosfwd>
 
 class ME0DetId;
 
 class ME0Segment final : public RecSegment {
-
 public:
+  /// Default constructor
+  ME0Segment() : theChi2(0.), theTimeValue(0.), theTimeUncrt(0.), theDeltaPhi(0.) {}
 
-    /// Default constructor
-    ME0Segment() : theChi2(0.){}
-	
-    /// Constructor
-    ME0Segment(const std::vector<const ME0RecHit*>& proto_segment, LocalPoint origin, 
-	       LocalVector direction, AlgebraicSymMatrix errors, double chi2);
+  /// Constructor
+  ME0Segment(const std::vector<const ME0RecHit*>& proto_segment,
+             const LocalPoint& origin,
+             const LocalVector& direction,
+             const AlgebraicSymMatrix& errors,
+             float chi2);
 
-   ME0Segment(const std::vector<const ME0RecHit*>& proto_segment, LocalPoint origin, 
-	      LocalVector direction, AlgebraicSymMatrix errors, double chi2, double time, double timeErr);
-  
-    /// Destructor
-    virtual ~ME0Segment();
+  ME0Segment(const std::vector<const ME0RecHit*>& proto_segment,
+             const LocalPoint& origin,
+             const LocalVector& direction,
+             const AlgebraicSymMatrix& errors,
+             float chi2,
+             float time,
+             float timeErr,
+             float deltaPhi);
 
-    //--- Base class interface
-    ME0Segment* clone() const { return new ME0Segment(*this); }
+  /// Destructor
+  ~ME0Segment() override;
 
-    LocalPoint localPosition() const { return theOrigin; }
-    LocalError localPositionError() const ;
-	
-    LocalVector localDirection() const { return theLocalDirection; }
-    LocalError localDirectionError() const ;
+  //--- Base class interface
+  ME0Segment* clone() const override { return new ME0Segment(*this); }
 
-    /// Parameters of the segment, for the track fit in the order (dx/dz, dy/dz, x, y )
-    AlgebraicVector parameters() const;
+  LocalPoint localPosition() const override { return theOrigin; }
+  LocalError localPositionError() const override;
 
-    /// Covariance matrix of parameters()
-    AlgebraicSymMatrix parametersError() const { return theCovMatrix; }
+  LocalVector localDirection() const override { return theLocalDirection; }
+  LocalError localDirectionError() const override;
 
-    /// The projection matrix relates the trajectory state parameters to the segment parameters().
-    virtual AlgebraicMatrix projectionMatrix() const;
+  /// Parameters of the segment, for the track fit in the order (dx/dz, dy/dz, x, y )
+  AlgebraicVector parameters() const override;
 
-    virtual std::vector<const TrackingRecHit*> recHits() const;
+  /// Covariance matrix of parameters()
+  AlgebraicSymMatrix parametersError() const override { return theCovMatrix; }
 
-    virtual std::vector<TrackingRecHit*> recHits();
+  /// The projection matrix relates the trajectory state parameters to the segment parameters().
+  AlgebraicMatrix projectionMatrix() const override;
 
-    double chi2() const { return theChi2; };
+  std::vector<const TrackingRecHit*> recHits() const override;
 
-    virtual int dimension() const { return 4; }
+  std::vector<TrackingRecHit*> recHits() override;
 
-    virtual int degreesOfFreedom() const { return 2*nRecHits() - 4;}	 
+  double chi2() const override { return theChi2; };
 
-    //--- Extension of the interface
-        
-    const std::vector<ME0RecHit>& specificRecHits() const { return theME0RecHits; }
+  int dimension() const override { return 4; }
 
-    int nRecHits() const { return theME0RecHits.size(); }        
+  int degreesOfFreedom() const override { return 2 * nRecHits() - 4; }
 
-    ME0DetId me0DetId() const { return  geographicalId(); }
+  //--- Extension of the interface
 
-    float time() const    { return theTimeValue; }
-    float timeErr() const { return theTimeUncrt; }
-    
-    void print() const;		
-    
- private:
-    
-    std::vector<ME0RecHit> theME0RecHits;
-    LocalPoint theOrigin;            // in chamber frame - the GeomDet local coordinate system
-    LocalVector theLocalDirection;   // in chamber frame - the GeomDet local coordinate system
-    AlgebraicSymMatrix theCovMatrix; // the covariance matrix
-    double theChi2;                  // the Chi squared of the segment fit
-    double theTimeValue;             // the best time estimate of the segment
-    double theTimeUncrt;             // the uncertainty on the time estimation
+  const std::vector<ME0RecHit>& specificRecHits() const { return theME0RecHits; }
 
+  int nRecHits() const { return theME0RecHits.size(); }
+
+  ME0DetId me0DetId() const { return geographicalId(); }
+
+  float time() const { return theTimeValue; }
+  float timeErr() const { return theTimeUncrt; }
+
+  float deltaPhi() const { return theDeltaPhi; }
+
+  void print() const;
+
+private:
+  std::vector<ME0RecHit> theME0RecHits;
+  LocalPoint theOrigin;             // in chamber frame - the GeomDet local coordinate system
+  LocalVector theLocalDirection;    // in chamber frame - the GeomDet local coordinate system
+  AlgebraicSymMatrix theCovMatrix;  // the covariance matrix
+  float theChi2;                    // the Chi squared of the segment fit
+  float theTimeValue;               // the best time estimate of the segment
+  float theTimeUncrt;               // the uncertainty on the time estimation
+  float theDeltaPhi;                // Difference in segment phi position: outer layer - inner lay
 };
 
 std::ostream& operator<<(std::ostream& os, const ME0Segment& seg);
 
-#endif 
+#endif

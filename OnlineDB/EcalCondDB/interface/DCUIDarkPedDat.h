@@ -10,33 +10,28 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class DCUIDarkPedDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   DCUIDarkPedDat();
-  ~DCUIDarkPedDat();
+  ~DCUIDarkPedDat() override;
 
   // User data methods
-  inline std::string getTable() { return "DCU_IDARK_PED_DAT"; }
+  inline std::string getTable() override { return "DCU_IDARK_PED_DAT"; }
 
   inline void setPed(float temp) { m_ped = temp; }
   inline float getPed() const { return m_ped; }
-  
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
 
-  void writeDB(const EcalLogicID* ecid, const DCUIDarkPedDat* item, DCUIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, DCUIDarkPedDat>* data, DCUIOV* iov)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const DCUIDarkPedDat* item, DCUIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, DCUIDarkPedDat >* fillVec, DCUIOV* iov)
-     throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, DCUIDarkPedDat>* data, DCUIOV* iov) noexcept(false);
+
+  void fetchData(std::map<EcalLogicID, DCUIDarkPedDat>* fillVec, DCUIOV* iov) noexcept(false);
 
   // User data
   float m_ped;
-  
 };
 
 #endif

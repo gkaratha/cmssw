@@ -2,23 +2,18 @@
 #define DQM_SiStripCommissioningClients_FastFedCablingHistograms_H
 
 #include "DQM/SiStripCommissioningClients/interface/CommissioningHistograms.h"
-
-class DQMStore;
+#include "DQMServices/Core/interface/DQMStore.h"
 
 class FastFedCablingHistograms : public virtual CommissioningHistograms {
+public:
+  FastFedCablingHistograms(const edm::ParameterSet& pset, DQMStore*);
+  ~FastFedCablingHistograms() override;
 
- public:
-  
-  FastFedCablingHistograms( const edm::ParameterSet& pset, DQMStore* );
-  virtual ~FastFedCablingHistograms();
-  
-  void histoAnalysis( bool debug );
+  void histoAnalysis(bool debug) override;
 
-  void printAnalyses(); // override
+  void printAnalyses() override;  // override
 
-  void printSummary(); // override
-
+  void printSummary() override;  // override
 };
 
-#endif // DQM_SiStripCommissioningClients_FastFedCablingHistograms_H
-
+#endif  // DQM_SiStripCommissioningClients_FastFedCablingHistograms_H

@@ -2,7 +2,7 @@
 //
 // Package:    BasicToPFJet
 // Class:      BasicToPFJet
-// 
+//
 /**\class BasicToPFJet BasicToPFJet.cc UserCode/BasicToPFJet/plugins/BasicToPFJet.cc
 
  Description: converts reco::BasicJets to reco::PFJets and adds the new PFJetCollection to the event. Originally designed
@@ -24,36 +24,31 @@
 // user include files
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 //include header file
 #include "RecoJets/JetProducers/plugins/BasicToPFJet.h"
 
-BasicToPFJet::BasicToPFJet(const edm::ParameterSet& PSet) :
-  src_ (PSet.getParameter<edm::InputTag>("src")),
-  inputToken_ (consumes<reco::BasicJetCollection>(src_))
-{
+BasicToPFJet::BasicToPFJet(const edm::ParameterSet& PSet)
+    : src_(PSet.getParameter<edm::InputTag>("src")), inputToken_(consumes<reco::BasicJetCollection>(src_)) {
   produces<reco::PFJetCollection>();
 }
 
-BasicToPFJet::~BasicToPFJet(){}
-
-
-void BasicToPFJet::fillDescriptions(edm::ConfigurationDescriptions& descriptions){
+void BasicToPFJet::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("src",edm::InputTag(""));
-  descriptions.add("BasicToPFJet",desc);
+  desc.add<edm::InputTag>("src", edm::InputTag(""));
+  descriptions.add("BasicToPFJet", desc);
 }
 
-void BasicToPFJet::produce( edm::Event& Event, const edm::EventSetup& EventSetup){
-
+void BasicToPFJet::produce(edm::StreamID, edm::Event& Event, const edm::EventSetup& EventSetup) const {
   //first get the basic jet collection
   edm::Handle<reco::BasicJetCollection> BasicJetColl;
   Event.getByToken(inputToken_, BasicJetColl);
 
   //now make the new pf jet collection
-  std::auto_ptr<reco::PFJetCollection> PFJetColl(new reco::PFJetCollection);
+  auto PFJetColl = std::make_unique<reco::PFJetCollection>();
   //reco::PFJetCollection* PFJetColl = new reco::PFJetCollection;
   //make the 'specific'
   reco::PFJet::Specific specific;
@@ -62,15 +57,14 @@ void BasicToPFJet::produce( edm::Event& Event, const edm::EventSetup& EventSetup
   reco::BasicJetCollection::const_iterator i = BasicJetColl->begin();
 
   //loop over basic jets and convert them to pfjets
-  for(; i!=BasicJetColl->end(); i++){
-    reco::PFJet pfjet(i->p4(),i->vertex(),specific);
+  for (; i != BasicJetColl->end(); i++) {
+    reco::PFJet pfjet(i->p4(), i->vertex(), specific);
     PFJetColl->push_back(pfjet);
   }
 
-  //std::auto_ptr<reco::PFJetCollection> selectedPFJets(PFJetColl);
-  Event.put(PFJetColl);
+  //std::unique_ptr<reco::PFJetCollection> selectedPFJets(PFJetColl);
+  Event.put(std::move(PFJetColl));
 }
 
- 
 //define as plug-in for the framework
 DEFINE_FWK_MODULE(BasicToPFJet);

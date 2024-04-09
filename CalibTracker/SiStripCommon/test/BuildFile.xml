@@ -1,7 +1,6 @@
-<library   file="plugins/*.cc" name="testCalibTrackerSiStripCommonPlugins">
-  <use   name="CalibTracker/SiStripCommon"/>
-  <use   name="FWCore/Framework"/>
-  <use   name="FWCore/ParameterSet"/>
-  <use   name="FWCore/MessageLogger"/>
-  <flags   EDM_PLUGIN="1"/>
+<test name="testCalibTrackerSiStripCommon" command="test_all.sh"/>
+
+<use name="CalibTracker/SiStripCommon"/>
+<library file="*.cc" name="CalibTrackerSiStripCommonTest">
+  <flags EDM_PLUGIN="1"/>
 </library>

@@ -2,24 +2,23 @@
 #define FastSimulation_ParticlePropagator_MagneticFieldMapESProducer_H
 
 #include "FWCore/Framework/interface/ESProducer.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FastSimulation/ParticlePropagator/interface/MagneticFieldMapRecord.h"
 #include "FastSimulation/ParticlePropagator/interface/MagneticFieldMap.h"
-#include <boost/shared_ptr.hpp>
+#include "FastSimulation/TrackerSetup/interface/TrackerInteractionGeometryRecord.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include <string>
 
-class  MagneticFieldMapESProducer: public edm::ESProducer{
- public:
-  MagneticFieldMapESProducer(const edm::ParameterSet & p);
-  virtual ~MagneticFieldMapESProducer(); 
-  boost::shared_ptr<MagneticFieldMap> produce(const MagneticFieldMapRecord &);
- private:
-  boost::shared_ptr<MagneticFieldMap> _map;
-  std::string _label;
+class MagneticFieldMapESProducer : public edm::ESProducer {
+public:
+  MagneticFieldMapESProducer(const edm::ParameterSet &p);
+  ~MagneticFieldMapESProducer() override = default;
+  std::unique_ptr<MagneticFieldMap> produce(const MagneticFieldMapRecord &);
+
+private:
+  const std::string label_;
+  edm::ESGetToken<TrackerInteractionGeometry, TrackerInteractionGeometryRecord> tokenGeom_;
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> tokenBField_;
 };
 
-
 #endif
-
-
-
-

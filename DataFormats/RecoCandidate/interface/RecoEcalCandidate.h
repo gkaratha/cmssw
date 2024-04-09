@@ -15,31 +15,31 @@ namespace reco {
   class RecoEcalCandidate : public RecoCandidate {
   public:
     /// default constructor
-    RecoEcalCandidate() : RecoCandidate() { }
+    RecoEcalCandidate() : RecoCandidate() {}
     /// constructor from values
-    RecoEcalCandidate( Charge q , const LorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ),
-		       int pdgId = 0, int status = 0 ) :
-      RecoCandidate( q, p4, vtx, pdgId, status ) { }
+    RecoEcalCandidate(
+        Charge q, const LorentzVector& p4, const Point& vtx = Point(0, 0, 0), int pdgId = 0, int status = 0)
+        : RecoCandidate(q, p4, vtx, pdgId, status) {}
     /// constructor from values
-    RecoEcalCandidate( Charge q , const PolarLorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ),
-		       int pdgId = 0, int status = 0 ) :
-      RecoCandidate( q, p4, vtx, pdgId, status ) { }
+    RecoEcalCandidate(
+        Charge q, const PolarLorentzVector& p4, const Point& vtx = Point(0, 0, 0), int pdgId = 0, int status = 0)
+        : RecoCandidate(q, p4, vtx, pdgId, status) {}
     /// destructor
-    virtual ~RecoEcalCandidate();
+    ~RecoEcalCandidate() override;
     /// returns a clone of the candidate
-    virtual RecoEcalCandidate * clone() const;
+    RecoEcalCandidate* clone() const override;
     /// set reference to superCluster
-    void setSuperCluster( const reco::SuperClusterRef & r ) { superCluster_ = r; }
+    void setSuperCluster(const reco::SuperClusterRef& r) { superCluster_ = r; }
     /// reference to a superCluster
-    virtual reco::SuperClusterRef superCluster() const;
+    reco::SuperClusterRef superCluster() const override;
 
   private:
     /// check overlap with another candidate
-    virtual bool overlap( const Candidate & ) const;
+    bool overlap(const Candidate&) const override;
     /// reference to a superCluster
     reco::SuperClusterRef superCluster_;
   };
-  
-}
+
+}  // namespace reco
 
 #endif

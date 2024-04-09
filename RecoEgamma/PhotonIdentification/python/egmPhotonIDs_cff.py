@@ -1,16 +1,16 @@
-# Misc loads for VID framework
-from RecoEgamma.PhotonIdentification.egmPhotonIDs_cfi import *
-from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
+import FWCore.ParameterSet.Config as cms
 
-# Load the producer module to build full 5x5 cluster shapes and whatever 
-# else is needed for IDs
-from RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi import *
+from PhysicsTools.SelectorUtils.tools.DataFormat import DataFormat
 
-# Load the producer for MVA IDs. Make sure it is also added to the sequence!
-from RecoEgamma.PhotonIdentification.PhotonMVAValueMapProducer_cfi import *
-from RecoEgamma.PhotonIdentification.PhotonRegressionValueMapProducer_cfi import *
+def loadEgmIdSequence(process, dataFormat):
+    process.load("RecoEgamma.PhotonIdentification.egmPhotonIDs_cfi")
+    from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 
-# The sequence below is important. The MVA ValueMapProducer
-# needs to be downstream from the ID ValueMapProducer because it relies 
-# on some of its products
-egmPhotonIDSequence = cms.Sequence(photonIDValueMapProducer * photonMVAValueMapProducer * egmPhotonIDs * photonRegressionValueMapProducer )
+    # Load the producer for MVA IDs. Make sure it is also added to the sequence!
+    process.load("RecoEgamma.PhotonIdentification.PhotonMVAValueMapProducer_cfi")
+    process.egmPhotonIDTask = cms.Task()
+    # Add everything else other then isolation
+    process.egmPhotonIDTask.add(process.photonMVAValueMapProducer,
+                                process.egmPhotonIDs)
+
+    process.egmPhotonIDSequence = cms.Sequence(process.egmPhotonIDTask)

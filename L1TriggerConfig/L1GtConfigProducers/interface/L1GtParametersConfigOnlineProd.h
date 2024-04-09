@@ -16,7 +16,7 @@
  */
 
 // system include files
-#include "boost/shared_ptr.hpp"
+#include <memory>
 #include <string>
 
 // user include files
@@ -29,24 +29,19 @@
 // forward declarations
 
 // class declaration
-class L1GtParametersConfigOnlineProd :
-        public L1ConfigOnlineProdBase<L1GtParametersRcd, L1GtParameters>
-{
-
+class L1GtParametersConfigOnlineProd : public L1ConfigOnlineProdBase<L1GtParametersRcd, L1GtParameters> {
 public:
+  /// constructor
+  L1GtParametersConfigOnlineProd(const edm::ParameterSet&);
 
-    /// constructor
-    L1GtParametersConfigOnlineProd(const edm::ParameterSet&);
+  /// destructor
+  ~L1GtParametersConfigOnlineProd() override;
 
-    /// destructor
-    ~L1GtParametersConfigOnlineProd();
-
-    /// public methods
-    virtual boost::shared_ptr<L1GtParameters> newObject(const std::string& objectKey);
+  /// public methods
+  std::unique_ptr<L1GtParameters> newObject(const std::string& objectKey) override;
 
 private:
-
-    ///
+  ///
 };
 
 #endif

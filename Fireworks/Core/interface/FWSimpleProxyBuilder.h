@@ -28,45 +28,46 @@
 // forward declarations
 
 class FWSimpleProxyBuilder : public FWProxyBuilderBase {
-
 public:
-   FWSimpleProxyBuilder(const std::type_info& iType);
-   virtual ~FWSimpleProxyBuilder();
+  FWSimpleProxyBuilder(const std::type_info& iType);
+  ~FWSimpleProxyBuilder() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
-   ///Used by the plugin system to determine how the proxy uses the data from FWEventItem
-   static std::string typeOfBuilder();
+  // ---------- static member functions --------------------
+  ///Used by the plugin system to determine how the proxy uses the data from FWEventItem
+  static std::string typeOfBuilder();
 
-   // ---------- member functions ---------------------------
+  // ---------- member functions ---------------------------
 
 protected:
-   using FWProxyBuilderBase::build;
-   virtual void build(const FWEventItem* iItem, TEveElementList* product, const FWViewContext*);
-   using FWProxyBuilderBase::buildViewType;
-   virtual void buildViewType(const FWEventItem* iItem, TEveElementList* product, FWViewType::EType viewType, const FWViewContext*);
+  using FWProxyBuilderBase::build;
+  void build(const FWEventItem* iItem, TEveElementList* product, const FWViewContext*) override;
+  using FWProxyBuilderBase::buildViewType;
+  void buildViewType(const FWEventItem* iItem,
+                     TEveElementList* product,
+                     FWViewType::EType viewType,
+                     const FWViewContext*) override;
 
-   //called once for each item in collection, the void* points to the
-   // object properly offset in memory
-   virtual void build(const void*, unsigned int iIndex, TEveElement& iItemHolder, const FWViewContext*) = 0;
-   virtual void buildViewType(const void*, unsigned int iIndex, TEveElement& iItemHolder, FWViewType::EType, const FWViewContext*) = 0;
+  //called once for each item in collection, the void* points to the
+  // object properly offset in memory
+  virtual void build(const void*, unsigned int iIndex, TEveElement& iItemHolder, const FWViewContext*) = 0;
+  virtual void buildViewType(
+      const void*, unsigned int iIndex, TEveElement& iItemHolder, FWViewType::EType, const FWViewContext*) = 0;
 
-   virtual void clean();
-   FWSimpleProxyHelper m_helper;
+  void clean() override;
+  FWSimpleProxyHelper m_helper;
 
+public:
+  FWSimpleProxyBuilder(const FWSimpleProxyBuilder&) = delete;  // stop default
+
+  const FWSimpleProxyBuilder& operator=(const FWSimpleProxyBuilder&) = delete;  // stop default
 private:
-   FWSimpleProxyBuilder(const FWSimpleProxyBuilder&); // stop default
+  virtual void itemChangedImp(const FWEventItem*);
 
-   const FWSimpleProxyBuilder& operator=(const FWSimpleProxyBuilder&); // stop default
+  bool visibilityModelChanges(const FWModelId&, TEveElement*, FWViewType::EType, const FWViewContext*) override;
 
-   virtual void itemChangedImp(const FWEventItem*);
-   
-   virtual bool visibilityModelChanges(const FWModelId&, TEveElement*, FWViewType::EType, const FWViewContext*);
-
- 
-   // ---------- member data --------------------------------
+  // ---------- member data --------------------------------
 };
-
 
 #endif

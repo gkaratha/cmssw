@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TrackerGeometryWriter")
-process.load('CondCore.DBCommon.CondDBCommon_cfi')
+process.load('CondCore.CondDB.CondDB_cfi')
 process.load('Configuration.Geometry.GeometryExtended_cff')
 
 process.source = cms.Source("EmptyIOVSource",
@@ -11,21 +11,18 @@ process.source = cms.Source("EmptyIOVSource",
                             interval = cms.uint64(1)
                             )
 
-process.TrackerGeometricDetExtraESModule = cms.ESProducer( "TrackerGeometricDetExtraESModule",
-                                                           fromDDD = cms.bool( True )
-                                                           )
+process.TrackerGeometricDetESModule = cms.ESProducer( "TrackerGeometricDetESModule",
+                                                      fromDDD = cms.bool( True )
+                                                     )
 
-process.TrackerGeometryWriter = cms.EDAnalyzer("PGeometricDetBuilder")
-process.TrackerGeometryExtraWriter = cms.EDAnalyzer("PGeometricDetExtraBuilder")
-process.TrackerParametersWriter = cms.EDAnalyzer("PTrackerParametersDBBuilder")
+process.TrackerGeometryWriter = cms.EDAnalyzer("PGeometricDetBuilder", fromDD4hep=cms.bool(False))
+process.TrackerParametersWriter = cms.EDAnalyzer("PTrackerParametersDBBuilder", fromDD4hep=cms.bool(False))
 
-process.CondDBCommon.BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService')
-process.CondDBCommon.timetype = cms.untracked.string('runnumber')
-process.CondDBCommon.connect = cms.string('sqlite_file:myfile.db')
+process.CondDB.timetype = cms.untracked.string('runnumber')
+process.CondDB.connect = cms.string('sqlite_file:myfile.db')
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
-                                          process.CondDBCommon,
+                                          process.CondDB,
                                           toPut = cms.VPSet(cms.PSet(record = cms.string('IdealGeometryRecord'),tag = cms.string('TKRECO_Geometry_Test01')),
-                                                            cms.PSet(record = cms.string('PGeometricDetExtraRcd'),tag = cms.string('TKExtra_Geometry_Test01')),
                                                             cms.PSet(record = cms.string('PTrackerParametersRcd'),tag = cms.string('TKParameters_Geometry_Test01'))
                                                             )
                                           )
@@ -34,4 +31,4 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
     )
 
-process.p1 = cms.Path(process.TrackerGeometryWriter*process.TrackerGeometryExtraWriter*process.TrackerParametersWriter)
+process.p1 = cms.Path(process.TrackerGeometryWriter*process.TrackerParametersWriter)

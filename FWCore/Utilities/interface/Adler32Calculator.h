@@ -2,7 +2,7 @@
 #define FWCore_Utilities_Adler32Calculator_h
 
 #include <sys/types.h>
-#include <stdint.h>
+#include <cstdint>
 
 /*
 Code to calculate a Adler32 checksum on a file.  This code is based
@@ -13,5 +13,5 @@ namespace cms {
 
   void Adler32(char const* data, size_t len, uint32_t& a, uint32_t& b);
   uint32_t Adler32(char const* data, size_t len);
-}
+}  // namespace cms
 #endif

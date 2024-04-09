@@ -47,9 +47,7 @@ int main() try {
 
   edm::ActivityRegistry ar;
   edm::ParameterSet pset;
-  std::auto_ptr<Service0> s0(new Service0(pset, ar));  
-  auto wrapper = std::make_shared<ServiceWrapper<Service0> >(s0);
-  legacy->put(wrapper);
+  legacy->put(std::make_shared<ServiceWrapper<Service0>>(std::make_unique<Service0>(pset, ar)));
   legacy->copySlotsFrom(ar);
   edm::ServiceToken legacyToken = TestServicesManagerOrder::makeToken(legacy);
 
@@ -59,7 +57,7 @@ int main() try {
   std::string typeName1("DummyServiceA1");
   ps1.addParameter("@service_type", typeName1);
   vps1.push_back(ps1);
-      
+
   // The next two are intentionally swapped to test build
   // on demand feature.  DummyServiceB3 depends on DummyServiceD2
   // so they should end up getting built in the reverse of the
@@ -78,16 +76,12 @@ int main() try {
   auto legacy2 = std::make_shared<ServicesManager>(legacyToken, kTokenOverrides, vps1);
   edm::ServiceToken legacyToken2 = TestServicesManagerOrder::makeToken(legacy2);
 
-
   ServicesManager sm(legacyToken2, kOverlapIsError, vps);
 
   edm::ActivityRegistry ar4;
   edm::ParameterSet pset4;
-  std::auto_ptr<Service4> s4(new Service4(pset4, ar4));  
-  auto wrapper4 = std::make_shared<ServiceWrapper<Service4> >(s4);
-  sm.put(wrapper4);
+  sm.put(std::make_shared<ServiceWrapper<Service4>>(std::make_unique<Service4>(pset4, ar4)));
   sm.copySlotsFrom(ar4);
-
 
   edm::ActivityRegistry actReg;
   sm.connectTo(actReg);
@@ -95,10 +89,10 @@ int main() try {
   actReg.postEndJobSignal_();
 
   return 0;
-} catch(cms::Exception const& e) {
+} catch (cms::Exception const& e) {
   std::cerr << e.explainSelf() << std::endl;
   return 1;
-} catch(std::exception const& e) {
+} catch (std::exception const& e) {
   std::cerr << e.what() << std::endl;
   return 1;
 }

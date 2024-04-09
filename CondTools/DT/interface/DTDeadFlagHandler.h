@@ -27,37 +27,30 @@
 //---------------
 #include <string>
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTDeadFlagHandler: public popcon::PopConSourceHandler<DTDeadFlag> {
-
- public:
-
+class DTDeadFlagHandler : public popcon::PopConSourceHandler<DTDeadFlag> {
+public:
   /** Constructor
    */
-  DTDeadFlagHandler( const edm::ParameterSet& ps );
+  DTDeadFlagHandler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTDeadFlagHandler();
+  ~DTDeadFlagHandler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
- private:
-
+private:
   std::string dataTag;
   std::string fileName;
   unsigned int runNumber;
-
 };
 
-
-#endif // DTDeadFlagHandler_H
-
+#endif  // DTDeadFlagHandler_H

@@ -10,33 +10,32 @@
 #include "SimMuon/GEMDigitizer/interface/ME0DigiPreRecoModel.h"
 
 class ME0Geometry;
-namespace CLHEP
-{
+namespace CLHEP {
   class HepRandomEngine;
 }
 
-class ME0PreRecoGaussianModel: public ME0DigiPreRecoModel
-{
+class ME0PreRecoGaussianModel : public ME0DigiPreRecoModel {
 public:
-
   ME0PreRecoGaussianModel(const edm::ParameterSet&);
 
-  ~ME0PreRecoGaussianModel();
+  ~ME0PreRecoGaussianModel() override;
 
   void simulateSignal(const ME0EtaPartition*, const edm::PSimHitContainer&, CLHEP::HepRandomEngine*) override;
-
   void simulateNoise(const ME0EtaPartition*, CLHEP::HepRandomEngine*) override;
-
-  void setup() {}
+  double correctSigmaU(const ME0EtaPartition*, double);
+  void setup() override {}
 
 private:
   double sigma_t;
   double sigma_u;
   double sigma_v;
+  double error_u;
+  double error_v;
+  bool gaussianSmearing_;
+  double constPhiSmearing_;
   bool corr;
   bool etaproj;
   bool digitizeOnlyMuons_;
-  bool gaussianSmearing_;
   double averageEfficiency_;
   // bool simulateIntrinsicNoise_; // not implemented
   // double averageNoiseRate_;     // not implemented
@@ -46,8 +45,11 @@ private:
   int minBunch_;
   int maxBunch_;
 
+  double instLumi_;
+  double rateFact_;
+  double referenceInstLumi_;
+
   // params for the simple pol6 model of neutral bkg for ME0:
   std::vector<double> neuBkg, eleBkg;
-
 };
 #endif

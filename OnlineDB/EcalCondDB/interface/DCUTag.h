@@ -11,12 +11,12 @@
  *   Tag for Run information
  */
 class DCUTag : public ITag {
- public:
+public:
   friend class DCUIOV;  // needs permission to write
   friend class EcalCondDBInterface;
 
   DCUTag();
-  ~DCUTag();
+  ~DCUTag() override;
 
   // Methods for user data
   std::string getGeneralTag() const;
@@ -26,31 +26,25 @@ class DCUTag : public ITag {
   void setLocationDef(const LocationDef& locDef);
 
   // Methods using ID
-  int fetchID() throw(std::runtime_error);
-  void setByID(int id) throw(std::runtime_error);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
-  inline bool operator==(const DCUTag &t) const 
-    { 
-      return (m_genTag == t.m_genTag &&
-	      m_locDef == t.m_locDef);
-    }
+  inline bool operator==(const DCUTag& t) const { return (m_genTag == t.m_genTag && m_locDef == t.m_locDef); }
 
-  inline bool operator!=(const DCUTag &t) const { return !(*this == t); }
+  inline bool operator!=(const DCUTag& t) const { return !(*this == t); }
 
- private:
+private:
   // User data for this tag
   std::string m_genTag;
   LocationDef m_locDef;
 
-
   // Methods from ITag
-  int writeDB() throw(std::runtime_error);
-  void fetchParentIDs(int* locId) throw(std::runtime_error);
+  int writeDB() noexcept(false);
+  void fetchParentIDs(int* locId) noexcept(false);
 
   // Public access methods
-  void fetchAllTags( std::vector<DCUTag>* fillVec) throw(std::runtime_error);
-
+  void fetchAllTags(std::vector<DCUTag>* fillVec) noexcept(false);
 };
 
 #endif

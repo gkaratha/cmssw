@@ -7,36 +7,34 @@
 
 class FWGeometryTableManagerBase;
 class TGLViewer;
-class FWEveDetectorGeo : public FWGeoTopNode
-{
+class FWEveDetectorGeo : public FWGeoTopNode {
 public:
-   FWEveDetectorGeo(FWGeometryTableView* v); 
-   virtual ~FWEveDetectorGeo() {}
+  FWEveDetectorGeo(FWGeometryTableView* v);
+  ~FWEveDetectorGeo() override {}
 
-   virtual void Paint(Option_t* option="");
+  void Paint(Option_t* option = "") override;
 
-   virtual TString     GetHighlightTooltip();
+  TString GetHighlightTooltip() override;
 
-   virtual FWGeometryTableManagerBase* tableManager();
-   virtual FWGeometryTableViewBase* browser();
+  FWGeometryTableManagerBase* tableManager() override;
+  FWGeometryTableViewBase* browser() override;
 
-   virtual void popupMenu(int x, int y, TGLViewer*);
-   
+  void popupMenu(int x, int y, TGLViewer*) override;
+
 #ifndef __CINT__
   // virtual void paintShape(bool visLevel, FWGeometryTableManagerBase::NodeInfo& data,  Int_t tableIndex, const TGeoHMatrix& nm, bool volumeColor);
 #endif
-   
-protected:   
 
+protected:
 private:
 #ifndef __CINT__
-   bool paintChildNodesRecurse(FWGeometryTableManagerBase::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
+  bool paintChildNodesRecurse(FWGeometryTableManagerBase::Entries_i pIt, Int_t idx, const TGeoHMatrix& mtx);
 #endif
-   FWGeometryTableView       *m_browser;
-   int m_maxLevel;
-   bool m_filterOff;
+  FWGeometryTableView* m_browser;
+  int m_maxLevel;
+  bool m_filterOff;
 
-   ClassDef(FWEveDetectorGeo, 0);
+  ClassDefOverride(FWEveDetectorGeo, 0);
 };
 
 #endif

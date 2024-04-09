@@ -2,34 +2,33 @@
 #define Geometry_GEMGeometry_GEMGeometryBuilderFromCondDB_H
 
 /** \class  GEMGeometryBuilderFromCondDB
- *  Build the GEMGeometry from the DDD description stored in Condition DB 
+ *  Build the GEMGeometry from the RecoIdealGeometry description stored in Condition DB 
  *
  *  \author M. Maggi - INFN Bari
  *
  */
 
-#include <CondFormats/GeometryObjects/interface/RecoIdealGeometry.h>
-#include <string>
-#include <map>
-#include <list>
+#include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h"
+#include "Geometry/GEMGeometry/interface/GEMGeometry.h"
 
-
-class GEMGeometry;
-class GEMDetId;
-class GEMEtaPartition;
-
-class GEMGeometryBuilderFromCondDB 
-{ 
- public:
-
+class GEMGeometryBuilderFromCondDB {
+public:
   GEMGeometryBuilderFromCondDB();
 
   ~GEMGeometryBuilderFromCondDB();
 
-  GEMGeometry* build(const RecoIdealGeometry& rgeo);
+  void build(GEMGeometry& theGeometry, const RecoIdealGeometry& rgeo);
 
- private:
-  //  std::map<GEMDetId,std::list<GEMEtaPartition *> > chids;
+private:
+  typedef ReferenceCountingPointer<BoundPlane> RCPBoundPlane;
+
+  GEMSuperChamber* buildSuperChamber(const RecoIdealGeometry& rgeo, unsigned int gid, GEMDetId detId) const;
+
+  GEMChamber* buildChamber(const RecoIdealGeometry& rgeo, unsigned int gid, GEMDetId detId) const;
+
+  GEMEtaPartition* buildEtaPartition(const RecoIdealGeometry& rgeo, unsigned int gid, GEMDetId detId) const;
+
+  RCPBoundPlane boundPlane(const RecoIdealGeometry& rgeo, unsigned int gid, GEMDetId detId) const;
 };
 
 #endif

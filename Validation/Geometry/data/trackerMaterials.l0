@@ -11,6 +11,8 @@ T_Aluminium                      1.000 0.000 0.000 0.000 0.000
 T_Beryllium                      1.000 0.000 0.000 0.000 0.000
 		                 
 T_Carbon                         1.000 0.000 0.000 0.000 0.000
+
+T_Kapton                         1.000 0.000 0.000 0.000 0.000
 		                 
 T_Nomex                          1.000 0.000 0.000 0.000 0.000
     		                 
@@ -74,7 +76,17 @@ T_G10                            1.000 0.000 0.000 0.000 0.000
 
 T_CarbonFibreStr                 1.000 0.000 0.000 0.000 0.000
 
+T_CarbonFibreStrBox              1.000 0.000 0.000 0.000 0.000
 
+MS_CU60                          0.000 0.000 1.000 0.000 0.000
+
+MS_AL36                          0.000 0.000 1.000 0.000 0.000
+
+MS_AL48                          0.000 0.000 1.000 0.000 0.000
+
+MS_AL_60                         0.000 0.000 1.000 0.000 0.000
+
+Polyurethane                     1.000 0.000 0.000 0.000 0.000
 
 
 #pixel_bar.in 0 0 0 0 0
@@ -109,16 +121,97 @@ Layer3_EndringPrints             0.006 0.000 0.000 0.000 0.994
 
 silicone_pipes_plus_coolant      0.000 0.000 0.000 1.000 0.000
 
-SectorA                          0.354 0.000 0.084 0.187 0.375
+SectorA                          0.331 0.000 0.023 0.105 0.542
 
-SectorB                          0.399 0.000 0.219 0.218 0.164
+SectorB                          0.300 0.000 0.359 0.246 0.095
 
-SectorC                          0.312 0.000 0.094 0.171 0.423
+SectorC                          0.214 0.000 0.120 0.177 0.489
 
-PixelBarrelSupTubCables          0.000 0.000 0.784 0.216 0.000
+SectorBC                         0.322 0.000 0.048 0.056 0.574
 
-PixelBarrelSupTubCables2         0.000 0.000 0.784 0.216 0.000
+PixelBarrelSupTubCables          0.000 0.000 0.762 0.238 0.000
 
+PixelBarrelSupTubCables2         0.000 0.000 0.762 0.238 0.000
+
+BPix_Silicone                    1.000 0.000 0.000 0.000 0.000
+
+Pix_Bar_Baseplate_Full_Upgrade   1.000 0.000 0.000 0.000 0.000
+
+Pix_Bar_Cable_Upgrade            0.000 0.000 1.000 0.000 0.000
+
+Pix_Bar_CableSignal_Upgrade      0.000 0.000 1.000 0.000 0.000
+
+Pix_Bar_CablePower_Upgrade       0.000 0.000 1.000 0.000 0.000
+
+Pix_Bar_Cable_Layer1_Upgrade     0.000 0.000 1.000 0.000 0.000
+
+Pix_Bar_Cable_Layer234_Upgrade   0.000 0.000 1.000 0.000 0.000
+
+cable_endring_to_tube_Upgrade    0.309 0.000 0.585 0.000 0.105
+
+Layer1_2_EndringPrints_Upgrade   0.008 0.000 0.000 0.000 0.992
+
+Layer3_EndringPrints_Upgrade     0.010 0.000 0.000 0.000 0.990
+
+SectorC_Upgrade                  0.214 0.000 0.120 0.177 0.489
+
+Flange1_Airex                    1.000 0.000 0.000 0.000 0.000
+
+Flange2_Airex                    1.000 0.000 0.000 0.000 0.000
+
+Flange3_Airex                    1.000 0.000 0.000 0.000 0.000
+
+Flange4_InnerCFK                 1.000 0.000 0.000 0.000 0.000
+
+Flange1_CFK                      1.000 0.000 0.000 0.000 0.000
+
+Flange2_CFK                      1.000 0.000 0.000 0.000 0.000
+
+Flange3_CFK                      1.000 0.000 0.000 0.000 0.000
+
+Flange4_CFK                      1.000 0.000 0.000 0.000 0.000
+
+FlangeOuter_Layer3_Upgrade       1.000 0.000 0.000 0.000 0.000
+
+LCP_Glass_Enforced               0.000 0.000 0.000 0.000 1.000
+
+Silicon_Nitride                  1.000 0.000 0.000 0.000 0.000
+
+FlangeOuter_Layer3_Upgrade       1.000 0.000 0.000 0.000 0.000
+
+micro_twisted_boundle            0.000 0.000 0.000 0.000 1.000
+
+CFK                              1.000 0.000 0.000 0.000 0.000
+
+CFK_Layer1                       1.000 0.000 0.000 0.000 0.000
+
+CFK_Layer2                       1.000 0.000 0.000 0.000 0.000
+
+CFK_Layer3                       1.000 0.000 0.000 0.000 0.000
+
+CFK_Layer4                       1.000 0.000 0.000 0.000 0.000
+
+CFK_Layer4                       1.000 0.000 0.000 0.000 0.000
+
+CoolPipesDaisyChain              0.000 0.000 0.000 1.000 0.000
+
+Bpix_Pipe_Steel_Half             0.000 0.000 0.000 1.000 0.000
+
+Bpix_CO2_-20C_Half               0.000 0.000 0.000 1.000 0.000
+
+Bpix_Pipe_Steel                  0.000 0.000 0.000 1.000 0.000
+
+Bpix_CO2_-20C                    0.000 0.000 0.000 1.000 0.000
+
+C6F14_F2_-10C                    0.000 0.000 0.000 1.000 0.000
+
+SupplyTubeEpoxy                  1.000 0.000 0.000 0.000 0.000
+
+SupplyTubeConn3                  1.000 0.000 0.000 0.000 0.000
+
+SupplyTubeConn3_Upgrade          1.000 0.000 0.000 0.000 0.000
+
+Polyoxymethylene                 1.000 0.000 0.000 0.000 0.000
 
 
 #pixel_fwd.in 0 0 0 0 0
@@ -157,6 +250,8 @@ Pix_Fwd_Port_Cards               0.000 0.000 0.176 0.000 0.824
 
 Pix_Fwd_Port_Cards_Pilot         0.000 0.000 0.176 0.000 0.824
 
+Pix_Fwd_Port_Cards_Phase1        0.000 0.000 0.139 0.137 0.725
+
 Pix_Fwd_End_Pipe_1               0.000 0.000 0.490 0.510 0.000
 
 Pix_Fwd_End_Pipe_2               0.000 0.000 0.497 0.503 0.000
@@ -169,6 +264,41 @@ FPix_CFSkin                      1.000 0.000 0.000 0.000 0.000
 
 Pix_Fwd_ROChip                   0.000 0.000 0.000 0.000 1.000
 
+Pix_Fwd_InnerBlade_AdhFilm       1.000 0.000 0.000 0.000 0.000
+
+Pix_Fwd_AluFlexCable2            0.000 0.000 1.000 0.000 0.000
+
+Pix_Fwd_AluFlexCable3            0.000 0.000 1.000 0.000 0.000
+
+FPix_CFSkin_InnerInnerRing       1.000 0.000 0.000 0.000 0.000
+
+FPix_CFSkin_InnerOuterRing       1.000 0.000 0.000 0.000 0.000
+
+FPix_CFSkin_OuterInnerRing       1.000 0.000 0.000 0.000 0.000
+
+FPix_CFSkin_OuterOuterRing       1.000 0.000 0.000 0.000 0.000
+
+C_C_InnerInnerRing               1.000 0.000 0.000 0.000 0.000
+
+C_C_InnerOuterRing               1.000 0.000 0.000 0.000 0.000
+
+C_C_OuterInnerRing               1.000 0.000 0.000 0.000 0.000
+
+C_C_OuterOuterRing               1.000 0.000 0.000 0.000 0.000
+
+Pix_Fwd_OuterBlade_AdhFilm       1.000 0.000 0.000 0.000 0.000
+
+CF_SupportArm                    1.000 0.000 0.000 0.000 0.000
+
+Pix_Fwd_Conn                     0.000 0.000 1.000 0.000 0.000
+
+Pix_Fwd_AluFlexCable             0.000 0.000 1.000 0.000 0.000
+
+DiskCoolingTube_inner            0.000 0.000 0.000 1.000 0.000
+
+DiskCoolingTube_outer            0.000 0.000 0.000 1.000 0.000
+
+Peek                             1.000 0.000 0.000 0.000 0.000
 
 
 #tib_module.in 0 0 0 0 0
@@ -216,8 +346,11 @@ TIB_AUX                          0.233 0.000 0.166 0.000 0.601
 TIB_DOHMCarrier                  0.768 0.000 0.232 0.000 0.000
 
 TIB_Pillar                       1.000 0.000 0.000 0.000 0.000
-    
 
+TIB_RailTop                      1.000 0.000 0.000 0.000 0.000
+
+TIB_RailBottom                   1.000 0.000 0.000 0.000 0.000
+    
 
 #tid_module.in 0 0 0 0 0
 
@@ -276,6 +409,12 @@ TIBTID_HybridBoard               0.000 0.000 0.000 0.000 1.000
 TIBTID_HybridTails               0.000 0.000 1.000 0.000 0.000
 
 TIBTID_Hybrid                    0.000 0.000 0.000 0.000 1.000
+
+TIBTID_T_RuggRibbon              0.000 0.000 1.000 0.000 0.000
+
+TIBTID_ServiceDisk1              0.531 0.000 0.407 0.080 0.000
+
+TIBTID_ServiceDisk2              0.531 0.000 0.407 0.080 0.000
     
     
 
@@ -376,6 +515,10 @@ TOB_CONN12                       0.009 0.000 0.972 0.000 0.019
 TOB_CONN34                       0.015 0.000 0.955 0.000 0.030
     
 TOB_CONN56                       0.010 0.000 0.969 0.000 0.021
+
+TOB_AlSideConnect                1.000 0.000 0.000 0.000 0.000
+
+TOB_AlCentralConnect             1.000 0.000 0.000 0.000 0.000
 
 
 
@@ -737,6 +880,4 @@ Tk_SO_FC_D              1.000 0.000 0.000 0.000 0.000
 Tk_SO_FC_E              1.000 0.000 0.000 0.000 0.000
 
 Tk_SO_FC_F              1.000 0.000 0.000 0.000 0.000
-
-
 

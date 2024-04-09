@@ -7,6 +7,7 @@
 #include "CondFormats/Alignment/interface/Alignments.h"
 
 #include "CLHEP/Geometry/Transform3D.h"
+#include <memory>
 #include <vector>
 
 /** \class EcalGeometryLoader
@@ -17,52 +18,37 @@
 
 class DDCompactView;
 
-template < class T >
-class CaloGeometryLoaderTest
-{
-   public:
+template <class T>
+class CaloGeometryLoaderTest {
+public:
+  typedef std::vector<double> ParmVec;
 
-      typedef std::vector< double > ParmVec ;
+  using PtrType = std::unique_ptr<CaloSubdetectorGeometry>;
 
-      typedef boost::shared_ptr< CaloSubdetectorGeometry > PtrType ;
+  typedef CaloSubdetectorGeometry::ParVec ParVec;
+  typedef CaloSubdetectorGeometry::ParVecVec ParVecVec;
 
-      typedef CaloSubdetectorGeometry::ParVec    ParVec ;
-      typedef CaloSubdetectorGeometry::ParVecVec ParVecVec ;
+  static const double k_ScaleFromDDDtoGeant;
 
-      static const double k_ScaleFromDDDtoGeant ;
+  CaloGeometryLoaderTest();
 
-      CaloGeometryLoaderTest< T >() ;
+  virtual ~CaloGeometryLoaderTest() {}
 
-      virtual ~CaloGeometryLoaderTest< T >() {}
- 
-      PtrType load( const DDCompactView* cpv,
-		    const Alignments*    alignments = 0 ,
-		    const Alignments*    globals    = 0  ) ;  
+  PtrType load(const DDCompactView* cpv, const Alignments* alignments = nullptr, const Alignments* globals = nullptr);
 
-   private:
+private:
+  void makeGeometry(const DDCompactView* cpv, T* geom, const Alignments* alignments, const Alignments* globals);
 
-      void makeGeometry( const DDCompactView*  cpv        , 
-			 T*                    geom       ,
-			 const Alignments*     alignments ,
-			 const Alignments*     globals       ) ;
-      
-      void fillNamedParams( DDFilteredView fv,
-			    T*             geom ) ;
-      
-      void fillGeom( T*                    geom ,
-		     const ParmVec&        pv ,
-		     const HepGeom::Transform3D& tr ,
-		     const DetId&          id    ) ;
-      
-      void myFillGeom( T*                    geom ,
-		       const ParmVec&        pv ,
-		       const HepGeom::Transform3D& tr ,
-		       const unsigned int     id    ) ;
+  void fillNamedParams(DDFilteredView fv, T* geom);
 
-      unsigned int getDetIdForDDDNode( const DDFilteredView& fv ) ;
+  void fillGeom(T* geom, const ParmVec& pv, const HepGeom::Transform3D& tr, const DetId& id);
 
-      typename T::NumberingScheme m_scheme;
-      DDSpecificsFilter  m_filter;
+  void myFillGeom(T* geom, const ParmVec& pv, const HepGeom::Transform3D& tr, const unsigned int id);
+
+  unsigned int getDetIdForDDDNode(const DDFilteredView& fv);
+
+  typename T::NumberingScheme m_scheme;
+  DDSpecificsFilter m_filter;
 };
 
 #endif

@@ -4,33 +4,31 @@
 #include "TGLAnnotation.h"
 class FWConfiguration;
 
-
 namespace fwlite {
-   class Event;
+  class Event;
 }
 
-class FWEventAnnotation : public TGLAnnotation
-{
+class FWEventAnnotation : public TGLAnnotation {
 public:
-   FWEventAnnotation(TGLViewerBase *view);
-   virtual ~FWEventAnnotation();
+  FWEventAnnotation(TGLViewerBase* view);
+  ~FWEventAnnotation() override;
 
-   virtual void   Render(TGLRnrCtx& rnrCtx);
+  void Render(TGLRnrCtx& rnrCtx) override;
 
-   //configuration management interface
-   virtual void addTo(FWConfiguration&) const;
-   virtual void setFrom(const FWConfiguration&);
-  
-   void setLevel(long x);
-   void setEvent();
-  
+  //configuration management interface
+  virtual void addTo(FWConfiguration&) const;
+  virtual void setFrom(const FWConfiguration&);
+
+  void setLevel(long x);
+  void setEvent();
+
+  FWEventAnnotation(const FWEventAnnotation&) = delete;                   // stop default
+  const FWEventAnnotation& operator=(const FWEventAnnotation&) = delete;  // stop default
+
 private:
-   FWEventAnnotation(const FWEventAnnotation&); // stop default
-   const FWEventAnnotation& operator=(const FWEventAnnotation&); // stop default
+  void updateOverlayText();
 
-   void updateOverlayText();
-
-   int  m_level;
+  int m_level;
 };
 
 #endif

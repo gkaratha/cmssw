@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FWCollectionSummaryTableManager
-// 
+//
 /**\class FWCollectionSummaryTableManager FWCollectionSummaryTableManager.h Fireworks/Core/interface/FWCollectionSummaryTableManager.h
 
  Description: <one line class summary>
@@ -20,7 +20,7 @@
 
 // system include files
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 // user include files
 #include "Fireworks/TableWidget/interface/FWTableManagerBase.h"
@@ -33,43 +33,46 @@ class FWEventItem;
 class FWCollectionSummaryWidget;
 
 class FWCollectionSummaryTableManager : public FWTableManagerBase {
-   
 public:
-   FWCollectionSummaryTableManager(FWEventItem* iCollection, const TGGC* iContext, const TGGC* iHighlightContext, FWCollectionSummaryWidget*);
-   virtual ~FWCollectionSummaryTableManager();
-   
-   // ---------- const member functions ---------------------
-   virtual  int numberOfRows() const ;
-   virtual  int numberOfColumns() const ;
-   virtual std::vector<std::string> getTitles() const;
-   virtual int unsortedRowNumber(int iSortedRowNumber) const;
+  FWCollectionSummaryTableManager(FWEventItem* iCollection,
+                                  const TGGC* iContext,
+                                  const TGGC* iHighlightContext,
+                                  FWCollectionSummaryWidget*);
+  ~FWCollectionSummaryTableManager() override;
 
-   virtual FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
+  // ---------- const member functions ---------------------
+  int numberOfRows() const override;
+  int numberOfColumns() const override;
+  std::vector<std::string> getTitles() const override;
+  int unsortedRowNumber(int iSortedRowNumber) const override;
 
-   virtual bool hasRowHeaders() const ;
-   virtual FWTableCellRendererBase* rowHeader(int iSortedRowNumber) const ;
-   
-   // ---------- static member functions --------------------
-   
-   // ---------- member functions ---------------------------
-   virtual void buttonReleasedInRowHeader(Int_t row, Event_t* event, Int_t relX, Int_t relY);
+  FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const override;
+
+  bool hasRowHeaders() const override;
+  FWTableCellRendererBase* rowHeader(int iSortedRowNumber) const override;
+
+  // ---------- static member functions --------------------
+
+  // ---------- member functions ---------------------------
+  void buttonReleasedInRowHeader(Int_t row, Event_t* event, Int_t relX, Int_t relY) override;
 
 protected:
-   virtual void implSort(int iCol, bool iSortOrder);
-private:
-   FWCollectionSummaryTableManager(const FWCollectionSummaryTableManager&); // stop default
-   
-   const FWCollectionSummaryTableManager& operator=(const FWCollectionSummaryTableManager&); // stop default
-   
-   void dataChanged();
-   // ---------- member data --------------------------------
-   FWEventItem* m_collection;
-   std::vector<int> m_sortedToUnsortedIndicies;
-   
-   mutable FWCollectionSummaryModelCellRenderer m_renderer;
-   mutable FWTextTableCellRenderer m_bodyRenderer;
-   FWCollectionSummaryWidget* m_widget;
-};
+  void implSort(int iCol, bool iSortOrder) override;
 
+public:
+  FWCollectionSummaryTableManager(const FWCollectionSummaryTableManager&) = delete;  // stop default
+
+  const FWCollectionSummaryTableManager& operator=(const FWCollectionSummaryTableManager&) = delete;  // stop default
+
+private:
+  void dataChanged();
+  // ---------- member data --------------------------------
+  FWEventItem* m_collection;
+  std::vector<int> m_sortedToUnsortedIndicies;
+
+  mutable FWCollectionSummaryModelCellRenderer m_renderer;
+  mutable FWTextTableCellRenderer m_bodyRenderer;
+  FWCollectionSummaryWidget* m_widget;
+};
 
 #endif

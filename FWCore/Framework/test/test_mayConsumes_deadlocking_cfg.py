@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("DEADLOCKTEST")
 process.source = cms.Source("EmptySource")
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(20000))
+process.maxEvents.input = 20000
 
 process.a = cms.EDAnalyzer("ConsumingOneSharedResourceAnalyzer", 
                             valueMustMatch = cms.untracked.int32(1),
@@ -17,21 +17,25 @@ process.b = cms.EDAnalyzer("ConsumingOneSharedResourceAnalyzer",
                             resourceName = cms.untracked.string("B")
                             )
 
-process.one = cms.EDProducer("IntLegacyProducer",
-                             ivalue = cms.int32(1)
+process.one = cms.EDProducer("IntOneSharedProducer",
+                             ivalue = cms.int32(1),
+                             resourceNames = cms.untracked.vstring("A", "B")
 )
 
-process.two = cms.EDProducer("IntLegacyProducer",
-                             ivalue = cms.int32(2)
+process.two = cms.EDProducer("IntOneSharedProducer",
+                             ivalue = cms.int32(2),
+                             resourceNames = cms.untracked.vstring("A", "B")
 )
            
-process.options = cms.untracked.PSet(
-                    allowUnscheduled = cms.untracked.bool(True),
-                    numberOfThreads = cms.untracked.uint32(2),
-                    numberOfStreams = cms.untracked.uint32(0)
+process.options = dict(
+    numberOfThreads = 2,
+    numberOfStreams = 0,
+    numberOfConcurrentLuminosityBlocks = 1
 )                 
 
-process.p1 = cms.Path(process.a)
+process.t = cms.Task(process.one, process.two)
+
+process.p1 = cms.Path(process.a, process.t)
 process.p2 = cms.Path(process.b)
 
 process.add_(cms.Service("ZombieKillerService", secondsBetweenChecks = cms.untracked.uint32(10)))

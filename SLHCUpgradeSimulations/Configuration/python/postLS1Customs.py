@@ -1,6 +1,5 @@
+from __future__ import print_function
 import FWCore.ParameterSet.Config as cms
-
-from RecoTracker.Configuration.customiseForRunI import customiseForRunI
 
 def customisePostLS1_Common(process):
 
@@ -27,8 +26,6 @@ def customisePostLS1_Common(process):
         process = customise_Reco(process)
     if hasattr(process,'digitisation_step') or ( hasattr(process,'mix') and hasattr(process.mix,'digitizers')):
         process = customise_Digi_Common(process)
-    if hasattr(process,'HLTSchedule'):
-        process = customise_HLT(process)
     if hasattr(process,'L1simulation_step'):
         process = customise_L1Emulator(process)
     if hasattr(process,'dqmoffline_step'):
@@ -45,7 +42,7 @@ def customisePostLS1_Common(process):
 
 def customisePostLS1(process,displayDeprecationWarning=True):
     if displayDeprecationWarning :
-        print """
+        print("""
         #
         # -- Warning! You are using a deprecated customisation function. --
         #
@@ -56,13 +53,13 @@ def customisePostLS1(process,displayDeprecationWarning=True):
         #       2) add the option "--era Run2_25ns" 
         #   If using a pre-made configuration file:
         #       1) remove or comment out the "process = customisePostLS1(process)" line.
-        #       2) add "from Configuration.StandardSequences.Eras import eras" to the TOP of the config file (above
+        #       2) add "from Configuration.Eras.Era_Run2_25ns_cff import Run2_25ns" to the TOP of the config file (above
         #          the process declaration).
-        #       3) add "eras.Run2_25ns" as a parameter to the process object, e.g. "process = cms.Process('HLT',eras.Run2_25ns)" 
+        #       3) add "Run2_25ns" as a parameter to the process object, e.g. "process = cms.Process('HLT',Run2_25ns)" 
         #
         # There is more information at https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCmsDriverEras
         #
-        """
+        """)
     # common customisation
     process = customisePostLS1_Common(process)
 
@@ -89,7 +86,7 @@ def customisePostLS1_lowPU(process):
 
 def customisePostLS1_50ns(process,displayDeprecationWarning=True):
     if displayDeprecationWarning :
-        print """
+        print("""
         #
         # -- Warning! You are using a deprecated customisation function. --
         #
@@ -100,13 +97,13 @@ def customisePostLS1_50ns(process,displayDeprecationWarning=True):
         #       2) add the option "--era Run2_50ns"
         #   If using a pre-made configuration file:
         #       1) remove or comment out the "process = customisePostLS1_50ns(process)" line.
-        #       2) add "from Configuration.StandardSequences.Eras import eras" to the TOP of the config file (above
+        #       2) add "from Configuration.Eras.Era_Run2_50ns_cff import Run2_50ns" to the TOP of the config file (above
         #          the process declaration).
-        #       3) add "eras.Run2_50ns" as a parameter to the process object, e.g. "process = cms.Process('HLT',eras.Run2_50ns)"
+        #       3) add "Run2_50ns" as a parameter to the process object, e.g. "process = cms.Process('HLT',Run2_50ns)"
         #
         # There is more information at https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCmsDriverEras
         #
-        """
+        """)
 
     # common customisations
     process = customisePostLS1_Common(process)
@@ -120,7 +117,7 @@ def customisePostLS1_50ns(process,displayDeprecationWarning=True):
 
 def customisePostLS1_HI(process,displayDeprecationWarning=True):
     if displayDeprecationWarning :
-        print """
+        print("""
         #
         # -- Warning! You are using a deprecated customisation function. --
         #
@@ -131,13 +128,13 @@ def customisePostLS1_HI(process,displayDeprecationWarning=True):
         #       2) add the option "--era Run2_HI"
         #   If using a pre-made configuration file:
         #       1) remove or comment out the "process = customisePostLS1_HI(process)" line.
-        #       2) add "from Configuration.StandardSequences.Eras import eras" to the TOP of the config file (above
+        #       2) add "from Configuration.Eras.Era_Run2_HI_cff import Run2_HI" to the TOP of the config file (above
         #          the process declaration).
-        #       3) add "eras.Run2_HI" as a parameter to the process object, e.g. "process = cms.Process('HLT',eras.Run2_HI)"
+        #       3) add "Run2_HI" as a parameter to the process object, e.g. "process = cms.Process('HLT',Run2_HI)"
         #
         # There is more information at https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCmsDriverEras
         #
-        """
+        """)
 
     # common customisation
     process = customisePostLS1_Common(process)
@@ -151,23 +148,6 @@ def customisePostLS1_HI(process,displayDeprecationWarning=True):
     #process = L1Menu_CollisionsHeavyIons2015_v0(process)
 
     return process
-
-def customisePostLS1_B0T(process):
-    # 50ns only
-
-    process=customisePostLS1_50ns(process)
-    process=customiseForRunI(process)
-
-    return process
-
-def customisePostLS1_B0T_lowPU(process):
-    # 50ns only
-
-    process=customisePostLS1_lowPU(process)
-    process=customiseForRunI(process)
-
-    return process
-
 
 def digiEventContent(process):
     #extend the event content
@@ -250,7 +230,7 @@ def customise_Validation(process):
 
 def customise_Sim(process):
     # enable 2015 HF shower library
-    process.g4SimHits.HFShowerLibrary.FileName = 'SimG4CMS/Calo/data/HFShowerLibrary_npmt_noatt_eta4_16en_v3.root'
+    process.g4SimHits.HFShowerLibrary.FileName = 'SimG4CMS/Calo/data/HFShowerLibrary_npmt_noatt_eta4_16en_v4.root'
     return process
 
 def customise_Digi_Common(process):
@@ -788,15 +768,12 @@ def customise_L1Emulator(process):
 
 
 def customise_RawToDigi(process):
-    process.RawToDigi.remove(process.gtEvmDigis)
+    if hasattr(process,'gtEvmDigis'):
+        process.RawToDigi.remove(process.gtEvmDigis)
     return process
 
 
 def customise_DigiToRaw(process):
-    return process
-
-
-def customise_HLT(process):
     return process
 
 

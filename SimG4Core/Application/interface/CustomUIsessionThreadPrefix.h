@@ -1,8 +1,7 @@
 #ifndef SimG4Core_CustomUIsessionThreadPrefix_H
-#define SimG4Core_CustomUIsessionThreadPrefix_H 
+#define SimG4Core_CustomUIsessionThreadPrefix_H
 
-#include "SimG4Core/Application/interface/CustomUIsession.h"
-
+#include "SimG4Core/Geometry/interface/CustomUIsession.h"
 
 /**
  * This class is intended for debugging of multithreaded simulation
@@ -11,13 +10,10 @@
  * thread-specific prefix is added before each line of output. This
  * makes it easier to grab the output of a specific thread.
  */
-class CustomUIsessionThreadPrefix : public CustomUIsession
-{
-
- public:
-
-  CustomUIsessionThreadPrefix(const std::string& threadPrefix, int threadId);
-  ~CustomUIsessionThreadPrefix();
+class CustomUIsessionThreadPrefix : public CustomUIsession {
+public:
+  explicit CustomUIsessionThreadPrefix(const std::string& threadPrefix, int threadId);
+  ~CustomUIsessionThreadPrefix() override;
 
   G4int ReceiveG4cout(const G4String& coutString) override;
   G4int ReceiveG4cerr(const G4String& cerrString) override;

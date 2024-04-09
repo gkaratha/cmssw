@@ -1,9 +1,12 @@
 #ifndef DDL_ALGORITHM_H
 #define DDL_ALGORITHM_H
 
+#include <string>
+
 #include "DDXMLElement.h"
 
-#include <string>
+class DDCompactView;
+class DDLElementRegistry;
 
 /// DDLAlgorithm processes Algorithm elements.
 /** @class DDLAlgorithm
@@ -19,21 +22,12 @@
  *
  */
 
-class DDLAlgorithm : public DDXMLElement
-{
- public:
+class DDLAlgorithm final : public DDXMLElement {
+public:
+  DDLAlgorithm(DDLElementRegistry* myreg);
 
-  /// Constructor
-  DDLAlgorithm( DDLElementRegistry* myreg );
-
-  /// Destructor
-  ~DDLAlgorithm();
-
-  void preProcessElement (const std::string& name, const std::string& nmspace, DDCompactView& cpv); 
-
-  void processElement (const std::string& name, const std::string& nmspace, DDCompactView& cpv); 
-
+  void preProcessElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
+  void processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
 };
 
 #endif
-

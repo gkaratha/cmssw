@@ -14,9 +14,9 @@
  
 */
 //
-// Original Author: 
+// Original Author:
 //         Created:  Tue May 16 10:14:34 CEST 2006
- 
+
 // system include files
 
 // user include files
@@ -25,37 +25,32 @@
 #include "SimG4CMS/Forward/interface/CastorShowerLibrary.h"
 #include "SimG4CMS/Forward/interface/CastorNumberingScheme.h"
 #include "SimDataFormats/CaloHit/interface/CastorShowerEvent.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
+
 #include "G4LogicalVolume.hh"
 
 class CastorSD : public CaloSD {
-
-public:    
-
-  CastorSD(G4String, const DDCompactView &, const SensitiveDetectorCatalog & clg,
-	   edm::ParameterSet const &, const SimTrackManager*);
-  virtual ~CastorSD();
-  virtual double   getEnergyDeposit(G4Step* );
-  virtual uint32_t setDetUnitId(G4Step* step);
-  void             setNumberingScheme(CastorNumberingScheme* scheme);
-
-private:
-
-  void                    getFromLibrary(G4Step*);
-  int                     setTrackID(G4Step*);
-  uint32_t                rotateUnitID(uint32_t, G4Track*, const CastorShowerEvent&);
-  CastorNumberingScheme * numberingScheme;
-  CastorShowerLibrary *   showerLibrary;
-  G4LogicalVolume         *lvC3EF, *lvC3HF, *lvC4EF, *lvC4HF;
-  G4LogicalVolume         *lvCAST;               // Pointer for CAST sensitive volume  (SL trigger)
-  
-  bool                    useShowerLibrary;
-  double                  energyThresholdSL; 
-  double		  non_compensation_factor;
+public:
+  CastorSD(const std::string &, const SensitiveDetectorCatalog &clg, edm::ParameterSet const &, const SimTrackManager *);
+  ~CastorSD() override;
+  uint32_t setDetUnitId(const G4Step *step) override;
+  void setNumberingScheme(CastorNumberingScheme *scheme);
 
 protected:
+  double getEnergyDeposit(const G4Step *) override;
+  bool getFromLibrary(const G4Step *) override;
 
-  virtual void            initRun();
+private:
+  uint32_t rotateUnitID(uint32_t, const G4Track *, const CastorShowerEvent &);
+  CastorNumberingScheme *numberingScheme;
+  CastorShowerLibrary *showerLibrary;
+  G4LogicalVolume *lvC3EF, *lvC3HF, *lvC4EF, *lvC4HF;
+  G4LogicalVolume *lvCAST;  // Pointer for CAST sensitive volume  (SL trigger)
 
+  bool useShowerLibrary;
+  double energyThresholdSL;
+  double non_compensation_factor;
 };
 
-#endif // CastorSD_h
+#endif  // CastorSD_h

@@ -7,29 +7,15 @@
  */
 
 template <unsigned int N>
-class KullbackLeiblerDistance : public DistanceBetweenComponents<N> {
-
-private:
-  typedef typename SingleGaussianState<N>::Vector Vector;
-  typedef typename SingleGaussianState<N>::Matrix Matrix;
-  
+class KullbackLeiblerDistance final : public DistanceBetweenComponents<N> {
 public:
-  
   /** Method which calculates the actual Kullback-Leibler distance.
    */
+  double operator()(const SingleGaussianState<N>&, const SingleGaussianState<N>&) const override;
 
-  virtual double operator() (const SingleGaussianState<N>&, 
-			     const SingleGaussianState<N>&) const;
-
-  virtual KullbackLeiblerDistance<N>* clone() const
-  {  
-    return new KullbackLeiblerDistance<N>(*this);
-  }
-
-// private:
-//   double trace (const Matrix& matrix) const;
-};  
+  KullbackLeiblerDistance<N>* clone() const override { return new KullbackLeiblerDistance<N>(*this); }
+};
 
 #include "TrackingTools/GsfTools/interface/KullbackLeiblerDistance.icc"
 
-#endif // KullbackLeiblerDistance_H
+#endif  // KullbackLeiblerDistance_H

@@ -16,7 +16,6 @@ Implementation:
 //
 //
 
-
 // system include files
 #include <memory>
 
@@ -45,14 +44,15 @@ Implementation:
 class EcalFEDErrorFilter : public HLTFilter {
 public:
   explicit EcalFEDErrorFilter(const edm::ParameterSet&);
-  ~EcalFEDErrorFilter();
+  ~EcalFEDErrorFilter() override;
 
 private:
-  virtual bool hltFilter(edm::Event&, const edm::EventSetup&, trigger::TriggerFilterObjectWithRefs & filterproduct) const override;
+  bool hltFilter(edm::Event&,
+                 const edm::EventSetup&,
+                 trigger::TriggerFilterObjectWithRefs& filterproduct) const override;
 
   // ----------member data ---------------------------
 
-  edm::InputTag     DataLabel_;
+  edm::EDGetTokenT<FEDRawDataCollection> dataToken_;
   std::vector<int> fedUnpackList_;
-
 };

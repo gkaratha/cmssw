@@ -103,6 +103,8 @@ process.source = cms.Source("EmptyIOVSource",
 if options.globalTag == "DONOTEXIST":
     process.load('Configuration.Geometry.GeometryExtended_cff')
     process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+    process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+
     process.poolDBESSource = cms.ESSource("PoolDBESSource",
                                           BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
                                           DBParameters = cms.PSet(
@@ -118,12 +120,11 @@ if options.globalTag == "DONOTEXIST":
                                           )
 else:
     process.load("Configuration.StandardSequences.GeometryDB_cff")
-    process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-    from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag 
+    process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+    from Configuration.AlCa.GlobalTag import GlobalTag
     process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
-    
+
 process.DQMStore = cms.Service("DQMStore",
-                               referenceFileName = cms.untracked.string(''),
                                verbose = cms.untracked.int32(1)
                                )
 

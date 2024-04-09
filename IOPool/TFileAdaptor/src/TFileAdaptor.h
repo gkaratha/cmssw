@@ -1,9 +1,10 @@
 #ifndef IOPool_TFileAdaptor_TFileAdaptor_h
 #define IOPool_TFileAdaptor_TFileAdaptor_h
 
-#include "boost/shared_ptr.hpp"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace edm {
   class ActivityRegistry;
   class ConfigurationDescriptions;
   class ParameterSet;
-}
+}  // namespace edm
 
 // Driver for configuring ROOT plug-in manager to use TStorageFactoryFile.
 class TFileAdaptor {
@@ -23,16 +24,17 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   friend class TFileAdaptorUI;
+
 private:
   // Write current Storage statistics on a ostream
   void termination(void) const;
-  
+
   //Called by TFileAdaptorUI
-  void stats(std::ostream &o) const;
-  
-  void statsXML(std::map<std::string, std::string> &data) const;
-  
-  static void addType(TPluginManager* mgr, char const* type, int altType=0);
+  void stats(std::ostream& o) const;
+
+  void statsXML(std::map<std::string, std::string>& data) const;
+
+  static void addType(TPluginManager* mgr, char const* type, int altType = 0);
   bool native(char const* proto) const;
 
   bool enabled_;
@@ -45,17 +47,13 @@ private:
   unsigned int timeout_;
   unsigned int debugLevel_;
   std::vector<std::string> native_;
-
 };
 
 namespace edm {
   namespace service {
-    inline
-    bool isProcessWideService(TFileAdaptor const*) {
-      return true;
-    }
-  }
-}
+    inline bool isProcessWideService(TFileAdaptor const*) { return true; }
+  }  // namespace service
+}  // namespace edm
 
 /*
  * wrapper to bind TFileAdaptor to root, python etc
@@ -66,7 +64,6 @@ namespace edm {
 
 class TFileAdaptorUI {
 public:
-
   TFileAdaptorUI();
   ~TFileAdaptorUI();
 
@@ -74,7 +71,7 @@ public:
   void stats() const;
 
 private:
-  boost::shared_ptr<TFileAdaptor> me;
+  edm::propagate_const<std::shared_ptr<TFileAdaptor>> me;
 };
 
 #endif

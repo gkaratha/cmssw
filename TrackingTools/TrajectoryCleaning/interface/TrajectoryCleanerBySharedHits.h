@@ -12,35 +12,28 @@
  *  reconstructed hits, and number of lost hits.
  */
 
-
 class TrajectoryCleanerBySharedHits : public TrajectoryCleaner {
+public:
+  typedef std::vector<Trajectory*> TrajectoryPointerContainer;
 
- public:
+  TrajectoryCleanerBySharedHits()
+      : theFraction(0.19), validHitBonus_(5.0), missingHitPenalty_(20.0), allowSharedFirstHit(true) {}
+  TrajectoryCleanerBySharedHits(const edm::ParameterSet& iConfig)
+      : theFraction(iConfig.getParameter<double>("fractionShared")),
+        validHitBonus_(iConfig.getParameter<double>("ValidHitBonus")),
+        missingHitPenalty_(iConfig.getParameter<double>("MissingHitPenalty")),
+        allowSharedFirstHit(iConfig.getParameter<bool>("allowSharedFirstHit")) {}
 
-  typedef std::vector<Trajectory*> 	TrajectoryPointerContainer;
-
-  TrajectoryCleanerBySharedHits() :
-    theFraction(0.19),
-    validHitBonus_(5.0),
-    missingHitPenalty_(20.0),
-    allowSharedFirstHit(true){}
-  TrajectoryCleanerBySharedHits(const edm::ParameterSet & iConfig) :
-    theFraction(iConfig.getParameter<double>("fractionShared")),
-    validHitBonus_(iConfig.getParameter<double>("ValidHitBonus")),
-    missingHitPenalty_(iConfig.getParameter<double>("MissingHitPenalty")),
-    allowSharedFirstHit(iConfig.getParameter<bool>("allowSharedFirstHit")){}
-
-  virtual ~TrajectoryCleanerBySharedHits(){};
+  ~TrajectoryCleanerBySharedHits() override{};
 
   using TrajectoryCleaner::clean;
-  virtual void clean( TrajectoryPointerContainer&) const;
+  void clean(TrajectoryPointerContainer&) const override;
 
- private:
-  double theFraction;
-  double validHitBonus_;
-  double missingHitPenalty_;
+private:
+  float theFraction;
+  float validHitBonus_;
+  float missingHitPenalty_;
   bool allowSharedFirstHit;
-
 };
 
 #endif

@@ -3,7 +3,7 @@
 
 #ifndef _STAND_ALONE
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#endif //_STAND_ALONE
+#endif  //_STAND_ALONE
 
 #include "L1Trigger/RPCTrigger/interface/RPCTriggerConfiguration.h"
 #include "L1Trigger/RPCTrigger/interface/RPCPacManager.h"
@@ -11,51 +11,51 @@
 #include "L1Trigger/RPCTrigger/interface/RPCConst.h"
 //#include "L1Trigger/RPCTrigger/interface/RPCException.h"
 //---------------------------------------------------------------------------
-class RPCBasicTrigConfig: public RPCTriggerConfiguration {
+class RPCBasicTrigConfig : public RPCTriggerConfiguration {
 public:
   RPCBasicTrigConfig(RPCPacManager<RPCPacData>* pacManager);
-  
+
   RPCBasicTrigConfig();
 
   ///returns count of Trigger Crates in system.
-  virtual int getTCsCnt();
+  int getTCsCnt() override;
 
   ///returns number og Trigger Boards in one Trigger Crate.
-  virtual int getTBsInTC();
+  int getTBsInTC() override;
 
   /** One TB covers 3 or 4 Towers. The function returns the index of m_tower
     * on TB. */
-  virtual int getTowerNumOnTb(const RPCConst::l1RpcConeCrdnts& coneCrdnts);
+  int getTowerNumOnTb(const RPCConst::l1RpcConeCrdnts& coneCrdnts) override;
 
   ///Returns pointer to m_PAC that should run given LogCone. The PACs are holded by L1PacManager.
-  virtual const RPCPacData* getPac(const RPCConst::l1RpcConeCrdnts& coneCrdnts) const;
+  const RPCPacData* getPac(const RPCConst::l1RpcConeCrdnts& coneCrdnts) const override;
 
   ///Returns the index of TC that should run given LogCone.
-  virtual int getTCNum(const RPCConst::l1RpcConeCrdnts& coneCrdnts);
+  int getTCNum(const RPCConst::l1RpcConeCrdnts& coneCrdnts) override;
 
   ///Returns the index of TB (in TC) that should run given LogCone.
-  virtual int getTBNum(const RPCConst::l1RpcConeCrdnts& coneCrdnts);
+  int getTBNum(const RPCConst::l1RpcConeCrdnts& coneCrdnts) override;
 
   ///Returns the count of Towers (3 or 4), that are covered by given TB.
-  virtual int getTowsCntOnTB(int tbNum);
+  int getTowsCntOnTB(int tbNum) override;
 
   /** Converts TC GB-Sorter input m_tower address <0...35> ("m_tower number natural")
     * to m_tower number <-16...0...16>
     * TC GB-Sorter input m_tower address is 8 bits: [7...2] TB num, [1...0] m_tower num on TB.*/
-  virtual int towAddr2TowNum(int towAddr);
+  int towAddr2TowNum(int towAddr) override;
 
   /** Converts TC GB-Sorter output m_tower address <0...31> ("m_tower number continous")
     * to m_tower number 2'complement*/
-  virtual int towNum2TowNum2Comp(int towNum);
+  int towNum2TowNum2Comp(int towNum) override;
 
-  virtual ~RPCBasicTrigConfig() {}
+  ~RPCBasicTrigConfig() override {}
 
 private:
   static const int m_TRIGGER_CRATES_CNT;
 
   static const int m_TB_IN_TC_CNT = 9;
 
-  static const int m_TOWER_ON_TB[2 * RPCConst::ITOW_MAX + 1 +1];
+  static const int m_TOWER_ON_TB[2 * RPCConst::ITOW_MAX + 1 + 1];
 
   static const int m_TOWERS_CNT_ON_TB[m_TB_IN_TC_CNT];
 

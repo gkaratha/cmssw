@@ -4,7 +4,8 @@ import FWCore.ParameterSet.Config as cms
 # DQM Module
 #--------------------------
 
-dqmCSCClient = cms.EDAnalyzer("CSCMonitorModule",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+dqmCSCClient = DQMEDAnalyzer('CSCMonitorModule',
 
   BOOKING_XML_FILE = cms.FileInPath('DQM/CSCMonitorModule/data/emuDQMBooking.xml'),
   InputObjects = cms.untracked.InputTag("rawDataCollector"),
@@ -46,6 +47,29 @@ dqmCSCClient = cms.EDAnalyzer("CSCMonitorModule",
       '-/All_Readout_Errors/',
       '-/^DMB_.*$/',
       '-/DDU_[0-9]+/',
+      '-/FED_[0-9]+/',
+      '-/FEDBufferSize/',
+      '-/FEDEntries/',
+      '-/FEDFatal/',
+      '-/FEDFormatFatal/',
+      '-/FEDFormat_Errors/',
+      '-/FEDNonFatal/',
+      '-/FED_DDU_L1A_mismatch/',
+      '-/FED_DDU_L1A_mismatch_.*$/',
+      '-/Minus_endcap_ALCT_CLCT_Match_.*$/',
+      '-/Minus_endcap_CFEB_SCA_.*$/',
+      '-/Plus_endcap_ALCT_CLCT_Match_.*$/',
+      '-/Plus_endcap_CFEB_SCA_.*$/',
+      '-/CSC_AFEB_RawHits_Time_.*$/',
+      '-/CSC_ALCT0_BXN_.*$/',
+      '-/CSC_ALCT0_Quality/',
+      '-/CSC_ALCT_CLCT_Match_.*$/',
+      '-/CSC_ALCT_Planes_.*$/',
+      '-/CSC_CFEB_Comparators_Time_.*$/',
+      '-/CSC_CFEB_SCA_CellPeak_Time_.*$/',
+      '-/CSC_CLCT0_BXN_.*$/',
+      '-/CSC_CLCT0_Quality/',
+      '-/CSC_CLCT_Planes_.*$/',
       '-/CSC_[0-9]+_[0-9]+/'
     )
   )

@@ -27,7 +27,6 @@
 #include "CondFormats/DataRecord/interface/L1MuTriggerScalesRcd.h"
 #include "CondTools/L1Trigger/interface/L1ConfigOnlineProdBase.h"
 
-
 //
 // class declaration
 //
@@ -35,19 +34,17 @@
 class L1MuTriggerScalesOnlineProducer : public L1ConfigOnlineProdBase<L1MuTriggerScalesRcd, L1MuTriggerScales> {
 public:
   L1MuTriggerScalesOnlineProducer(const edm::ParameterSet&);
-  ~L1MuTriggerScalesOnlineProducer();
+  ~L1MuTriggerScalesOnlineProducer() override;
 
-  virtual boost::shared_ptr<L1MuTriggerScales> newObject(
-	const std::string& objectKey ) ;
+  std::unique_ptr<L1MuTriggerScales> newObject(const std::string& objectKey) override;
 
 private:
   // ----------member data ---------------------------
   L1MuTriggerScales m_scales;
   unsigned int m_nbitPackingPhi;
-  unsigned int m_nbitPackingEta; 
+  unsigned int m_nbitPackingEta;
   unsigned int m_nbinsEta;
   bool m_signedPackingPhi;
-
 };
 
 #endif

@@ -3,9 +3,9 @@
 
 #include "CondFormats/SiStripObjects/interface/CommissioningAnalysis.h"
 #include "DataFormats/SiStripCommon/interface/SiStripConstants.h"
-#include <boost/cstdint.hpp>
 #include <sstream>
 #include <vector>
+#include <cstdint>
 
 /** 
    @class VpspScanAnalysis
@@ -13,23 +13,21 @@
    @brief Histogram-based analysis for VPSP scan.
 */
 class VpspScanAnalysis : public CommissioningAnalysis {
-  
- public:
-
+public:
   // ---------- con(de)structors ----------
 
-  VpspScanAnalysis( const uint32_t& key );
+  VpspScanAnalysis(const uint32_t& key);
 
   VpspScanAnalysis();
 
-  virtual ~VpspScanAnalysis() {;}
+  ~VpspScanAnalysis() override { ; }
 
   friend class VpspScanAlgorithm;
 
   // ---------- public interface ----------
-  
+
   /** Identifies if analysis is valid or not. */
-  bool isValid() const;
+  bool isValid() const override;
 
   /** VPSP settings for both APVs. */
   inline const VInt& vpsp() const;
@@ -55,20 +53,19 @@ class VpspScanAnalysis : public CommissioningAnalysis {
   // ---------- misc ----------
 
   /** Prints analysis results. */
-  void print( std::stringstream&, uint32_t not_used = 0 );
-  
+  void print(std::stringstream&, uint32_t not_used = 0) override;
+
   /** Overrides base method. */
-  void summary( std::stringstream& ) const;
-  
+  void summary(std::stringstream&) const override;
+
   /** Resets analysis member data. */
-  void reset();
+  void reset() override;
 
   // ---------- private member data ----------
-  
- private:
-  
+
+private:
   /** VPSP settings */
-  VInt vpsp_; 
+  VInt vpsp_;
 
   VInt adcLevel_;
 
@@ -81,7 +78,6 @@ class VpspScanAnalysis : public CommissioningAnalysis {
   VInt topLevel_;
 
   VInt bottomLevel_;
-  
 };
 
 // ---------- Inline methods ----------
@@ -94,5 +90,4 @@ const VpspScanAnalysis::VInt& VpspScanAnalysis::bottomEdge() const { return bott
 const VpspScanAnalysis::VInt& VpspScanAnalysis::topLevel() const { return topLevel_; }
 const VpspScanAnalysis::VInt& VpspScanAnalysis::bottomLevel() const { return bottomLevel_; }
 
-#endif // CondFormats_SiStripObjects_VpspScanAnalysis_H
-
+#endif  // CondFormats_SiStripObjects_VpspScanAnalysis_H

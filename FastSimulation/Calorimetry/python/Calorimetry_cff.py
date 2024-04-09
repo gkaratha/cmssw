@@ -1,11 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
 # This is used to modify parameters for Run 2 (see bottom of file)
-from Configuration.StandardSequences.Eras import eras
 
 #Global fast calorimetry parameters
 from FastSimulation.Calorimetry.HcalResponse_cfi import *
 from FastSimulation.Calorimetry.HSParameters_cfi import *
+from Geometry.HcalSimData.HFParameters_cff import *
 #from FastSimulation.Configuration.CommonInputs_cff import *
 
 from FastSimulation.Calorimetry.ECALResponse_cfi import *
@@ -263,22 +263,13 @@ FamosCalorimetryBlock = cms.PSet(
             timeShiftHF = cms.vdouble(50.7, 52.5, 52.9, 53.9, 54.5, 55.1, 55.1, 55.7, 55.9, 56.1, 56.1, 56.1, 56.5),
             ),
         HFShower           = cms.PSet(
-            ProbMax          = cms.double(1.0),
-            CFibre           = cms.double(0.5),
-            OnlyLong          = cms.bool(True)
+            HFShowerBlock  = cms.PSet(refToPSet_ = cms.string("HFShowerBlock"))
             ),
         HFShowerLibrary    = cms.PSet(
             useShowerLibrary = cms.untracked.bool(True),
             useCorrectionSL  = cms.untracked.bool(True),
-            FileName = cms.FileInPath('SimG4CMS/Calo/data/HFShowerLibrary_oldpmt_noatt_eta4_16en_v3.root'),
-            BackProbability  = cms.double(0.2),
-            TreeEMID         = cms.string('emParticles'),
-            TreeHadID        = cms.string('hadParticles'),
-            Verbosity        = cms.untracked.bool(False),
             ApplyFiducialCut = cms.bool(True),
-            BranchEvt        = cms.untracked.string(''),
-            BranchPre        = cms.untracked.string(''),
-            BranchPost       = cms.untracked.string('')
+            HFLibraryFileBlock = cms.PSet(refToPSet_ = cms.string("HFLibraryFileBlock"))
             )
         ),
     GFlash = cms.PSet(
@@ -299,4 +290,4 @@ FamosCalorimetryBlock = cms.PSet(
 FamosCalorimetryBlock.Calorimetry.ECAL.Digitizer = True
 FamosCalorimetryBlock.Calorimetry.HCAL.Digitizer = True
 
-eras.run2_common.toModify(FamosCalorimetryBlock.Calorimetry.HFShowerLibrary, FileName = 'SimG4CMS/Calo/data/HFShowerLibrary_npmt_noatt_eta4_16en_v3.root' )
+from Configuration.Eras.Modifier_run2_common_cff import run2_common

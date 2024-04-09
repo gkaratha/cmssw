@@ -1,43 +1,42 @@
-#include "../interface/MicroGMTExtrapolationLUT.h"
+#include "L1Trigger/L1TMuon/interface/MicroGMTExtrapolationLUT.h"
 
-l1t::MicroGMTExtrapolationLUT::MicroGMTExtrapolationLUT (const edm::ParameterSet& iConfig, const std::string& setName, const int type) {
-  getParameters(iConfig, setName.c_str(), type);
-}
-
-l1t::MicroGMTExtrapolationLUT::MicroGMTExtrapolationLUT (const edm::ParameterSet& iConfig, const char* setName, const int type) {
-  getParameters(iConfig, setName, type);
-}
-
-void 
-l1t::MicroGMTExtrapolationLUT::getParameters (const edm::ParameterSet& iConfig, const char* setName, const int type) {
-  edm::ParameterSet config = iConfig.getParameter<edm::ParameterSet>(setName);
-  
-  m_etaRedInWidth = config.getParameter<int>("etaAbsRed_in_width");
-  m_ptRedInWidth = config.getParameter<int>("pTred_in_width");
-  
+l1t::MicroGMTExtrapolationLUT::MicroGMTExtrapolationLUT(const std::string& fname,
+                                                        const int outWidth,
+                                                        const int etaRedInWidth,
+                                                        const int ptRedInWidth)
+    : MicroGMTLUT(), m_etaRedInWidth(etaRedInWidth), m_ptRedInWidth(ptRedInWidth) {
   m_totalInWidth = m_ptRedInWidth + m_etaRedInWidth;
+  m_outWidth = outWidth;
 
   m_ptRedMask = (1 << m_ptRedInWidth) - 1;
   m_etaRedMask = ((1 << m_etaRedInWidth) - 1) << m_ptRedInWidth;
-  
-  std::string m_fname = config.getParameter<std::string>("filename");
-  if (m_fname != std::string("")) {
-    load(m_fname);
-  } 
+
+  m_inputs.push_back(MicroGMTConfiguration::ETA_COARSE);
   m_inputs.push_back(MicroGMTConfiguration::PT);
-  m_inputs.push_back(MicroGMTConfiguration::ETA);
+
+  if (fname != std::string("")) {
+    load(fname);
+  }
 }
 
+l1t::MicroGMTExtrapolationLUT::MicroGMTExtrapolationLUT(l1t::LUT* lut,
+                                                        const int outWidth,
+                                                        const int etaRedInWidth,
+                                                        const int ptRedInWidth)
+    : MicroGMTLUT(lut), m_etaRedInWidth(etaRedInWidth), m_ptRedInWidth(ptRedInWidth) {
+  m_totalInWidth = m_ptRedInWidth + m_etaRedInWidth;
+  m_outWidth = outWidth;
 
-l1t::MicroGMTExtrapolationLUT::~MicroGMTExtrapolationLUT ()
-{
+  m_ptRedMask = (1 << m_ptRedInWidth) - 1;
+  m_etaRedMask = ((1 << m_etaRedInWidth) - 1) << m_ptRedInWidth;
 
+  m_inputs.push_back(MicroGMTConfiguration::ETA_COARSE);
+  m_inputs.push_back(MicroGMTConfiguration::PT);
+
+  m_initialized = true;
 }
 
-
-int 
-l1t::MicroGMTExtrapolationLUT::lookup(int eta, int pt) const 
-{
+int l1t::MicroGMTExtrapolationLUT::lookup(int eta, int pt) const {
   // normalize these two to the same scale and then calculate?
   if (m_initialized) {
     // unsigned eta_twocomp = MicroGMTConfiguration::getTwosComp(eta, m_etaRedInWidth);
@@ -48,18 +47,18 @@ l1t::MicroGMTExtrapolationLUT::lookup(int eta, int pt) const
   return result;
 }
 
-int 
-l1t::MicroGMTExtrapolationLUT::hashInput(int eta, int pt) const
-{
+int l1t::MicroGMTExtrapolationLUT::hashInput(int eta, int pt) const {
   int result = 0;
   result += eta << m_ptRedInWidth;
   result += pt;
   return result;
 }
 
-void 
-l1t::MicroGMTExtrapolationLUT::unHashInput(int input, int& eta, int& pt) const 
-{
-  eta = input & m_etaRedMask;
-  pt = input >> m_etaRedInWidth;
-} 
+void l1t::MicroGMTExtrapolationLUT::unHashInput(int input, int& eta, int& pt) const {
+  pt = input & m_ptRedMask;
+  eta = (input & m_etaRedMask) >> m_ptRedInWidth;
+}
+
+int l1t::MicroGMTExtrapolationLUT::getEtaRedInWidth() const { return m_etaRedInWidth; }
+
+int l1t::MicroGMTExtrapolationLUT::getPtRedInWidth() const { return m_ptRedInWidth; }

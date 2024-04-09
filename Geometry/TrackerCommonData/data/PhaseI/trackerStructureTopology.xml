@@ -1,15 +1,6 @@
 <?xml version="1.0"?>
-<DDDefinition xmlns="http://www.cern.ch/cms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/cms/DDL ../../../DetectorDescription/Schema/DDLSchema.xsd">
+<DDDefinition>
  
-<!--
-Modified for Phase 1 Pixel Forward Geometry
-
-Pratima Jindal, Purdue University Calumet
-July 2009
-
-
--->
-
  <SpecParSection label="spec-pars2.xml">
 
     <SpecPar name="FullTrackerPar">
@@ -49,30 +40,25 @@ July 2009
     </SpecPar>
 
    <SpecPar name="PixelPhase1EndcapSubDetPar">
-      <PartSelector path="//PixelForward" />
-  
+      <PartSelector path="//PixelForwardZplus" />
+      <PartSelector path="//PixelForwardZminus" />  
       <Parameter name="TkDDDStructure" value="PixelPhase1EndcapSubDet"/>
     </SpecPar>
 
     <SpecPar name="PixelPhase1EndcapDiskPar">
-       <PartSelector path="//PixelForwardDisk1"/>
-       <PartSelector path="//PixelForwardDisk2"/>
-       <PartSelector path="//PixelForwardDisk3"/>
+       <PartSelector path="//PixelForwardDiskZplus"/>
+       <PartSelector path="//PixelForwardDiskZminus"/>
       <Parameter name="TkDDDStructure" value="PixelPhase1EndcapDisk"/>
     </SpecPar>
 
      <SpecPar name="PixelEndcapPanelPar">
-      <PartSelector path="//PixelForwardWafer1" />
-      <PartSelector path="//PixelForwardWafer2" />
-      <PartSelector path="//PixelForwardWafer3" />
+      <PartSelector path="//.*:PixelForwardWafer" />
        <Parameter name="TkDDDStructure" value="PixelEndcapPanel"/>
     </SpecPar>
 
     <SpecPar name="PixelEndcapDetPar">
-      <PartSelector path="//PixelForwardSensor1" />
-      <PartSelector path="//PixelForwardSensor2" />
-      <PartSelector path="//PixelForwardSensor3" />
-       <Parameter name="TkDDDStructure" value="PixelEndcapDet"/>
+      <PartSelector path="//.*:PixelForwardSensor" />
+      <Parameter name="TkDDDStructure" value="PixelEndcapDet"/>
     </SpecPar>
 
 
@@ -285,7 +271,7 @@ July 2009
   </SpecPar>
 
 
-  <SpecPar name="TrackerAPVNumber6Par">
+  <SpecPar name="TrackerAPVNumber6Par" eval="true">
       <PartSelector path="//TIBActiveRphi0" />
       <PartSelector path="//TIBActiveSter0" />
       <PartSelector path="//TIDModule0RphiActive" />
@@ -302,7 +288,7 @@ July 2009
       <Parameter name="SiliconAPVNumber" value="6"/>
   </SpecPar>
 
-  <SpecPar name="TrackerAPVNumber4Par">
+  <SpecPar name="TrackerAPVNumber4Par" eval="true">
       <PartSelector path="//TIBActiveRphi2" />
       <PartSelector path="//TIDModule2RphiActive" />
       <PartSelector path="//TOBActiveRphi0" />
@@ -315,124 +301,124 @@ July 2009
       <Parameter name="SiliconAPVNumber" value="4"/>
   </SpecPar>
 
-  <SpecPar name="PixelROCRowsPar_L0">
+  <SpecPar name="PixelROCRowsPar_L0" eval="true">
       <PartSelector path="//PixelBarrelActiveFull0" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
-  <SpecPar name="PixelROCRowsPar_L1">
+  <SpecPar name="PixelROCRowsPar_L1" eval="true">
       <PartSelector path="//PixelBarrelActiveFull1" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
-  <SpecPar name="PixelROCRowsPar_L2">
+  <SpecPar name="PixelROCRowsPar_L2" eval="true">
       <PartSelector path="//PixelBarrelActiveFull2" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
-  <SpecPar name="PixelROCRowsPar_L3">
+  <SpecPar name="PixelROCRowsPar_L3" eval="true">
       <PartSelector path="//PixelBarrelActiveFull3" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
 
-  <SpecPar name="PixelROCRowsPar_D1">
-      <PartSelector path="//PixelForwardSensor1" />
+  <SpecPar name="PixelROCRowsPar_D1" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
-  <SpecPar name="PixelROCRowsPar_D2">
-      <PartSelector path="//PixelForwardSensor2" />
+  <SpecPar name="PixelROCRowsPar_D2" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
-  <SpecPar name="PixelROCRowsPar_D3">
-      <PartSelector path="//PixelForwardSensor3" />
+  <SpecPar name="PixelROCRowsPar_D3" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCRows" value="80"/>
   </SpecPar>
 
-  <SpecPar name="PixelROCColsPar_L0">
+  <SpecPar name="PixelROCColsPar_L0" eval="true">
       <PartSelector path="//PixelBarrelActiveFull0" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
-  <SpecPar name="PixelROCColsPar_L1">
+  <SpecPar name="PixelROCColsPar_L1" eval="true">
       <PartSelector path="//PixelBarrelActiveFull1" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
-  <SpecPar name="PixelROCColsPar_L2">
+  <SpecPar name="PixelROCColsPar_L2" eval="true">
       <PartSelector path="//PixelBarrelActiveFull2" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
-  <SpecPar name="PixelROCColsPar_L3">
+  <SpecPar name="PixelROCColsPar_L3" eval="true">
       <PartSelector path="//PixelBarrelActiveFull3" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
 
-  <SpecPar name="PixelROCColsPar_D1">
-      <PartSelector path="//PixelForwardSensor1" />
+  <SpecPar name="PixelROCColsPar_D1" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
-  <SpecPar name="PixelROCColsPar_D2">
-      <PartSelector path="//PixelForwardSensor2" />
+  <SpecPar name="PixelROCColsPar_D2" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
-  <SpecPar name="PixelROCColsPar_D3">
-      <PartSelector path="//PixelForwardSensor3" />
+  <SpecPar name="PixelROCColsPar_D3" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROCCols" value="52"/>
   </SpecPar>
 
-  <SpecPar name="PixelROC_XPar_L0">
+  <SpecPar name="PixelROC_XPar_L0" eval="true">
       <PartSelector path="//PixelBarrelActiveFull0" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
 
-  <SpecPar name="PixelROC_XPar_L1">
+  <SpecPar name="PixelROC_XPar_L1" eval="true">
       <PartSelector path="//PixelBarrelActiveFull1" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
-  <SpecPar name="PixelROC_XPar_L2">
+  <SpecPar name="PixelROC_XPar_L2" eval="true">
       <PartSelector path="//PixelBarrelActiveFull2" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
-  <SpecPar name="PixelROC_XPar_L3">
+  <SpecPar name="PixelROC_XPar_L3" eval="true">
       <PartSelector path="//PixelBarrelActiveFull3" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
 
-  <SpecPar name="PixelROC_XPar_D1">
-      <PartSelector path="//PixelForwardSensor1" />
+  <SpecPar name="PixelROC_XPar_D1" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
-  <SpecPar name="PixelROC_XPar_D2">
-      <PartSelector path="//PixelForwardSensor2" />
+  <SpecPar name="PixelROC_XPar_D2" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
-  <SpecPar name="PixelROC_XPar_D3">
-      <PartSelector path="//PixelForwardSensor3" />
+  <SpecPar name="PixelROC_XPar_D3" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_X" value="2"/>
   </SpecPar>
 
-  <SpecPar name="PixelROC_YPar_L0">
+  <SpecPar name="PixelROC_YPar_L0" eval="true">
       <PartSelector path="//PixelBarrelActiveFull0" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
-  <SpecPar name="PixelROC_YPar_L1">
+  <SpecPar name="PixelROC_YPar_L1" eval="true">
       <PartSelector path="//PixelBarrelActiveFull1" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
-  <SpecPar name="PixelROC_YPar_L2">
+  <SpecPar name="PixelROC_YPar_L2" eval="true">
       <PartSelector path="//PixelBarrelActiveFull2" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
-  <SpecPar name="PixelROC_YPar_L3">
+  <SpecPar name="PixelROC_YPar_L3" eval="true">
       <PartSelector path="//PixelBarrelActiveFull3" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
 
-  <SpecPar name="PixelROC_YPar_D1">
-      <PartSelector path="//PixelForwardSensor1" />
+  <SpecPar name="PixelROC_YPar_D1" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
-  <SpecPar name="PixelROC_YPar_D2">
-      <PartSelector path="//PixelForwardSensor2" />
+  <SpecPar name="PixelROC_YPar_D2" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
-  <SpecPar name="PixelROC_YPar_D3">
-      <PartSelector path="//PixelForwardSensor3" />
+  <SpecPar name="PixelROC_YPar_D3" eval="true">
+      <PartSelector path="//.*:PixelForwardSensor" />
       <Parameter name="PixelROC_Y" value="8"/>
   </SpecPar>
 

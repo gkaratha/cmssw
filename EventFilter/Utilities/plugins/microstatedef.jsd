@@ -5,7 +5,7 @@
          "operation" : "histo"
       },
       {
-         "name" : "Ministate",
+         "name" : "tMicrostate",
          "operation" : "histo"
       },
       {
@@ -35,7 +35,10 @@
       {
          "name" : "LockCount",
          "operation" : "sum"
+      },
+      {
+         "name" : "Inputstate",
+         "operation" : "histo"
       }
-
    ]
 }

@@ -42,20 +42,20 @@
 // ELadministrator::attach( const ELdestination & sink )
 // ELadministrator::attach( const ELdestination & sink, const ELstring & name )
 // ELadministrator::checkSeverity()
-// ELadministrator::severityCount( const ELseverityLevel & sev ) const
-// ELadministrator::severityCount( const ELseverityLevel & from,
-//                                  const ELseverityLevel & to    ) const
-// ELadministrator::resetSeverityCount( const ELseverityLevel & sev )
-// ELadministrator::resetSeverityCount( const ELseverityLevel & from,
-//                                      const ELseverityLevel & to    )
+// ELadministrator::severityCount( const messagelogger::ELseverityLevel & sev ) const
+// ELadministrator::severityCount( const messagelogger::ELseverityLevel & from,
+//                                  const messagelogger::ELseverityLevel & to    ) const
+// ELadministrator::resetSeverityCount( const messagelogger::ELseverityLevel & sev )
+// ELadministrator::resetSeverityCount( const messagelogger::ELseverityLevel & from,
+//                                      const messagelogger::ELseverityLevel & to    )
 // ELadministrator::resetSeverityCount()
-// ELadministrator::setThresholds( const ELseverityLevel & sev )
+// ELadministrator::setThresholds( const messagelogger::ELseverityLevel & sev )
 // ELadministrator::setLimits( const ELstring & id, int limit )
-// ELadministrator::setLimits( const ELseverityLevel & sev, int limit )
+// ELadministrator::setLimits( const messagelogger::ELseverityLevel & sev, int limit )
 // ELadministrator::setIntervals( const ELstring & id, int interval )
-// ELadministrator::setIntervals( const ELseverityLevel & sev, int interval )
+// ELadministrator::setIntervals( const messagelogger::ELseverityLevel & sev, int interval )
 // ELadministrator::setTimespans( const ELstring & id, int seconds )
-// ELadministrator::setTimespans( const ELseverityLevel & sev, int seconds )
+// ELadministrator::setTimespans( const messagelogger::ELseverityLevel & sev, int seconds )
 // ELadministrator::wipe()
 // ELadministrator::finish()
 //
@@ -63,7 +63,7 @@
 // ELadministrator::context() const
 // ELadministrator::abortThreshold() const
 // ELadministrator::exitThreshold() const
-// ELadministrator::sinks()
+// ELadministrator::sinks_
 // ELadministrator::highSeverity() const
 // ELadministrator::severityCounts( const int lev ) const
 // ELadministrator::finishMsg()
@@ -72,10 +72,9 @@
 //
 // ----------------------------------------------------------------------
 
-
-#include "FWCore/MessageService/interface/ELadministrator.h"
-#include "FWCore/MessageService/interface/ELdestination.h"
-#include "FWCore/MessageService/interface/ELoutput.h"
+#include "FWCore/MessageService/src/ELadministrator.h"
+#include "FWCore/MessageService/src/ELdestination.h"
+#include "FWCore/MessageService/src/ELoutput.h"
 
 #include "FWCore/Utilities/interface/EDMException.h"
 
@@ -83,257 +82,177 @@
 #include <sstream>
 #include <list>
 using std::cerr;
-
+using namespace edm::messagelogger;
 
 namespace edm {
-namespace service {
+  namespace service {
 
+    // Possible Traces:
+    // #define ELadministratorCONSTRUCTOR_TRACE
+    // #define ELadTRACE_FINISH
 
-// Possible Traces:
-// #define ELadministratorCONSTRUCTOR_TRACE
-// #define ELadTRACE_FINISH
+    void ELadministrator::log(edm::ErrorObj& msg) {
+      // severity level statistics keeping:                 // $$ mf 6/7/01
+      int lev = msg.xid().severity.getLevel();
+      ++severityCounts_[lev];
+      if (lev > highSeverity_.getLevel())
+        highSeverity_ = msg.xid().severity;
 
-  
-void ELadministrator::log(edm::ErrorObj & msg) {
-  
-  
-  // severity level statistics keeping:                 // $$ mf 6/7/01
-  int lev = msg.xid().severity.getLevel();
-  ++ severityCounts_[lev];
-  if ( lev > highSeverity_.getLevel() )
-    highSeverity_ = msg.xid().severity;
-  
-  // -----  send the message to each destination:
-  //
-  if (sinks().begin() == sinks().end())  {
-    std::cerr << "\nERROR LOGGED WITHOUT DESTINATION!\n";
-    std::cerr << "Attaching destination \"cerr\" to ELadministrator by default\n"
-    << std::endl;
-    attach(ELoutput(std::cerr));
-  }
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    if (  (*d)->log( msg )  )
-      msg.setReactedTo ( true );
-  
-  return;
-  
-}
+      // -----  send the message to each destination:
+      //
+      if (sinks_.begin() == sinks_.end()) {
+        std::cerr << "\nERROR LOGGED WITHOUT DESTINATION!\n";
+        std::cerr << "Attaching destination \"cerr\" to ELadministrator by default\n" << std::endl;
+        attach(std::make_shared<ELoutput>(std::cerr));
+      }
+      for (auto& sink : sinks_)
+        if (sink->log(msg))
+          msg.setReactedTo(true);
 
+      return;
+    }
 
-// ----------------------------------------------------------------------
-// ELadministrator functionality:
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // ELadministrator functionality:
+    // ----------------------------------------------------------------------
 
-ELdestControl ELadministrator::attach( const ELdestination & sink )  {
+    std::shared_ptr<ELdestination> ELadministrator::attach(std::shared_ptr<ELdestination> sink) {
+      sinks_.push_back(sink);
+      return sink;
 
-  std::shared_ptr<ELdestination> dest(sink.clone());
-  sinks().push_back( dest );
-  return ELdestControl( dest );
+    }  // attach()
 
-}  // attach()
+    ELseverityLevel ELadministrator::checkSeverity() {
+      const ELseverityLevel retval(highSeverity_);
+      highSeverity_ = ELzeroSeverity;
+      return retval;
 
-ELdestControl ELadministrator::attach(  const ELdestination & sink,
-                                        const ELstring & name )     {
-  std::shared_ptr<ELdestination> dest(sink.clone());
-  attachedDestinations_[name] = dest;
-  sinks().push_back( dest );
-  return ELdestControl( dest );
-} // attach()
+    }  // checkSeverity()
 
+    int ELadministrator::severityCount(const ELseverityLevel& sev) const {
+      return severityCounts_[sev.getLevel()];
 
-ELseverityLevel  ELadministrator::checkSeverity()  {
+    }  // severityCount()
 
-  const ELseverityLevel  retval( highSeverity_ );
-  highSeverity_ = ELzeroSeverity;
-  return retval;
+    int ELadministrator::severityCount(const ELseverityLevel& from, const ELseverityLevel& to) const {
+      int k = from.getLevel();
+      int sum = severityCounts_[k];
 
-}  // checkSeverity()
+      while (++k != to.getLevel())
+        sum += severityCounts_[k];
 
+      return sum;
 
-int ELadministrator::severityCount( const ELseverityLevel & sev ) const  {
+    }  // severityCount()
 
-  return severityCounts_[sev.getLevel()];
+    void ELadministrator::resetSeverityCount(const ELseverityLevel& sev) {
+      severityCounts_[sev.getLevel()] = 0;
 
-}  // severityCount()
+    }  // resetSeverityCount()
 
+    void ELadministrator::resetSeverityCount(const ELseverityLevel& from, const ELseverityLevel& to) {
+      for (int k = from.getLevel(); k <= to.getLevel(); ++k)
+        severityCounts_[k] = 0;
 
-int ELadministrator::severityCount(
-  const ELseverityLevel & from,
-  const ELseverityLevel & to
-)  const  {
+    }  // resetSeverityCount()
 
-  int k = from.getLevel();
-  int sum = severityCounts_[k];
+    void ELadministrator::resetSeverityCount() {
+      resetSeverityCount(ELzeroSeverity, ELhighestSeverity);
 
-  while ( ++k != to.getLevel() )
-    sum += severityCounts_[k];
+    }  // resetSeverityCount()
 
-  return  sum;
+    // ----------------------------------------------------------------------
+    // Accessors:
+    // ----------------------------------------------------------------------
 
-}  // severityCount()
+    const ELseverityLevel& ELadministrator::highSeverity() const { return highSeverity_; }
 
+    int ELadministrator::severityCounts(const int lev) const { return severityCounts_[lev]; }
 
-void ELadministrator::resetSeverityCount( const ELseverityLevel & sev )  {
+    // ----------------------------------------------------------------------
+    // Message handling:
+    // ----------------------------------------------------------------------
 
-  severityCounts_[sev.getLevel()] = 0;
+    // ----------------------------------------------------------------------
+    // The following do the indicated action to all attached destinations:
+    // ----------------------------------------------------------------------
 
-}  // resetSeverityCount()
+    void ELadministrator::setThresholds(const ELseverityLevel& sev) {
+      for (auto& sink : sinks_)
+        sink->threshold = sev;
 
+    }  // setThresholds()
 
-void ELadministrator::resetSeverityCount( const ELseverityLevel & from,
-                                          const ELseverityLevel & to   )  {
+    void ELadministrator::setLimits(const std::string& id, int limit) {
+      for (auto& sink : sinks_)
+        sink->limits.setLimit(id, limit);
 
-  for ( int k = from.getLevel();  k <= to.getLevel();  ++k )
-    severityCounts_[k] = 0;
+    }  // setLimits()
 
-}  // resetSeverityCount()
+    void ELadministrator::setIntervals(const ELseverityLevel& sev, int interval) {
+      for (auto& sink : sinks_)
+        sink->limits.setInterval(sev, interval);
 
+    }  // setIntervals()
 
-void ELadministrator::resetSeverityCount()  {
+    void ELadministrator::setIntervals(const std::string& id, int interval) {
+      for (auto& sink : sinks_)
+        sink->limits.setInterval(id, interval);
 
-  resetSeverityCount( ELzeroSeverity, ELhighestSeverity );
+    }  // setIntervals()
 
-}  // resetSeverityCount()
+    void ELadministrator::setLimits(const ELseverityLevel& sev, int limit) {
+      for (auto& sink : sinks_)
+        sink->limits.setLimit(sev, limit);
 
+    }  // setLimits()
 
-// ----------------------------------------------------------------------
-// Accessors:
-// ----------------------------------------------------------------------
+    void ELadministrator::setTimespans(const std::string& id, int seconds) {
+      for (auto& sink : sinks_)
+        sink->limits.setTimespan(id, seconds);
 
-std::list<std::shared_ptr<ELdestination> > & ELadministrator::sinks()  { return sinks_; }
+    }  // setTimespans()
 
+    void ELadministrator::setTimespans(const ELseverityLevel& sev, int seconds) {
+      for (auto& sink : sinks_)
+        sink->limits.setTimespan(sev, seconds);
 
-const ELseverityLevel & ELadministrator::highSeverity() const  {
-  return highSeverity_;
-}
+    }  // setTimespans()
 
+    void ELadministrator::wipe() {
+      for (auto& sink : sinks_)
+        sink->limits.wipe();
 
-int ELadministrator::severityCounts( const int lev ) const  {
-  return severityCounts_[lev];
-}
+    }  // wipe()
 
+    void ELadministrator::finish() {
+      for (auto& sink : sinks_)
+        sink->finish();
 
-// ----------------------------------------------------------------------
-// Message handling:
-// ----------------------------------------------------------------------
+    }  // wipe()
 
+    ELadministrator::ELadministrator() : sinks_(), highSeverity_(ELseverityLevel(ELseverityLevel::ELsev_zeroSeverity)) {
+#ifdef ELadministratorCONSTRUCTOR_TRACE
+      std::cerr << "ELadminstrator constructor\n";
+#endif
 
-// ----------------------------------------------------------------------
-// The following do the indicated action to all attached destinations:
-// ----------------------------------------------------------------------
+      for (int lev = 0; lev < ELseverityLevel::nLevels; ++lev)
+        severityCounts_[lev] = 0;
+    }
+    //-*****************************
+    // The ELadminstrator destructor
+    //-*****************************
 
-void ELadministrator::setThresholds( const ELseverityLevel & sev )  {
+    ELadministrator::~ELadministrator() {
+#ifdef ELadministratorCONSTRUCTOR_TRACE
+      std::cerr << "ELadministrator Destructor\n";
+#endif
 
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->threshold = sev;
+      sinks_.clear();
 
-}  // setThresholds()
+    }  // ~ELadministrator()
 
+    // ----------------------------------------------------------------------
 
-void ELadministrator::setLimits( const ELstring & id, int limit )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setLimit( id, limit );
-
-}  // setLimits()
-
-
-void ELadministrator::setIntervals
-			( const ELseverityLevel & sev, int interval )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setInterval( sev, interval );
-
-}  // setIntervals()
-
-void ELadministrator::setIntervals( const ELstring & id, int interval )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setInterval( id, interval );
-
-}  // setIntervals()
-
-
-void ELadministrator::setLimits( const ELseverityLevel & sev, int limit )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setLimit( sev, limit );
-
-}  // setLimits()
-
-
-void ELadministrator::setTimespans( const ELstring & id, int seconds )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setTimespan( id, seconds );
-
-}  // setTimespans()
-
-
-void ELadministrator::setTimespans( const ELseverityLevel & sev, int seconds )  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.setTimespan( sev, seconds );
-
-}  // setTimespans()
-
-
-void ELadministrator::wipe()  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->limits.wipe();
-
-}  // wipe()
-
-void ELadministrator::finish()  {
-
-  std::list<std::shared_ptr<ELdestination> >::iterator d;
-  for ( d = sinks().begin();  d != sinks().end();  ++d )
-    (*d)->finish();
-
-}  // wipe()
-
-
-ELadministrator::ELadministrator()
-: sinks_         (                                                           )
-, highSeverity_  ( ELseverityLevel (ELseverityLevel::ELsev_zeroSeverity)     )
-{
-
-  #ifdef ELadministratorCONSTRUCTOR_TRACE
-    std::cerr << "ELadminstrator constructor\n";
-  #endif
-
-  for ( int lev = 0;  lev < ELseverityLevel::nLevels;  ++lev )
-    severityCounts_[lev] = 0;
-
-}
-//-*****************************
-// The ELadminstrator destructor
-//-*****************************
-
-ELadministrator::~ELadministrator()  {
-
-  #ifdef ELadministratorCONSTRUCTOR_TRACE
-    std::cerr << "ELadministrator Destructor\n";
-  #endif
-
-  sinks().clear();
-
-}  // ~ELadministrator()
-
-
-
-// ----------------------------------------------------------------------
-
-
-} // end of namespace service  
-} // end of namespace edm  
+  }  // end of namespace service
+}  // end of namespace edm

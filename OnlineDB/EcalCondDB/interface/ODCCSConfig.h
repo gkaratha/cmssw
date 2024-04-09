@@ -7,13 +7,13 @@
 #include "OnlineDB/EcalCondDB/interface/IODConfig.h"
 
 class ODCCSConfig : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODCCSConfig();
-  ~ODCCSConfig();
+  ~ODCCSConfig() override;
 
   // User data methods
-  inline std::string getTable() { return "ECAL_CCS_CONFIGURATION"; }
+  inline std::string getTable() override { return "ECAL_CCS_CONFIGURATION"; }
 
   inline void setId(int id) { m_ID = id; }
   inline int getId() const { return m_ID; }
@@ -62,21 +62,19 @@ class ODCCSConfig : public IODConfig {
   inline int getTEDelay() const { return m_te_delay; }
   inline void setTEDelay(int x) { m_te_delay = x; }
 
+  int fetchNextId() noexcept(false);
+  void setParameters(const std::map<std::string, std::string>& my_keys_map);
 
-  int fetchNextId() throw(std::runtime_error);
-  void setParameters(const std::map<std::string,std::string>& my_keys_map);
-  
- private:
-  void prepareWrite()  throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB()       throw(std::runtime_error);
+  void writeDB() noexcept(false);
 
   void clear();
 
-  void fetchData(ODCCSConfig * result)     throw(std::runtime_error);
+  void fetchData(ODCCSConfig* result) noexcept(false);
 
-  int fetchID()  throw(std::runtime_error);
-
+  int fetchID() noexcept(false);
 
   // User data
   int m_ID;
@@ -99,7 +97,6 @@ class ODCCSConfig : public IODConfig {
   int m_bc0;
   int m_bc0_delay;
   int m_te_delay;
-  
 };
 
 #endif

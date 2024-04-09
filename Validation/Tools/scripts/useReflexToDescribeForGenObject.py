@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from __future__ import print_function
+from builtins import range
 import ROOT
 import re
 import pprint
@@ -68,34 +70,39 @@ def getObjectList (objectName, base, verbose = False, memberData = False):
         rootObjConstructor = getattr (ROOT, objectName)
     except AttributeError as missingAttr:
         if str(missingAttr) in ['double', 'int']:
-            print "Do not need to describe doubles or ints"
+            print("Do not need to describe doubles or ints")
             sys.exit(0)
         else:
             raise
 
     obj = rootObjConstructor()
     alreadySeenFunction = set()
+    vetoedFunction = set()
     etaFound, phiFound = False, False
     global vetoedTypes
     retval = []
     # Put the current class on the queue and start the while loop
-    reflexList = [ ROOT.Reflex.Type.ByName (objectName) ]
-    if verbose: print reflexList
+    classList = [ ROOT.TClass.GetClass(objectName) ]
+    if verbose: print(classList)
     # Uses while because reflixList is really a stack
-    while reflexList:
-        reflex = reflexList.pop (0) # get first element
-        print "Looking at %s" % reflex.Name (0xffffffff)
+    while classList:
+        alreadySeenFunction.update(vetoedFunction) # skip functions hidden by derived class
+        vetoedFunction.clear()
+        oneclass = classList.pop (0) # get first element
+        print("Looking at %s" % oneclass.GetName ())
+        bases = oneclass.GetListOfBases()
+        funcs = oneclass.GetListOfMethods()
         if verbose:
-            print "baseSize", reflex.BaseSize()
-            print "FunctionMemberSize", reflex.FunctionMemberSize()
-        for baseIndex in range( reflex.BaseSize() ) :
-            reflexList.append( reflex.BaseAt(baseIndex).ToType() )
-        for index in range( reflex.FunctionMemberSize() ):
-            funcMember = reflex.FunctionMemberAt (index)
+            print("baseSize", bases.GetSize())
+            print("FunctionMemberSize", funcs.GetSize())
+        for baseIndex in range( bases.GetSize() ) :
+            classList.append( bases.At(baseIndex).GetClassPointer() )
+        for index in range( funcs.GetSize() ):
+            funcMember = funcs.At (index)
             # if we've already seen this, don't bother again
-            name = funcMember.Name()
+            name = funcMember.GetName()
             if verbose:
-                print "name", name
+                print("name", name)
             if name == 'eta':
                 etaFound = True
             elif name == 'phi':
@@ -103,37 +110,40 @@ def getObjectList (objectName, base, verbose = False, memberData = False):
             if name in alreadySeenFunction:
                 continue
             # make sure this is an allowed return type
-            returnType = funcMember.TypeOf().ReturnType().Name (0xffffffff)
+            returnType = funcMember.GetReturnTypeName()
             goType     = root2GOtypeDict.get (returnType, None)
             if verbose:
-                print "   type", returnType, goType
+                print("   type", returnType, goType)
             if not goType:
                 vetoedTypes.add (returnType)
                 if verbose:
-                    print "     skipped"
+                    print("     skipped")
                 continue
             elif verbose:
-                print "     good"
+                print("     good")
             # only bother printout out lines where it is a const function
             # and has no input parameters.
-            if funcMember.IsConst() and not funcMember.FunctionParameterSize():
+            if funcMember.Property() & ROOT.kIsConstMethod and not funcMember.GetNargs():
                 retval.append( ("%s.%s()" % (base, name), goType))
                 alreadySeenFunction.add( name )
                 if verbose:
-                    print "     added"
-            elif verbose:
-                print "      failed IsConst() and FunctionParameterSize()"
+                    print("     added")
+            else :
+                vetoedFunction.add( name )
+                if verbose:
+                    print("      failed IsConst() and GetNargs()")
         if not memberData:
             continue
-        for index in range( reflex.DataMemberSize() ):
-            data = reflex.DataMemberAt( index );
-            name = data.Name()
-            dataType = data.MemberType().__class__.__name__
+        dataList = oneclass.GetListOfDataMembers()
+        for index in range( dataList.GetSize() ):
+            data = dataList.At( index );
+            name = data.GetName()
+            dataType = data.GetTypeName()
             goType = root2GOtypeDict.get (dataType, None)
             if not goType:
                 continue
             if verbose:
-                print "name", name, "dataType", dataType, "goType", goType
+                print("name", name, "dataType", dataType, "goType", goType)
             retval.append ( ("%s.%s" % (base, name), goType) )
     retval.sort()
     return retval, etaFound and phiFound
@@ -150,13 +160,13 @@ def genObjNameDef (line):
 
 def genObjectDef (mylist, tuple, alias, label, type, etaPhiFound):
     """Does something, but I can't remembrer what... """
-    print "tuple %s alias %s label %s type %s" % (tuple, alias, label, type)
+    print("tuple %s alias %s label %s type %s" % (tuple, alias, label, type))
     # first get the name of the object
     firstName = mylist[0][0]
     match = alphaRE.match (firstName)
     if not match:
-        raise RuntimeError, "firstName doesn't parse correctly. (%s)" \
-              % firstName
+        raise RuntimeError("firstName doesn't parse correctly. (%s)" \
+              % firstName)
     genName = match.group (1)
     genDef =  " ## GenObject %s Definition ##\n[%s]\n" % \
              (genName, genName)
@@ -213,7 +223,7 @@ if __name__ == "__main__":
     from Validation.Tools.GenObject import GenObject
     options.type = GenObject.decodeNonAlphanumerics (options.type)
     if len (args) < 1:
-        raise RuntimeError, "Need to provide object name."
+        raise RuntimeError("Need to provide object name.")
     #
     objectName = GenObject.decodeNonAlphanumerics (args[0])
     goName     = options.goName or colonRE.sub ('', objectName)
@@ -222,12 +232,12 @@ if __name__ == "__main__":
     # load the right libraries, etc.
     ROOT.gSystem.Load("libFWCoreFWLite")
     ROOT.gSystem.Load("libDataFormatsFWLite")
-    ROOT.gSystem.Load("libReflexDict")
-    ROOT.FWLiteEnabler::enable()
+    #ROOT.gSystem.Load("libReflexDict")
+    ROOT.FWLiteEnabler.enable()
     mylist, etaPhiFound = getObjectList (objectName, goName, options.verbose,
                                          options.privateMemberData)
     if not len (mylist):
-        print "There are no member functions that are useful for comparison."
+        print("There are no member functions that are useful for comparison.")
         sys.exit (GenObject.uselessReturnCode)
     targetFile = open (outputFile, 'w')
     genDef, tupleDef = genObjectDef (mylist,
@@ -240,5 +250,5 @@ if __name__ == "__main__":
     targetFile.write (genDef)
     targetFile.write (defTemplate % {'objs':'reco', 'OBJS':'RECO'})
     targetFile.write (tupleDef)
-    print "Vetoed types:"
+    print("Vetoed types:")
     pprint.pprint ( sorted( list(vetoedTypes) ) )

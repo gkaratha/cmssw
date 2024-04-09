@@ -10,10 +10,26 @@ globalMuons = cms.EDProducer("GlobalMuonProducer",
         GlobalTrajectoryBuilderCommon
     ),
     TrackerCollectionLabel = cms.InputTag("generalTracks"),
-    MuonCollectionLabel = cms.InputTag("standAloneMuons","UpdatedAtVtx")
+    MuonCollectionLabel = cms.InputTag("standAloneMuons","UpdatedAtVtx"),
+    VertexCollectionLabel = cms.InputTag("offlinePrimaryVertices"),
+    selectHighPurity = cms.bool(False)
 )
 
-globalMuons.GLBTrajBuilderParameters.GlobalMuonTrackMatcher.Propagator = cms.string('SmartPropagatorRK')
-globalMuons.GLBTrajBuilderParameters.TrackTransformer.Propagator = cms.string('SmartPropagatorAnyRK') 
+globalMuons.GLBTrajBuilderParameters.GlobalMuonTrackMatcher.Propagator = 'SmartPropagatorRK'
+globalMuons.GLBTrajBuilderParameters.TrackTransformer.Propagator = cms.string('SmartPropagatorAnyRK')
 
+# FastSim has no template fit on tracker hits
+# FastSim doesn't use Runge Kute for propagation
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(globalMuons,
+                 GLBTrajBuilderParameters =dict(GlbRefitterParameters = dict(TrackerRecHitBuilder = 'WithoutRefit',
+                                                                             Propagator = 'SmartPropagatorAny'),
+                                                TrackerRecHitBuilder = 'WithoutRefit',
+                                                TrackTransformer = dict(TrackerRecHitBuilder = 'WithoutRefit',
+                                                                        Propagator = 'SmartPropagatorAny'),
+                                                GlobalMuonTrackMatcher = dict(Propagator = 'SmartPropagator') 
+                                                )
+)
 
+from Configuration.ProcessModifiers.pp_on_AA_cff import pp_on_AA
+pp_on_AA.toModify(globalMuons, selectHighPurity = True)

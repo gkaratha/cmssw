@@ -66,7 +66,6 @@ process.siStripQualityESProducer.UseEmptyRunInfo = cms.bool(True)
 process.siStripQualityESProducer.ListOfRecordToMerge = cms.VPSet()
 # fake LA conditions
 process.load('CalibTracker.SiStripESProducers.fake.SiStripLorentzAngleFakeESSource_cfi')
-process.load('CalibTracker.SiStripESProducers.fake.SiStripLorentzAngleFakeESSource_cfi')
 # fake conditions for threshold
 process.load('CalibTracker.SiStripESProducers.fake.SiStripThresholdFakeESSource_cfi')
 process.load('CalibTracker.SiPixelESProducers.SiPixelFakeLorentzAngleESSource_cfi')
@@ -77,7 +76,6 @@ process.load('RecoVertex.BeamSpotProducer.BeamSpotFakeConditionsNominalCollision
 process.load('RecoLocalTracker.SiStripRecHitConverter.SiStripRecHitMatcher_cfi')
 # CPEs
 process.load('RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi')
-process.load('RecoLocalTracker.SiPixelRecHits.PixelCPEParmError_cfi')
 # TransientTrackingBuilder
 process.load('RecoTracker.TransientTrackingRecHit.TransientTrackingRecHitBuilder_cfi')
 process.ttrhbwr.PixelCPE = cms.string('PixelCPEfromTrackAngle')
@@ -133,9 +131,10 @@ process.TrackProducer.alias=('') # can we drop this?
 process.load('DQM.SiStripCommissioningSources.SiStripFineDelayHit_cfi')
 
 # Commissioning source file production
-process.CommissioningHistosWithTracking = process.CommissioningHistos.clone()
-process.CommissioningHistosWithTracking.InputModuleLabel = cms.string('siStripFineDelayHit')
-process.CommissioningHistosWithTracking.SignalToNoiseCut = cms.double(3.0)
+process.CommissioningHistosWithTracking = process.CommissioningHistos.clone(
+    InputModuleLabel = 'siStripFineDelayHit',
+    SignalToNoiseCut = cms.double(3.0)
+)
 
 # the path to run for analysis with tracking
 process.p2 = cms.Path(

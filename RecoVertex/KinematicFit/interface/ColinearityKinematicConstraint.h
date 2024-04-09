@@ -12,52 +12,45 @@
  * two tracks should be used in the fit.
  *
  */
-                                               
-class ColinearityKinematicConstraint : public MultiTrackKinematicConstraint{
 
+class ColinearityKinematicConstraint : public MultiTrackKinematicConstraint {
 public:
+  enum ConstraintDim { Phi, PhiTheta };
 
- enum ConstraintDim {Phi, PhiTheta};
+  ColinearityKinematicConstraint(ConstraintDim dim = Phi);
 
- ColinearityKinematicConstraint(ConstraintDim dim = Phi);
-
-
-/**
+  /**
  * Returns a vector of values of constraint
  * equations at the point where the input
  * particles are defined.
  */
-virtual AlgebraicVector  value(const std::vector<KinematicState> &states,
-                        const GlobalPoint& point) const;
+  AlgebraicVector value(const std::vector<KinematicState>& states, const GlobalPoint& point) const override;
 
-
-/**
+  /**
  * Returns a matrix of derivatives of
  * constraint equations w.r.t. 
  * particle parameters
  */
-virtual AlgebraicMatrix parametersDerivative(const std::vector<KinematicState> &states,
-                                      const GlobalPoint& point) const;
+  AlgebraicMatrix parametersDerivative(const std::vector<KinematicState>& states,
+                                       const GlobalPoint& point) const override;
 
-/**
+  /**
  * Returns a matrix of derivatives of
  * constraint equations w.r.t. 
  * vertex position
  */
-virtual AlgebraicMatrix positionDerivative(const std::vector<KinematicState> &states,
-                                    const GlobalPoint& point) const;
+  AlgebraicMatrix positionDerivative(const std::vector<KinematicState>& states,
+                                     const GlobalPoint& point) const override;
 
-/**
+  /**
  * Number of equations per track used for the fit
  */
-virtual int numberOfEquations() const {return size;}
- 
-virtual ColinearityKinematicConstraint * clone()const
-  {return new ColinearityKinematicConstraint(*this);}
+  int numberOfEquations() const override { return size; }
+
+  ColinearityKinematicConstraint* clone() const override { return new ColinearityKinematicConstraint(*this); }
 
 private:
   ConstraintDim dimension;
   unsigned int size;
-
 };
 #endif

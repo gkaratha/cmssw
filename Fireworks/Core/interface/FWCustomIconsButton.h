@@ -26,57 +26,53 @@
 // forward declarations
 class TGPicture;
 
-class FWCustomIconsButton : public TGButton
-{
-
+class FWCustomIconsButton : public TGButton {
 public:
-   FWCustomIconsButton(const TGWindow*  iParent,
-                       const TGPicture* iUpIcon,
-                       const TGPicture* iDownIcon,
-                       const TGPicture* iDisableIcon,
-                       const TGPicture* iBelowMouseIcon = 0,
-                       Int_t id = -1,
-                       GContext_t norm = TGButton::GetDefaultGC() (),
-                       UInt_t option=0);
-   
-   virtual ~FWCustomIconsButton();
+  FWCustomIconsButton(const TGWindow* iParent,
+                      const TGPicture* iUpIcon,
+                      const TGPicture* iDownIcon,
+                      const TGPicture* iDisableIcon,
+                      const TGPicture* iBelowMouseIcon = nullptr,
+                      Int_t id = -1,
+                      GContext_t norm = TGButton::GetDefaultGC()(),
+                      UInt_t option = 0);
 
-   virtual bool HandleCrossing(Event_t*);
-   
-   // ---------- const member functions ---------------------
+  ~FWCustomIconsButton() override;
 
-   // ---------- static member functions --------------------
+  bool HandleCrossing(Event_t*) override;
 
-   // ---------- member functions ---------------------------
-   void swapIcons(const TGPicture*& iUpIcon,
-                  const TGPicture*& iDownIcon,
-                  const TGPicture*& iDisabledIcon);
+  // ---------- const member functions ---------------------
 
-   void setIcons(const TGPicture* iUpIcon,
-                 const TGPicture* iDownIcon,
-                 const TGPicture* iDisabledIcon,
-                 const TGPicture* ibelowMouseIcon = 0);
+  // ---------- static member functions --------------------
 
-   const TGPicture* upIcon() const { return m_upIcon; }
-   const TGPicture* downIcon() const { return m_downIcon; }
-   const TGPicture* disabledIcon() const { return m_disabledIcon; }
-   const TGPicture* bellowMouseIcon() const { return m_belowMouseIcon; }
+  // ---------- member functions ---------------------------
+  void swapIcons(const TGPicture*& iUpIcon, const TGPicture*& iDownIcon, const TGPicture*& iDisabledIcon);
+
+  void setIcons(const TGPicture* iUpIcon,
+                const TGPicture* iDownIcon,
+                const TGPicture* iDisabledIcon,
+                const TGPicture* ibelowMouseIcon = nullptr);
+
+  const TGPicture* upIcon() const { return m_upIcon; }
+  const TGPicture* downIcon() const { return m_downIcon; }
+  const TGPicture* disabledIcon() const { return m_disabledIcon; }
+  const TGPicture* bellowMouseIcon() const { return m_belowMouseIcon; }
+
+  FWCustomIconsButton(const FWCustomIconsButton&) = delete;  // stop default
+
+  const FWCustomIconsButton& operator=(const FWCustomIconsButton&) = delete;  // stop default
 
 protected:
-   virtual void DoRedraw();
+  void DoRedraw() override;
+
 private:
-   FWCustomIconsButton(const FWCustomIconsButton&); // stop default
+  // ---------- member data --------------------------------
+  const TGPicture* m_upIcon;
+  const TGPicture* m_downIcon;
+  const TGPicture* m_disabledIcon;
+  const TGPicture* m_belowMouseIcon;
 
-   const FWCustomIconsButton& operator=(const FWCustomIconsButton&); // stop default
-
-   // ---------- member data --------------------------------
-   const TGPicture* m_upIcon;
-   const TGPicture* m_downIcon;
-   const TGPicture* m_disabledIcon;
-   const TGPicture* m_belowMouseIcon;
-   
-   bool m_inside;   
+  bool m_inside;
 };
-
 
 #endif

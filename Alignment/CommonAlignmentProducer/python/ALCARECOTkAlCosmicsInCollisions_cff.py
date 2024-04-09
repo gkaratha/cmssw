@@ -8,7 +8,7 @@ import FWCore.ParameterSet.Config as cms
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 ALCARECOTkAlCosmicsInCollisionsHLT = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     andOr = True, ## choose logical OR between Triggerbits
-    eventSetupPathsKey = 'TkAlCosmics',
+    eventSetupPathsKey = 'TkAlCosmicsInCollisions',
     throw = False # tolerate triggers not available
     )
 
@@ -24,11 +24,14 @@ ALCARECOTkAlCosmicsInCollisionsDCSFilter = DPGAnalysis.Skims.skim_detstatus_cfi.
     DebugOn      = cms.untracked.bool(False)
 )
 
+#_________________________ Cosmic During Collisions__________________________________
+from RecoTracker.SpecialSeedGenerators.cosmicDC_cff import *
+
 #________________________________Track selection____________________________________
-# AlCaReco for track based alignment using Cosmic muons reconstructed by Combinatorial Track Finder
+# AlCaReco for track based alignment using Cosmic muons reconstructed by Cosmics during collisions
 import Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi
 ALCARECOTkAlCosmicsInCollisions = Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi.AlignmentTrackSelector.clone(
-    src = 'regionalCosmicTracks',
+    src = 'cosmicDCTracks',
     filter = True,
     applyBasicCuts = True,
 
@@ -49,4 +52,4 @@ ALCARECOTkAlCosmicsInCollisions = Alignment.CommonAlignmentProducer.AlignmentTra
     )
 
 #________________________________Sequences____________________________________
-seqALCARECOTkAlCosmicsInCollisions = cms.Sequence(ALCARECOTkAlCosmicsInCollisionsHLT+ALCARECOTkAlCosmicsInCollisionsDCSFilter+ALCARECOTkAlCosmicsInCollisions)
+seqALCARECOTkAlCosmicsInCollisions = cms.Sequence(cosmicDCTracksSeq*ALCARECOTkAlCosmicsInCollisionsHLT+ALCARECOTkAlCosmicsInCollisionsDCSFilter+ALCARECOTkAlCosmicsInCollisions)

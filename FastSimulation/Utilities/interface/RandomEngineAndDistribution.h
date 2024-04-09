@@ -13,12 +13,10 @@ namespace CLHEP {
 namespace edm {
   class LuminosityBlockIndex;
   class StreamID;
-}
+}  // namespace edm
 
 class RandomEngineAndDistribution {
-
- public:
-
+public:
   RandomEngineAndDistribution(edm::StreamID const&);
   RandomEngineAndDistribution(edm::LuminosityBlockIndex const&);
 
@@ -26,36 +24,15 @@ class RandomEngineAndDistribution {
 
   CLHEP::HepRandomEngine& theEngine() const { return *engine_; }
 
-  inline double flatShoot(double xmin=0.0, double xmax=1.0) const {
-    if(rootEngine_) {
-      return xmin + (xmax - xmin) * rootEngine_->Rndm();
-    } else {
-      CLHEP::RandFlat flatDistribution(*engine_);
-      return xmin + (xmax - xmin) * flatDistribution.fire();
-    }
+  inline double flatShoot(double xmin = 0.0, double xmax = 1.0) const { return xmin + (xmax - xmin) * engine_->flat(); }
+
+  inline double gaussShoot(double mean = 0.0, double sigma = 1.0) const {
+    return CLHEP::RandGauss::shoot(engine_, mean, sigma);
   }
 
-  inline double gaussShoot(double mean=0.0, double sigma=1.0) const {
-    if(rootEngine_) {
-      return rootEngine_->Gaus(mean,sigma);
-    } else {
-      CLHEP::RandGaussQ gaussianDistribution(*engine_);
-      return mean + sigma * gaussianDistribution.fire();
-    }
-  }
+  inline unsigned int poissonShoot(double mean) const { return CLHEP::RandPoissonQ::shoot(engine_, mean); }
 
-  inline unsigned int poissonShoot(double mean) const{
-    if(rootEngine_) {
-      return rootEngine_->Poisson(mean);
-    } else {
-      CLHEP::RandPoissonQ poissonDistribution(*engine_);
-      return poissonDistribution.fire(mean);
-    }
-  }
-
- private:
-
+private:
   CLHEP::HepRandomEngine* engine_;
-  TRandom3* rootEngine_;
 };
-#endif // FastSimulation_Utilities_RandomEngineAndDistribution_H
+#endif  // FastSimulation_Utilities_RandomEngineAndDistribution_H

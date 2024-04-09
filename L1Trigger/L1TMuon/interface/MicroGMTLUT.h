@@ -7,38 +7,35 @@
 #include <bitset>
 #include <vector>
 
-#include "../interface/MicroGMTConfiguration.h"
+#include "CondFormats/L1TObjects/interface/LUT.h"
+#include "L1Trigger/L1TMuon/interface/MicroGMTConfiguration.h"
 
 namespace l1t {
-  class MicroGMTLUT {
-    public:
-      MicroGMTLUT() : m_totalInWidth(0), m_outWidth(0), m_initialized(false) {};
-      virtual ~MicroGMTLUT() {};
+  class MicroGMTLUT : public LUT {
+  public:
+    MicroGMTLUT() : m_totalInWidth(0), m_outWidth(0), m_initialized(false){};
+    MicroGMTLUT(l1t::LUT* lut);
+    virtual ~MicroGMTLUT(){};
 
-      // should be implemented in each daughter!
-      // This function is the minimum that should be provided
-      virtual int lookupPacked(int input) const;
+    // should be implemented in each daughter!
+    // This function is the minimum that should be provided
+    virtual int lookupPacked(int input) const;
 
-      // populates the m_contents map.
-      void initialize();
+    // populates the m_contents map.
+    void initialize();
 
-      int checkedInput(unsigned in, unsigned maxWidth) const;
+    int checkedInput(unsigned in, unsigned maxWidth) const;
 
-      // I/O functions
-      void save(std::ofstream& output);
-      void load(const std::string& inFileName);
-      // content to file
-      void contentsToStream(std::stringstream& stream);
-      void headerToStream(std::stringstream& stream) const;
+    // I/O functions
+    void save(std::ofstream& output);
+    int load(const std::string& inFileName);
 
-    protected:
-      unsigned m_totalInWidth;
-      unsigned m_outWidth;
-      std::vector<MicroGMTConfiguration::input_t> m_inputs;
-      std::map<int, int> m_contents;
-      std::string m_fname;
-      bool m_initialized;
+  protected:
+    unsigned m_totalInWidth;
+    unsigned m_outWidth;
+    std::vector<MicroGMTConfiguration::input_t> m_inputs;
+    bool m_initialized;
   };
-}
+}  // namespace l1t
 
 #endif /* defined(__l1microgmtlut_h) */

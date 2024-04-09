@@ -71,115 +71,25 @@ elPFIsoValuePU03 = cms.EDProducer("PFCandIsolatorFromDeposits",
    )
 )
 
-elPFIsoValueCharged04 = elPFIsoValueCharged03.clone()
-elPFIsoValueCharged04.deposits[0].deltaR = cms.double(0.4)
+elPFIsoValueCharged04 = elPFIsoValueCharged03.clone(deposits = {0: dict(deltaR = 0.4)} )
+elPFIsoValueChargedAll04 = elPFIsoValueChargedAll03.clone(deposits = {0: dict(deltaR = 0.4)} )
+elPFIsoValueGamma04 = elPFIsoValueGamma03.clone(deposits = {0: dict(deltaR = 0.4)} )
+elPFIsoValueNeutral04 = elPFIsoValueNeutral03.clone(deposits = {0: dict(deltaR = 0.4)} )
+elPFIsoValuePU04 = elPFIsoValuePU03.clone(deposits ={0: dict(deltaR = 0.4)} )
 
-
-elPFIsoValueChargedAll04 = elPFIsoValueChargedAll03.clone()
-elPFIsoValueChargedAll04.deposits[0].deltaR = cms.double(0.4)
-
-elPFIsoValueGamma04 = elPFIsoValueGamma03.clone()
-elPFIsoValueGamma04.deposits[0].deltaR = cms.double(0.4)
-
-
-elPFIsoValueNeutral04 = elPFIsoValueNeutral03.clone()
-elPFIsoValueNeutral04.deposits[0].deltaR = cms.double(0.4)
-
-elPFIsoValuePU04 = elPFIsoValuePU03.clone()
-elPFIsoValuePU04.deposits[0].deltaR = cms.double(0.4)
-
-
-
-electronPFIsolationValuesSequence = cms.Sequence (
-    elPFIsoValueCharged03+
-    elPFIsoValueChargedAll03+
-    elPFIsoValueGamma03+
-    elPFIsoValueNeutral03+
-    elPFIsoValuePU03+
+electronPFIsolationValuesTask = cms.Task(
+    elPFIsoValueCharged03,
+    elPFIsoValueChargedAll03,
+    elPFIsoValueGamma03,
+    elPFIsoValueNeutral03,
+    elPFIsoValuePU03,
     ##############################
-    elPFIsoValueCharged04+
-    elPFIsoValueChargedAll04+
-    elPFIsoValueGamma04+
-    elPFIsoValueNeutral04+
+    elPFIsoValueCharged04,
+    elPFIsoValueChargedAll04,
+    elPFIsoValueGamma04,
+    elPFIsoValueNeutral04,
     elPFIsoValuePU04
 )
+electronPFIsolationValuesSequence = cms.Sequence(electronPFIsolationValuesTask)
 
 #<----------------
-
-# New sequences for GED. One cone size only (0.3)
-gedElPFIsoValueCharged03 = cms.EDProducer("PFCandIsolatorFromDeposits",
-    deposits = cms.VPSet(
-            cms.PSet(
-            src = cms.InputTag("gedElPFIsoDepositCharged"),
-            deltaR = cms.double(0.3),
-            weight = cms.string('1'),
-            vetos = cms.vstring('EcalEndcaps:ConeVeto(0.015)'),
-            skipDefaultVeto = cms.bool(True),
-            mode = cms.string('sum'),
-            PivotCoordinatesForEBEE = cms.bool(True)
-            )
-     )
-)
-
-gedElPFIsoValueChargedAll03 = cms.EDProducer("PFCandIsolatorFromDeposits",
-    deposits = cms.VPSet(
-            cms.PSet(
-            src = cms.InputTag("gedElPFIsoDepositChargedAll"),
-            deltaR = cms.double(0.3),
-            weight = cms.string('1'),
-            vetos = cms.vstring('EcalEndcaps:ConeVeto(0.015)'),
-            skipDefaultVeto = cms.bool(True),
-            mode = cms.string('sum'),
-            PivotCoordinatesForEBEE = cms.bool(True)
-     )
-   )
-)
-
-gedElPFIsoValueGamma03 = cms.EDProducer("PFCandIsolatorFromDeposits",
-    deposits = cms.VPSet(
-            cms.PSet(
-            src = cms.InputTag("gedElPFIsoDepositGamma"),
-            deltaR = cms.double(0.3),
-            weight = cms.string('1'),
-            vetos = cms.vstring('EcalEndcaps:ConeVeto(0.08)'),
-            skipDefaultVeto = cms.bool(True),
-            mode = cms.string('sum'),
-            PivotCoordinatesForEBEE = cms.bool(True)
-      )
-   )
-)
-
-gedElPFIsoValueNeutral03 = cms.EDProducer("PFCandIsolatorFromDeposits",
-    deposits = cms.VPSet(
-            cms.PSet(
-            src = cms.InputTag("gedElPFIsoDepositNeutral"),
-            deltaR = cms.double(0.3),
-            weight = cms.string('1'),
-            vetos = cms.vstring(),
-            skipDefaultVeto = cms.bool(True),
-            mode = cms.string('sum'),
-            PivotCoordinatesForEBEE = cms.bool(True)
-            )
-        )
-    )
-
-gedElPFIsoValuePU03 = cms.EDProducer("PFCandIsolatorFromDeposits",
-    deposits = cms.VPSet(
-            cms.PSet(
-            src = cms.InputTag("gedElPFIsoDepositPU"),
-            deltaR = cms.double(0.3),
-            weight = cms.string('1'),
-            vetos = cms.vstring('EcalEndcaps:ConeVeto(0.015)'),
-            skipDefaultVeto = cms.bool(True),
-            mode = cms.string('sum'),
-            PivotCoordinatesForEBEE = cms.bool(True)
-            )
-   )
-)
-
-gedElectronPFIsolationValuesSequence = cms.Sequence (
-    gedElPFIsoValueCharged03+
-    gedElPFIsoValueChargedAll03+
-    gedElPFIsoValueGamma03+
-    gedElPFIsoValueNeutral03+
-    gedElPFIsoValuePU03 )

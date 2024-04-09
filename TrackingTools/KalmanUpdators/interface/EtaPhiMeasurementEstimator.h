@@ -14,29 +14,20 @@
 
 class EtaPhiMeasurementEstimator final : public MeasurementEstimator {
 public:
+  explicit EtaPhiMeasurementEstimator(float dEta, float dPhi) : thedEta(dEta), thedPhi(dPhi) {}
+  ~EtaPhiMeasurementEstimator() override {}
 
-  explicit EtaPhiMeasurementEstimator(double dEta, double dPhi) : 
-    thedEta(dEta),
-    thedPhi(dPhi)
-   {}
-  ~EtaPhiMeasurementEstimator(){}
+  std::pair<bool, double> estimate(const TrajectoryStateOnSurface&, const TrackingRecHit&) const override;
 
-  std::pair<bool,double> estimate(const TrajectoryStateOnSurface&,
-				  const TrackingRecHit&) const;
+  bool estimate(const TrajectoryStateOnSurface& tsos, const Plane& plane) const override;
 
-  virtual bool estimate(const TrajectoryStateOnSurface& tsos,
-			const Plane& plane) const;
+  Local2DVector maximalLocalDisplacement(const TrajectoryStateOnSurface& tsos, const Plane& plane) const override;
 
-  virtual Local2DVector maximalLocalDisplacement( const TrajectoryStateOnSurface& tsos,
-						   const Plane& plane) const;
+  EtaPhiMeasurementEstimator* clone() const override { return new EtaPhiMeasurementEstimator(*this); }
 
-  EtaPhiMeasurementEstimator* clone() const {
-    return new EtaPhiMeasurementEstimator(*this);
-  }
- private:
-  double thedEta;
-  double thedPhi;
-
+private:
+  float thedEta;
+  float thedPhi;
 };
 
 #endif

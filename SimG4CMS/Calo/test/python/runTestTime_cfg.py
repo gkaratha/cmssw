@@ -5,25 +5,23 @@ process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 process.load("Geometry.CMSCommonData.cmsSimIdealGeometryXML_cfi")
 process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Geometry.HcalCommonData.hcalParameters_cfi")
-process.load("Geometry.HcalCommonData.hcalDDDSimConstants_cfi")
+process.load("Geometry.EcalCommonData.ecalSimulationParameters_cff")
+process.load("Geometry.HcalCommonData.hcalDDConstants_cff")
+process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
+process.load("Geometry.MuonNumbering.muonOffsetESProducer_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("SimG4Core.Application.g4SimHits_cfi")
-
+process.load('Configuration.StandardSequences.Generator_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run1_mc']
 
 process.MessageLogger = cms.Service("MessageLogger",
-    destinations = cms.untracked.vstring('cout'),
-    categories = cms.untracked.vstring('Physics', 'SimG4CoreApplication', 
-                                       'G4cout', 'G4cerr'),
-    debugModules = cms.untracked.vstring('*'),
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     cout = cms.untracked.PSet(
-        INFO = cms.untracked.PSet(
-            limit = cms.untracked.int32(-1)
-        ),
         DEBUG = cms.untracked.PSet(
             limit = cms.untracked.int32(0)
         ),
@@ -33,13 +31,18 @@ process.MessageLogger = cms.Service("MessageLogger",
         G4cout = cms.untracked.PSet(
             limit = cms.untracked.int32(-1)
         ),
-        SimG4CoreApplication = cms.untracked.PSet(
+        INFO = cms.untracked.PSet(
             limit = cms.untracked.int32(-1)
         ),
         Physics = cms.untracked.PSet(
             limit = cms.untracked.int32(0)
-        )
-    )
+        ),
+        SimG4CoreApplication = cms.untracked.PSet(
+            limit = cms.untracked.int32(-1)
+        ),
+        enable = cms.untracked.bool(True)
+    ),
+    debugModules = cms.untracked.vstring('*')
 )
 
 process.load("IOMC.RandomEngine.IOMC_cff")
@@ -70,7 +73,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     AddAntiParticle = cms.bool(False)
 )
 
-process.o1 = cms.OutputModule("PoolOutputModule",
+process.output = cms.OutputModule("PoolOutputModule",
     process.FEVTSIMEventContent,
     fileName = cms.untracked.string('simevent.root')
 )
@@ -79,9 +82,11 @@ process.Timing = cms.Service("Timing")
 
 process.Tracer = cms.Service("Tracer")
 
-process.p1 = cms.Path(process.generator*process.VtxSmeared*process.g4SimHits)
-process.outpath = cms.EndPath(process.o1)
-process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP'
+process.generation_step = cms.Path(process.pgen)
+process.simulation_step = cms.Path(process.psim)
+process.out_step = cms.EndPath(process.output)
+
+process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP_FTFP_BERT_EML'
 process.g4SimHits.G4Commands = ['/tracking/verbose 1']
 process.common_maximum_timex = cms.PSet(
     MaxTrackTime  = cms.double(1000.0),
@@ -147,3 +152,12 @@ process.g4SimHits.Watchers = cms.VPSet(cms.PSet(
     type      = cms.string('TrackingVerboseAction')
 ))
 
+# Schedule definition
+process.schedule = cms.Schedule(process.generation_step,
+                                process.simulation_step,
+                                process.out_step
+                                )
+
+# filter all path with the production filter sequence 
+for path in process.paths:
+        getattr(process,path)._seq = process.generator * getattr(process,path)._seq

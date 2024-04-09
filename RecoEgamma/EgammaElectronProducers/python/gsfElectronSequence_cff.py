@@ -6,19 +6,17 @@ import FWCore.ParameterSet.Config as cms
 # imported in the reco sequences since the integration with pflow.
 #==============================================================================
 
-from RecoEgamma.EgammaElectronProducers.gsfElectronModules_cff import *
-gsfElectronSequence = cms.Sequence(ecalDrivenGsfElectronCores*ecalDrivenGsfElectrons*gsfElectronCores*gsfElectrons)
-gsfEcalDrivenElectronSequence = cms.Sequence(ecalDrivenGsfElectronCores*ecalDrivenGsfElectrons)
+from RecoEgamma.EgammaElectronProducers.ecalDrivenGsfElectronCores_cfi import ecalDrivenGsfElectronCores
+from RecoEgamma.EgammaElectronProducers.ecalDrivenGsfElectronCoresHGC_cff import ecalDrivenGsfElectronCoresHGC
+from RecoEgamma.EgammaElectronProducers.gsfElectrons_cfi import *
 
+gsfEcalDrivenElectronTask = cms.Task(ecalDrivenGsfElectronCores,ecalDrivenGsfElectrons)
+gsfEcalDrivenElectronSequence = cms.Sequence(gsfEcalDrivenElectronTask)
 
-#gsfElectronMergingSequence = cms.Sequence(gsfElectronCores*gsfElectrons)
+_gsfEcalDrivenElectronTaskHGC = gsfEcalDrivenElectronTask.copy()
+_gsfEcalDrivenElectronTaskHGC.add(cms.Task(ecalDrivenGsfElectronCoresHGC,ecalDrivenGsfElectronsHGC))
 
-from RecoEgamma.EgammaElectronProducers.edBasedElectronIso_cff import *
-from RecoEgamma.EgammaElectronProducers.pfBasedElectronIso_cff import *
-
-electronIsoSequence = cms.Sequence(
-        edBasedElectronIsoSequence+
-        pfBasedElectronIsoSequence
-     )
-
-gsfElectronMergingSequence = cms.Sequence(electronIsoSequence*gsfElectronCores*gsfElectrons)
+from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
+phase2_hgcal.toReplaceWith(
+  gsfEcalDrivenElectronTask, _gsfEcalDrivenElectronTaskHGC
+)

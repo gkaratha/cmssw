@@ -5,18 +5,14 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoLocalTracker/Records/interface/TkStripCPERecord.h"
 #include "RecoLocalTracker/SiStripRecHitConverter/interface/SiStripRecHitMatcher.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-class SiStripRecHitMatcherESProducer: public edm::ESProducer {
- public:
+class SiStripRecHitMatcherESProducer : public edm::ESProducer {
+public:
   SiStripRecHitMatcherESProducer(const edm::ParameterSet&);
-  boost::shared_ptr<SiStripRecHitMatcher> produce(const TkStripCPERecord&);
- private:
-  boost::shared_ptr<SiStripRecHitMatcher> matcher_;
+  std::unique_ptr<SiStripRecHitMatcher> produce(const TkStripCPERecord&);
+
+private:
   edm::ParameterSet pset_;
 };
 #endif
-
-
-
-

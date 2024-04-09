@@ -39,78 +39,84 @@ class TEveBoxSet;
 
 class FW3DViewDistanceMeasureTool;
 
-class FW3DViewBase : public FWEveView
-{
+class FW3DViewBase : public FWEveView {
 public:
-   FW3DViewBase(TEveWindowSlot*, FWViewType::EType, unsigned int version = 8);
-   virtual ~FW3DViewBase();
+  FW3DViewBase(TEveWindowSlot*, FWViewType::EType, unsigned int version = 8);
+  ~FW3DViewBase() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   virtual void addTo(FWConfiguration&) const;
-   virtual void populateController(ViewerParameterGUI&) const;
+  void addTo(FWConfiguration&) const override;
+  void populateController(ViewerParameterGUI&) const override;
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   virtual void setContext(const fireworks::Context&);
-   virtual void setFrom(const FWConfiguration&);
+  // ---------- member functions ---------------------------
+  void setContext(const fireworks::Context&) override;
+  void setFrom(const FWConfiguration&) override;
 
-   // To be fixed.
-   void updateGlobalSceneScaleParameters();
+  // To be fixed.
+  void updateGlobalSceneScaleParameters();
 
-   FW3DViewDistanceMeasureTool* getDMT() { return m_DMT;}
-   virtual bool requestGLHandlerPick() const;
-   void setCurrentDMTVertex(double x, double y, double z);
+  FW3DViewDistanceMeasureTool* getDMT() { return m_DMT; }
+  bool requestGLHandlerPick() const override;
+  void setCurrentDMTVertex(double x, double y, double z);
 
-   void showEcalBarrel(bool);
+  void showEcalBarrel(bool);
 
-   void setClip(float eta, float phi);
+  void setClip(float eta, float phi);
 
 private:
-   FW3DViewBase(const FW3DViewBase&);    // stop default
+  FW3DViewBase(const FW3DViewBase&);  // stop default
 
-   const FW3DViewBase& operator=(const FW3DViewBase&);    // stop default
+  const FW3DViewBase& operator=(const FW3DViewBase&);  // stop default
 
-   // ---------- member data --------------------------------
-   FW3DViewGeometry*  m_geometry;
-   TGLClip*           m_glClip;
+  // ---------- member data --------------------------------
+  FW3DViewGeometry* m_geometry;
+  TGLClip* m_glClip;
 
-   // parameters
-   FWEnumParameter m_showMuonBarrel;
-   FWBoolParameter m_showMuonEndcap;
-   FWBoolParameter m_showPixelBarrel;
-   FWBoolParameter m_showPixelEndcap;
-   FWBoolParameter m_showTrackerBarrel;
-   FWBoolParameter m_showTrackerEndcap;
+  // parameters
+  FWEnumParameter m_showMuonBarrel;
+  FWBoolParameter m_showMuonEndcap;
+  FWBoolParameter m_showPixelBarrel;
+  FWBoolParameter m_showPixelEndcap;
+  FWBoolParameter m_showTrackerBarrel;
+  FWBoolParameter m_showTrackerEndcap;
+  FWBoolParameter m_showHGCalEE;
+  FWBoolParameter m_showHGCalHSi;
+  FWBoolParameter m_showHGCalHSc;
+  FWBoolParameter m_showMtdBarrel;
+  FWBoolParameter m_showMtdEndcap;
 
-   TEveBoxSet* m_ecalBarrel;
-   FWBoolParameter m_showEcalBarrel;
+  TEveBoxSet* m_ecalBarrel;
+  FWBoolParameter m_showEcalBarrel;
 
-   FWEnumParameter m_rnrStyle;
-   FWBoolParameter m_selectable;
+  FWEnumParameter m_rnrStyle;
+  FWBoolParameter m_selectable;
 
-   FWEnumParameter m_cameraType;
+  FWEnumParameter m_cameraType;
 
-   FWBoolParameter m_clipEnable;
-   FWDoubleParameter m_clipTheta;
-   FWDoubleParameter m_clipPhi;
-   FWDoubleParameter m_clipDelta1;
-   FWDoubleParameter m_clipDelta2;
+  FWBoolParameter m_clipEnable;
+  FWDoubleParameter m_clipTheta;
+  FWDoubleParameter m_clipPhi;
+  FWDoubleParameter m_clipDelta1;
+  FWDoubleParameter m_clipDelta2;
+  FWLongParameter m_clipAppexOffset;
+  FWLongParameter m_clipHGCalLayerBegin;
+  FWLongParameter m_clipHGCalLayerEnd;
 
+  FW3DViewDistanceMeasureTool* m_DMT;
+  TEveLine* m_DMTline;
 
-   FW3DViewDistanceMeasureTool* m_DMT;
-   TEveLine* m_DMTline;
+  void selectable(bool);
 
-   void selectable( bool );
+  void enableSceneClip(bool);
+  void updateClipPlanes(bool resetCamera);
+  void updateHGCalVisibility(bool);
 
-   void enableSceneClip( bool );
-   void updateClipPlanes(bool resetCamera);
-
-   void rnrStyle(long);
-   void showMuonBarrel( long );
-   void setCameraType(long);
+  void rnrStyle(long);
+  void showMuonBarrel(long);
+  void setCameraType(long);
 };
-
 
 #endif

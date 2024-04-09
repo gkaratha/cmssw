@@ -3,82 +3,138 @@
 
 /*
 Version of the Event Processor used for tests of
-the state machine and other tests.
+TransitionProcessors.icc.
+
+The tests that use this class are less useful than they used
+to be. MockEventProcessor is mainly used to test the code in
+TransitionProcessors.icc (historical sidenote: at the time
+MockEventProcessor was originally created a long time ago,
+the functionality in TransitionProcessors.icc was
+implemented using a boost state machine and MockEventProcessor
+was originally designed to test that).  When
+concurrent runs and concurrent lumis were implemented,
+a lot of functionality was moved from TransitionProcessors.icc
+into EventProcessors.cc. In the tests, MockEventProcessor
+replaces EventProcessor and therefore it cannot be used
+to test code in EventProcessor. Originally, this tested
+the loops over runs, lumis, and events in addition to the
+loops over files. At this point, it is really
+testing only the code related to the loop over files in
+TransitionProcessors.icc and we could clean things up by
+removing the code and parts of the tests that are intended to
+test runs, lumis, and events. That part of the code is not
+serving any purpose anymore. This cleanup would be a lot
+of tedious work for very little practical gain though...
+It might never happen.
 
 Original Authors: W. David Dagenhart, Marc Paterno
 */
 
-#include "FWCore/Framework/interface/IEventProcessor.h"
-#include "DataFormats/Provenance/interface/ProcessHistoryID.h"
-#include "FWCore/Framework/src/EPStates.h"
+#include "DataFormats/Provenance/interface/RunLumiEventNumber.h"
+#include "FWCore/Framework/interface/InputSource.h"
 
-#include <iostream>
+#include <exception>
+#include <ostream>
+#include <memory>
+#include <sstream>
 #include <string>
 
 namespace edm {
-  class MockEventProcessor : public IEventProcessor {
+
+  class MockEventProcessor {
   public:
+    class TestException : public std::exception {
+    public:
+      TestException() noexcept : std::exception() {}
+    };
 
-    MockEventProcessor(std::string const& mockData,
-                       std::ostream& output,
-                       statemachine::FileMode const& fileMode,
-                       statemachine::EmptyRunLumiMode const& emptyRunLumiMode);
+    MockEventProcessor(std::string const& mockData, std::ostream& output, bool iDoNotMerge);
 
-    virtual StatusCode runToCompletion() override;
+    void runToCompletion();
 
-    virtual void readFile() override;
-    virtual void closeInputFile(bool cleaningUpAfterException) override;
-    virtual void openOutputFiles() override;
-    virtual void closeOutputFiles() override;
+    InputSource::ItemType nextTransitionType();
+    InputSource::ItemType lastTransitionType() const;
 
-    virtual void respondToOpenInputFile() override;
-    virtual void respondToCloseInputFile() override;
+    void readFile();
+    bool fileBlockValid() { return true; }
+    void closeInputFile(bool cleaningUpAfterException);
+    void openOutputFiles();
+    void closeOutputFiles();
 
-    virtual void startingNewLoop() override;
-    virtual bool endOfLoop() override;
-    virtual void rewindInput() override;
-    virtual void prepareForNextLoop() override;
-    virtual bool shouldWeCloseOutput() const override;
+    void respondToOpenInputFile();
+    void respondToCloseInputFile();
 
-    virtual void doErrorStuff() override;
+    void startingNewLoop();
+    bool endOfLoop();
+    void rewindInput();
+    void prepareForNextLoop();
+    bool shouldWeCloseOutput() const;
 
-    virtual void beginRun(statemachine::Run const& run) override;
-    virtual void endRun(statemachine::Run const& run, bool cleaningUpAfterException) override;
+    void doErrorStuff();
 
-    virtual void beginLumi(ProcessHistoryID const& phid, RunNumber_t run, LuminosityBlockNumber_t lumi) override;
-    virtual void endLumi(ProcessHistoryID const& phid, RunNumber_t run, LuminosityBlockNumber_t lumi, bool cleaningUpAfterException) override;
+    void beginProcessBlock(bool& beginProcessBlockSucceeded);
+    void inputProcessBlocks();
+    void endProcessBlock(bool cleaningUpAfterException, bool beginProcessBlockSucceeded);
 
-    virtual statemachine::Run readRun() override;
-    virtual statemachine::Run readAndMergeRun() override;
-    virtual int readLuminosityBlock() override;
-    virtual int readAndMergeLumi() override;
-    virtual void writeRun(statemachine::Run const& run) override;
-    virtual void deleteRunFromCache(statemachine::Run const& run) override;
-    virtual void writeLumi(ProcessHistoryID const& phid, RunNumber_t run, LuminosityBlockNumber_t lumi) override;
-    virtual void deleteLumiFromCache(ProcessHistoryID const& phid, RunNumber_t run, LuminosityBlockNumber_t lumi) override;
+    InputSource::ItemType processRuns();
+    void processRun();
+    InputSource::ItemType processLumis();
 
-    virtual void readAndProcessEvent() override;
-    virtual bool shouldWeStop() const override;
+    void beginRun(RunNumber_t run);
 
-    virtual void setExceptionMessageFiles(std::string& message) override;
-    virtual void setExceptionMessageRuns(std::string& message) override;
-    virtual void setExceptionMessageLumis(std::string& message) override;
+    void endUnfinishedRun(bool);
 
-    virtual bool alreadyHandlingException() const override;
+    void endRun();
+
+    void endUnfinishedLumi(bool);
+
+    void readRun();
+    void readAndMergeRun();
+    LuminosityBlockNumber_t readLuminosityBlock();
+    LuminosityBlockNumber_t readAndMergeLumi();
+    void writeRun();
+    void clearRunPrincipal();
+    void writeLumi();
+    void clearLumiPrincipal();
+
+    bool shouldWeStop() const;
+
+    void setExceptionMessageFiles(std::string& message);
+    void setExceptionMessageRuns();
+    void setExceptionMessageLumis();
+
+    bool setDeferredException(std::exception_ptr);
 
   private:
+    InputSource::ItemType readAndProcessEvents();
+    void readAndProcessEvent();
+    void throwIfNeeded();
+    void endLumi();
+
     std::string mockData_;
-    std::ostream & output_;
-    statemachine::FileMode fileMode_;
-    statemachine::EmptyRunLumiMode emptyRunLumiMode_;
+    std::ostream& output_;
+    std::istringstream input_;
 
-    int run_;
-    int lumi_;
+    bool lumiStatus_ = false;
+    LuminosityBlockNumber_t currentLumiNumber_ = 0;
+    bool didGlobalBeginLumiSucceed_ = false;
+    InputSource::ItemType lastTransition_ = InputSource::ItemType::IsInvalid;
 
+    bool currentRun_ = false;
+    RunNumber_t currentRunNumber_ = 0;
+    bool didGlobalBeginRunSucceed_ = false;
+
+    RunNumber_t nextRun_;
+    LuminosityBlockNumber_t nextLumi_;
+
+    bool doNotMerge_;
     bool shouldWeCloseOutput_;
     bool shouldWeEndLoop_;
     bool shouldWeStop_;
+    bool eventProcessed_;
+    bool reachedEndOfInput_;
+    bool shouldThrow_;
   };
-}
+}  // namespace edm
 
 #endif

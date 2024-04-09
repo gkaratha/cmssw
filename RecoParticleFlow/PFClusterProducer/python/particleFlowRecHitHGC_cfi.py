@@ -18,45 +18,42 @@ particleFlowRecHitHGC = cms.EDProducer("PFRecHitProducer",
     ),
     producers = cms.VPSet(
            cms.PSet(
-             name = cms.string("PFHGCEERecHitCreator"),
+             name = cms.string("PFHGCalEERecHitCreator"),
              src  = cms.InputTag("HGCalRecHit:HGCEERecHits"),
              geometryInstance = cms.string("HGCalEESensitive"),
-             qualityTests = cms.VPSet( 
+             qualityTests = cms.VPSet(
+# Enabling PFRecHitQTestHGCalThresholdSNR will filter out of the PFRecHits, all the HGCRecHits with energy not exceeding
+# 5 sigma noise                 
                 cms.PSet(
-                  name = cms.string("PFRecHitQTestThresholdInMIPs"),
-                  thresholdInMIPs = cms.double(0.50),
-                  mipValueInkeV = cms.double(55.1),
-                  recHitEnergyIs_keV = cms.bool(False),
-                  recHitEnergyMultiplier = cms.double(1.0)
-                  )
-                )
+                    name = cms.string("PFRecHitQTestHGCalThresholdSNR"),
+                    thresholdSNR = cms.double(5.0),
+                   ),
+                )              
            ),
            cms.PSet(
-             name = cms.string("PFHGCHEFRecHitCreator"),
+             name = cms.string("PFHGCalHSiRecHitCreator"),
              src  = cms.InputTag("HGCalRecHit:HGCHEFRecHits"),
              geometryInstance = cms.string("HGCalHESiliconSensitive"),
-             qualityTests = cms.VPSet( 
+             qualityTests = cms.VPSet(
+# Enabling PFRecHitQTestHGCalThresholdSNR will filter out of the PFRecHits, all the HGCRecHits with energy not exceeding
+# 5 sigma noise                     
                 cms.PSet(
-                  name = cms.string("PFRecHitQTestThresholdInMIPs"),
-                  thresholdInMIPs = cms.double(0.77),
-                  mipValueInkeV = cms.double(85.0),
-                  recHitEnergyIs_keV = cms.bool(False),
-                  recHitEnergyMultiplier = cms.double(1.0)
-                  )                
+                    name = cms.string("PFRecHitQTestHGCalThresholdSNR"),
+                    thresholdSNR = cms.double(5.0),
+                   ),                 
                 )
            ),
            cms.PSet(
-             name = cms.string("PFHGCHEBRecHitCreator"),
+             name = cms.string("PFHGCalHScRecHitCreator"),
              src  = cms.InputTag("HGCalRecHit:HGCHEBRecHits"),
-             geometryInstance = cms.string("HGCalHEScintillatorSensitive"),
-             qualityTests = cms.VPSet( 
+             geometryInstance = cms.string(""),
+             qualityTests = cms.VPSet(
+# Enabling PFRecHitQTestHGCalThresholdSNR will filter out of the PFRecHits, all the HGCRecHits with energy not exceeding
+# 5 sigma noise                     
                 cms.PSet(
-                  name = cms.string("PFRecHitQTestThresholdInMIPs"),
-                  thresholdInMIPs = cms.double(1.01),
-                  mipValueInkeV = cms.double(1498.4),
-                  recHitEnergyIs_keV = cms.bool(False),
-                  recHitEnergyMultiplier = cms.double(1.0)
-                  )
+                    name = cms.string("PFRecHitQTestHGCalThresholdSNR"),
+                    thresholdSNR = cms.double(5.0),
+                   ),                 
                 )
            )
     )          

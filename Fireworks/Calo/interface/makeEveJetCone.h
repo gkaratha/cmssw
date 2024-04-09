@@ -23,15 +23,15 @@
 // user include files
 
 // forward declarations
+class TEveJetCone;
 
 namespace reco {
-   class Jet;
+  class Jet;
 }
 
 namespace fireworks {
-   class Context;
-   TEveJetCone*  makeEveJetCone(const reco::Jet& iData, const fireworks::Context& context);
-}
-
+  class Context;
+  TEveJetCone* makeEveJetCone(const reco::Jet& iData, const fireworks::Context& context);
+}  // namespace fireworks
 
 #endif

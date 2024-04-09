@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MonPedestalOffsetsDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MonPedestalOffsetsDat();
-  ~MonPedestalOffsetsDat();
+  ~MonPedestalOffsetsDat() override;
 
   // User data methods
-  inline std::string getTable() { return "MON_PEDESTAL_OFFSETS_DAT"; }
+  inline std::string getTable() override { return "MON_PEDESTAL_OFFSETS_DAT"; }
 
   inline void setDACG1(int dac) { m_dacG1 = dac; }
   inline int getDACG1() const { return m_dacG1; }
@@ -30,19 +30,16 @@ class MonPedestalOffsetsDat : public IDataItem {
   inline void setTaskStatus(bool status) { m_taskStatus = status; }
   inline bool getTaskStatus() const { return m_taskStatus; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const MonPedestalOffsetsDat* item, MonRunIOV* iov )
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MonPedestalOffsetsDat* item, MonRunIOV* iov) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, MonPedestalOffsetsDat >* data, MonRunIOV* iov)
-    throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, MonPedestalOffsetsDat>* data, MonRunIOV* iov) noexcept(false);
 
-
-  void fetchData(std::map< EcalLogicID, MonPedestalOffsetsDat >* fillMap, MonRunIOV* iov, std::string mappa=" cv.maps_to " )
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, MonPedestalOffsetsDat>* fillMap,
+                 MonRunIOV* iov,
+                 std::string mappa = " cv.maps_to ") noexcept(false);
 
   // User data
   int m_dacG1;

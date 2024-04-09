@@ -18,40 +18,56 @@
 ///     cna_new/Correlated_Noise_Analysis/ECNA_main_page.htm
 ///-----------------------------------------------------------
 ///
-///  Set the results types and dimensions 
+///  Set the results types and dimensions
 ///
 
-enum CnaResultTyp
-  {cTypNumbers,     cTypMSp,         cTypSSp,
-   cTypAvTno,       cTypAvLfn,       cTypAvHfn,
-   cTypHfCov,       cTypHfCor,       cTypCovCss,     cTypCorCss,
-   cTypMeanCorss,   cTypSigCorss,
-   cTypAvPed,       cTypAvMeanCorss, cTypAvSigCorss, cTypNbOfEvts,
-   cTypPed,         cTypTno,         cTypLfn,        cTypHfn,
-   cTypAdcEvt,      cTypLfCov,       cTypLfCor,
-   cTypLFccMoStins, cTypHFccMoStins, cTypEvtNbInLoop};   //  cTypEvtNbInLoop -> FREE
+enum CnaResultTyp {
+  cTypNumbers,
+  cTypMSp,
+  cTypSSp,
+  cTypAvTno,
+  cTypAvLfn,
+  cTypAvHfn,
+  cTypHfCov,
+  cTypHfCor,
+  cTypCovCss,
+  cTypCorCss,
+  cTypMeanCorss,
+  cTypSigCorss,
+  cTypAvPed,
+  cTypAvMeanCorss,
+  cTypAvSigCorss,
+  cTypNbOfEvts,
+  cTypPed,
+  cTypTno,
+  cTypLfn,
+  cTypHfn,
+  cTypAdcEvt,
+  cTypLfCov,
+  cTypLfCor,
+  cTypLFccMoStins,
+  cTypHFccMoStins,
+  cTypEvtNbInLoop
+};  //  cTypEvtNbInLoop -> FREE
 
 class TEcnaResultType : public TObject {
-
 protected:
-
 public:
-
-  CnaResultTyp   fTypOfCnaResult; //type of info in this class
-  Int_t          fIthElement;     //Ith element in the entry of type fTypOfCnaResult
-  Int_t          fUserChannel;    //Channel chosen by the user
-  TEcnaNArrayD   fMatMat;         //1st matrix, used in case of MatMat
-  TEcnaNArrayD   fMatHis;         //2nd matrix, used in case of MatHis
+  CnaResultTyp fTypOfCnaResult;  //type of info in this class
+  Int_t fIthElement;             //Ith element in the entry of type fTypOfCnaResult
+  Int_t fUserChannel;            //Channel chosen by the user
+  TEcnaNArrayD fMatMat;          //1st matrix, used in case of MatMat
+  TEcnaNArrayD fMatHis;          //2nd matrix, used in case of MatHis
 
   TEcnaResultType();
   TEcnaResultType(TEcnaObject*);
 
-  ~TEcnaResultType();
+  ~TEcnaResultType() override;
   void SetSizeMat(Int_t, Int_t);
   void SetSizeHis(Int_t, Int_t);
 
   CnaResultTyp GetTypOfEntry(Int_t);
 
-  ClassDef(TEcnaResultType,1) //One leaf of the CNA root file
+  ClassDefOverride(TEcnaResultType, 1)  //One leaf of the CNA root file
 };
 #endif

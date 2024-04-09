@@ -15,28 +15,34 @@
 
 #include "DataFormats/L1Trigger/interface/L1MuonParticle.h"
 
-class FWL1MuonParticleProxyBuilder : public FWSimpleProxyBuilderTemplate<l1extra::L1MuonParticle>
-{
+class FWL1MuonParticleProxyBuilder : public FWSimpleProxyBuilderTemplate<l1extra::L1MuonParticle> {
 public:
-   FWL1MuonParticleProxyBuilder( void ) {}
-   virtual ~FWL1MuonParticleProxyBuilder( void ) {}
+  FWL1MuonParticleProxyBuilder(void) {}
+  ~FWL1MuonParticleProxyBuilder(void) override {}
 
-   REGISTER_PROXYBUILDER_METHODS();
+  REGISTER_PROXYBUILDER_METHODS();
+
+  FWL1MuonParticleProxyBuilder(const FWL1MuonParticleProxyBuilder&) = delete;                   // stop default
+  const FWL1MuonParticleProxyBuilder& operator=(const FWL1MuonParticleProxyBuilder&) = delete;  // stop default
 
 private:
-   FWL1MuonParticleProxyBuilder( const FWL1MuonParticleProxyBuilder& );    // stop default
-   const FWL1MuonParticleProxyBuilder& operator=( const FWL1MuonParticleProxyBuilder& );    // stop default
-  
-   using FWSimpleProxyBuilderTemplate<l1extra::L1MuonParticle>::build;
-   virtual void build( const l1extra::L1MuonParticle& iData, unsigned int iIndex, TEveElement& oItemHolder , const FWViewContext* );
+  using FWSimpleProxyBuilderTemplate<l1extra::L1MuonParticle>::build;
+  void build(const l1extra::L1MuonParticle& iData,
+             unsigned int iIndex,
+             TEveElement& oItemHolder,
+             const FWViewContext*) override;
 };
 
-void
-FWL1MuonParticleProxyBuilder::build( const l1extra::L1MuonParticle& iData, unsigned int iIndex, TEveElement& oItemHolder , const FWViewContext* ) 
-{
-   double scale = 10;
+void FWL1MuonParticleProxyBuilder::build(const l1extra::L1MuonParticle& iData,
+                                         unsigned int iIndex,
+                                         TEveElement& oItemHolder,
+                                         const FWViewContext*) {
+  double scale = 10;
 
-   fireworks::addDashedLine( iData.phi(), iData.theta(), iData.pt() * scale, &oItemHolder, this );
+  fireworks::addDashedLine(iData.phi(), iData.theta(), iData.pt() * scale, &oItemHolder, this);
 }
 
-REGISTER_FWPROXYBUILDER(FWL1MuonParticleProxyBuilder, l1extra::L1MuonParticle, "L1MuonParticle", FWViewType::kAllRPZBits);
+REGISTER_FWPROXYBUILDER(FWL1MuonParticleProxyBuilder,
+                        l1extra::L1MuonParticle,
+                        "L1MuonParticle",
+                        FWViewType::kAllRPZBits);

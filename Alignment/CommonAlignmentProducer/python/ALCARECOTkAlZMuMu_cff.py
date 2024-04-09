@@ -52,3 +52,13 @@ ALCARECOTkAlZMuMu.TwoBodyDecaySelector.applyAcoplanarityFilter = False
 ALCARECOTkAlZMuMu.TwoBodyDecaySelector.numberOfCandidates = 1
 
 seqALCARECOTkAlZMuMu = cms.Sequence(ALCARECOTkAlZMuMuHLT+ALCARECOTkAlZMuMuDCSFilter+ALCARECOTkAlZMuMuGoodMuons+ALCARECOTkAlZMuMuRelCombIsoMuons+ALCARECOTkAlZMuMu)
+
+## customizations for the pp_on_AA eras
+from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
+from Configuration.ProcessModifiers.pp_on_AA_cff import pp_on_AA
+(pp_on_XeXe_2017 | pp_on_AA).toModify(ALCARECOTkAlZMuMuHLT,
+                                      eventSetupPathsKey='TkAlZMuMuHI'
+)
+
+from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
+phase2_tracker.toModify(ALCARECOTkAlZMuMu, etaMin = -4, etaMax = 4)

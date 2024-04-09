@@ -9,6 +9,7 @@ VectorInputSource: Abstract interface for vector input sources.
 #include "DataFormats/Provenance/interface/ProcessHistoryRegistry.h"
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/get_underlying_safe.h"
 
 #include <memory>
 #include <string>
@@ -28,11 +29,18 @@ namespace edm {
     explicit VectorInputSource(ParameterSet const& pset, VectorInputSourceDescription const& desc);
     virtual ~VectorInputSource();
 
-    template<typename T>
-    size_t loopOverEvents(EventPrincipal& cache, size_t& fileNameHash, size_t number, T eventOperator, CLHEP::HepRandomEngine* = nullptr, EventID const* id = nullptr);
+    template <typename T>
+    size_t loopOverEvents(EventPrincipal& cache,
+                          size_t& fileNameHash,
+                          size_t number,
+                          T eventOperator,
+                          CLHEP::HepRandomEngine* = nullptr,
+                          EventID const* id = nullptr,
+                          bool recycleFiles = true);
 
-    template<typename T, typename Iterator>
-    size_t loopSpecified(EventPrincipal& cache, size_t& fileNameHash, Iterator const& begin, Iterator const& end, T eventOperator);
+    template <typename T, typename Iterator>
+    size_t loopSpecified(
+        EventPrincipal& cache, size_t& fileNameHash, Iterator const& begin, Iterator const& end, T eventOperator);
 
     void dropUnwantedBranches(std::vector<std::string> const& wantedBranches);
     //
@@ -42,18 +50,21 @@ namespace edm {
     /// Called at end of job
     void doEndJob();
 
-    std::shared_ptr<ProductRegistry const> productRegistry() const {return productRegistry_;}
-    ProductRegistry& productRegistryUpdate() const {return *productRegistry_;}
-    ProcessHistoryRegistry const& processHistoryRegistry() const {return *processHistoryRegistry_;}
-    ProcessHistoryRegistry& processHistoryRegistryForUpdate() {return *processHistoryRegistry_;}
+    std::shared_ptr<ProductRegistry const> productRegistry() const { return get_underlying_safe(productRegistry_); }
+    std::shared_ptr<ProductRegistry>& productRegistry() { return get_underlying_safe(productRegistry_); }
+    ProductRegistry& productRegistryUpdate() { return *productRegistry_; }
+    ProcessHistoryRegistry const& processHistoryRegistry() const { return *processHistoryRegistry_; }
+    ProcessHistoryRegistry& processHistoryRegistryForUpdate() { return *processHistoryRegistry_; }
 
   private:
-
     void clearEventPrincipal(EventPrincipal& cache);
 
   private:
-    virtual bool readOneEvent(EventPrincipal& cache, size_t& fileNameHash, CLHEP::HepRandomEngine*, EventID const* id) = 0;
-    virtual void readOneSpecified(EventPrincipal& cache, size_t& fileNameHash, SecondaryEventIDAndFileInfo const& event) = 0;
+    virtual bool readOneEvent(
+        EventPrincipal& cache, size_t& fileNameHash, CLHEP::HepRandomEngine*, EventID const* id, bool recycleFiles) = 0;
+    virtual void readOneSpecified(EventPrincipal& cache,
+                                  size_t& fileNameHash,
+                                  SecondaryEventIDAndFileInfo const& event) = 0;
     void readOneSpecified(EventPrincipal& cache, size_t& fileNameHash, EventID const& event) {
       SecondaryEventIDAndFileInfo info(event, fileNameHash);
       readOneSpecified(cache, fileNameHash, info);
@@ -63,26 +74,45 @@ namespace edm {
     virtual void beginJob() = 0;
     virtual void endJob() = 0;
 
-    std::shared_ptr<ProductRegistry> productRegistry_;
-    std::unique_ptr<ProcessHistoryRegistry> processHistoryRegistry_;
+    void throwIfOverLimit(unsigned int consecutiveRejections) const;
+
+    edm::propagate_const<std::shared_ptr<ProductRegistry>> productRegistry_;
+    edm::propagate_const<std::unique_ptr<ProcessHistoryRegistry>> processHistoryRegistry_;
+    unsigned int consecutiveRejectionsLimit_;
   };
 
-  template<typename T>
-  size_t VectorInputSource::loopOverEvents(EventPrincipal& cache, size_t& fileNameHash, size_t number, T eventOperator, CLHEP::HepRandomEngine* engine, EventID const* id) {
+  template <typename T>
+  size_t VectorInputSource::loopOverEvents(EventPrincipal& cache,
+                                           size_t& fileNameHash,
+                                           size_t number,
+                                           T eventOperator,
+                                           CLHEP::HepRandomEngine* engine,
+                                           EventID const* id,
+                                           bool recycleFiles) {
     size_t i = 0U;
-    for(; i < number; ++i) {
+    unsigned int consecutiveRejections = 0U;
+    while (i < number) {
       clearEventPrincipal(cache);
-      bool found = readOneEvent(cache, fileNameHash, engine, id);
-      if(!found) break;
-      eventOperator(cache, fileNameHash);
+      bool found = readOneEvent(cache, fileNameHash, engine, id, recycleFiles);
+      if (!found)
+        break;
+      bool used = eventOperator(cache, fileNameHash);
+      if (used) {
+        ++i;
+        consecutiveRejections = 0U;
+      } else if (consecutiveRejectionsLimit_ > 0) {
+        ++consecutiveRejections;
+        throwIfOverLimit(consecutiveRejections);
+      }
     }
     return i;
   }
 
-  template<typename T, typename Iterator>
-  size_t VectorInputSource::loopSpecified(EventPrincipal& cache, size_t& fileNameHash, Iterator const& begin, Iterator const& end, T eventOperator) {
+  template <typename T, typename Iterator>
+  size_t VectorInputSource::loopSpecified(
+      EventPrincipal& cache, size_t& fileNameHash, Iterator const& begin, Iterator const& end, T eventOperator) {
     size_t i = 0U;
-    for(Iterator iter = begin; iter != end; ++iter) {
+    for (Iterator iter = begin; iter != end; ++iter) {
       clearEventPrincipal(cache);
       readOneSpecified(cache, fileNameHash, *iter);
       eventOperator(cache, fileNameHash);
@@ -90,5 +120,5 @@ namespace edm {
     }
     return i;
   }
-}
+}  // namespace edm
 #endif

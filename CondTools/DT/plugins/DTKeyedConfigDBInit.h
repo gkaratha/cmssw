@@ -14,7 +14,7 @@
 //----------------------
 // Base Class Headers --
 //----------------------
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 //------------------------------------
 // Collaborating Class Declarations --
@@ -32,32 +32,26 @@
 //              -- Class Interface --
 //              ---------------------
 
-class DTKeyedConfigDBInit: public edm::EDAnalyzer {
-
- public:
-
+class DTKeyedConfigDBInit : public edm::one::EDAnalyzer<> {
+public:
   /** Constructor
    */
-  explicit DTKeyedConfigDBInit( const edm::ParameterSet& ps );
+  explicit DTKeyedConfigDBInit(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTKeyedConfigDBInit();
+  ~DTKeyedConfigDBInit() override;
 
   /** Operations
    */
-  /// 
-  virtual void beginJob();
-  virtual void analyze( const edm::Event& e, const edm::EventSetup& c );
-  virtual void endJob();
+  ///
+  void beginJob() override;
+  void analyze(const edm::Event& e, const edm::EventSetup& c) override;
+  void endJob() override;
 
- private:
-
+private:
   std::string container;
   std::string iov;
-
 };
 
-
-#endif // DTKeyedConfigDBInit_H
-
+#endif  // DTKeyedConfigDBInit_H

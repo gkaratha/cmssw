@@ -15,7 +15,7 @@ elPFIsoDepositGamma= cms.EDProducer("CandIsoDepositProducer",
                                      ExtractorPSet = cms.PSet(
                                             Diff_z = cms.double(99999.99),
                                             ComponentName = cms.string('PFCandWithSuperClusterExtractor'),
-                                            DR_Max = cms.double(1.0),
+                                            DR_Max = cms.double(0.4),
                                             Diff_r = cms.double(99999.99),
                                             inputCandView = cms.InputTag("pfAllPhotons"),
                                             DR_Veto = cms.double(0),
@@ -24,16 +24,17 @@ elPFIsoDepositGamma= cms.EDProducer("CandIsoDepositProducer",
                                             DepositLabel = cms.untracked.string('')
                                             )
                                     )
-elPFIsoDepositCharged.ExtractorPSet.DR_Veto = cms.double(0)
-elPFIsoDepositChargedAll.ExtractorPSet.DR_Veto = cms.double(0)
-elPFIsoDepositNeutral.ExtractorPSet.DR_Veto = cms.double(0)
-elPFIsoDepositPU.ExtractorPSet.DR_Veto = cms.double(0)
+elPFIsoDepositCharged.ExtractorPSet.DR_Veto    = 0
+elPFIsoDepositChargedAll.ExtractorPSet.DR_Veto = 0
+elPFIsoDepositNeutral.ExtractorPSet.DR_Veto    = 0
+elPFIsoDepositPU.ExtractorPSet.DR_Veto         = 0
 
 
-electronPFIsolationDepositsSequence = cms.Sequence(
-    elPFIsoDepositCharged+
-    elPFIsoDepositChargedAll+
-    elPFIsoDepositGamma+
-    elPFIsoDepositNeutral+
+electronPFIsolationDepositsTask = cms.Task(
+    elPFIsoDepositCharged,
+    elPFIsoDepositChargedAll,
+    elPFIsoDepositGamma,
+    elPFIsoDepositNeutral,
     elPFIsoDepositPU
     )
+electronPFIsolationDepositsSequence = cms.Sequence(electronPFIsolationDepositsTask)

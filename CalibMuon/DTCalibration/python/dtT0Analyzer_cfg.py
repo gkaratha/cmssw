@@ -1,16 +1,19 @@
 import FWCore.ParameterSet.Config as cms
+from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process("DTT0Analyzer")
+process = cms.Process("DTT0Analyzer",eras.Run3)
 
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = ''
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag=autoCond['run3_data']
 
 process.load("Configuration.StandardSequences.GeometryDB_cff")
+process.load("Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff")
 process.load("Geometry.DTGeometry.dtGeometry_cfi")
 process.DTGeometryESModule.applyAlignment = False
 process.DTGeometryESModule.fromDDD = False
 
-process.load("CondCore.DBCommon.CondDBSetup_cfi")
+process.load("CondCore.CondDB.CondDB_cfi")
 
 process.source = cms.Source("EmptySource",
     numberEventsInRun = cms.untracked.uint32(1),

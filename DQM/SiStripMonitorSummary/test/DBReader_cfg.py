@@ -2,20 +2,22 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Reader")
 
-process.load("DQM.SiStripCommon.TkHistoMap_cfi")
-
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring(''),
-    Reader = cms.untracked.PSet(
-        threshold = cms.untracked.string('INFO')
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
     ),
     cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
         threshold = cms.untracked.string('INFO')
     ),
-    destinations = cms.untracked.vstring('cout','Reader') #Reader.log
+    debugModules = cms.untracked.vstring(''),
+    files = cms.untracked.PSet(
+        Reader = cms.untracked.PSet(
+            threshold = cms.untracked.string('INFO')
+        )
+    )
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -32,6 +34,7 @@ process.source = cms.Source("EmptyIOVSource",
 # the DB Geometry is NOT used because in this cfg only one tag is taken from the DB and no GT is used. To be fixed if this is a problem
 process.load('Configuration.Geometry.GeometryExtended_cff')
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
 
 process.poolDBESSource = cms.ESSource("PoolDBESSource",
    BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
@@ -107,7 +110,6 @@ siStripQualityESProducer = cms.ESProducer("SiStripQualityESProducer",
 
 
 process.DQMStore = cms.Service("DQMStore",
-    referenceFileName = cms.untracked.string(''),
     verbose = cms.untracked.int32(1)
 )
 

@@ -6,11 +6,11 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
-#include "boost/shared_ptr.hpp"
-namespace edm{
+#include <memory>
+namespace edm {
   class IOVSyncValue;
 }
-namespace coral{
+namespace coral {
   class ISchema;
 }
 class DIPLuminosityRcd;
@@ -19,34 +19,37 @@ class DIPLumiDetail;
 /**
    HF Luminosity numbers from DIP. Only exist if stable beam. No data available for other beam status
  **/
-class DIPLumiProducer: public edm::ESProducer , public edm::EventSetupRecordIntervalFinder{
- public:
+class DIPLumiProducer : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
+public:
   DIPLumiProducer(const edm::ParameterSet&);
-  typedef boost::shared_ptr<DIPLumiSummary> ReturnSummaryType;
+  typedef std::shared_ptr<const DIPLumiSummary> ReturnSummaryType;
   ReturnSummaryType produceSummary(const DIPLuminosityRcd&);
-  typedef boost::shared_ptr<DIPLumiDetail> ReturnDetailType;
+  typedef std::shared_ptr<const DIPLumiDetail> ReturnDetailType;
   ReturnDetailType produceDetail(const DIPLuminosityRcd&);
-  ~DIPLumiProducer();
+  ~DIPLumiProducer() override;
 
- protected:
-  virtual void setIntervalFor( const edm::eventsetup::EventSetupRecordKey&,
-                               const edm::IOVSyncValue&,
-                               edm::ValidityInterval& );  
- private:
-  unsigned int maxavailableLSforRun(coral::ISchema& schema,const std::string&tablename,unsigned int runnumber);
- private:
+protected:
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+                      const edm::IOVSyncValue&,
+                      edm::ValidityInterval&) override;
+
+private:
+  unsigned int maxavailableLSforRun(coral::ISchema& schema, const std::string& tablename, unsigned int runnumber);
+
+private:
   std::string m_connectStr;
-  std::map< unsigned int,boost::shared_ptr<DIPLumiSummary> > m_summarycache;
-  std::map< unsigned int,boost::shared_ptr<DIPLumiDetail> > m_detailcache;
-  bool m_isNullRun; //if lumi data exist for this run
+  std::map<unsigned int, std::shared_ptr<const DIPLumiSummary> > m_summarycache;
+  std::map<unsigned int, std::shared_ptr<const DIPLumiDetail> > m_detailcache;
+  bool m_isNullRun;  //if lumi data exist for this run
   unsigned int m_summarycachedrun;
   unsigned int m_detailcachedrun;
   unsigned int m_cachesize;
-  boost::shared_ptr<DIPLumiSummary> m_summaryresult;
-  boost::shared_ptr<DIPLumiDetail> m_detailresult;
+  std::shared_ptr<const DIPLumiSummary> m_summaryresult;
+  std::shared_ptr<const DIPLumiDetail> m_detailresult;
   const edm::IOVSyncValue* m_pcurrentTime;
- private:
-  void fillsummarycache(unsigned int runnumber,unsigned int startlsnum);
-  void filldetailcache(unsigned int runnumber,unsigned int startlsnum);
+
+private:
+  void fillsummarycache(unsigned int runnumber, unsigned int startlsnum);
+  void filldetailcache(unsigned int runnumber, unsigned int startlsnum);
 };
 #endif

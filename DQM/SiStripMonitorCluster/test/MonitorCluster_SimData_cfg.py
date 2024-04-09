@@ -24,12 +24,18 @@ process.maxEvents = cms.untracked.PSet(
 # Message Logger
 #-------------------------------------------------
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('siStripDigis',
-                                         'siStripZeroSuppression',
-                                         'siStripClusters'
-                                         'SiStripMonitorCluster'),
-    cout = cms.untracked.PSet(threshold = cms.untracked.string('INFO')),
-    destinations = cms.untracked.vstring('cout')
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
+    cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
+        threshold = cms.untracked.string('INFO')
+    ),
+    debugModules = cms.untracked.vstring(
+        'siStripDigis', 
+        'siStripZeroSuppression', 
+        'siStripClustersSiStripMonitorCluster'
+    )
 )
 
 #-------------------------------------------------
@@ -56,13 +62,7 @@ process.load("RecoLocalTracker.Configuration.RecoLocalTracker_cff")
 #--------------------------
 # DQM Services
 #--------------------------
-process.DQMStore = cms.Service("DQMStore",
-    referenceFileName = cms.untracked.string(''),
-    verbose = cms.untracked.int32(0)
-)
-
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 #--------------------------
 # SiStrip MonitorCluster

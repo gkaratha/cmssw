@@ -19,7 +19,7 @@
 //
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "FWCore/Framework/interface/Event.h"
@@ -33,32 +33,31 @@
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
 
-
-
-class NeutronHitsCollector : public edm::EDProducer
-{
+class NeutronHitsCollector : public edm::stream::EDProducer<> {
 public:
   explicit NeutronHitsCollector(const edm::ParameterSet&);
-  ~NeutronHitsCollector() {};
+  ~NeutronHitsCollector() override = default;
 
 private:
-  virtual void beginJob() override;
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+  virtual void beginJob();
+  void produce(edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob();
 
-  std::string neutron_label_csc;
-  std::string neutron_label_dt;
-  std::string neutron_label_rpc;
+  const std::string neutron_label_csc;
+  const std::string neutron_label_dt;
+  const std::string neutron_label_rpc;
+  const edm::EDGetTokenT<edm::PSimHitContainer> tokenCSC_;
+  const edm::EDGetTokenT<edm::PSimHitContainer> tokenDT_;
+  const edm::EDGetTokenT<edm::PSimHitContainer> tokenRPC_;
 };
 
-
-
 NeutronHitsCollector::NeutronHitsCollector(const edm::ParameterSet& iConfig)
-{
-  neutron_label_csc = iConfig.getUntrackedParameter<std::string>("neutronLabelCSC","");
-  neutron_label_dt  = iConfig.getUntrackedParameter<std::string>("neutronLabelDT","");
-  neutron_label_rpc = iConfig.getUntrackedParameter<std::string>("neutronLabelRPC","");
-
+    : neutron_label_csc(iConfig.getUntrackedParameter<std::string>("neutronLabelCSC", "")),
+      neutron_label_dt(iConfig.getUntrackedParameter<std::string>("neutronLabelDT", "")),
+      neutron_label_rpc(iConfig.getUntrackedParameter<std::string>("neutronLabelRPC", "")),
+      tokenCSC_(consumes<edm::PSimHitContainer>(neutron_label_csc)),
+      tokenDT_(consumes<edm::PSimHitContainer>(neutron_label_dt)),
+      tokenRPC_(consumes<edm::PSimHitContainer>(neutron_label_rpc)) {
   // The following list duplicates
   // http://cmslxr.fnal.gov/lxr/source/SimG4Core/Application/plugins/OscarProducer.cc
 
@@ -103,138 +102,127 @@ NeutronHitsCollector::NeutronHitsCollector(const edm::ParameterSet& iConfig)
   //produces<edm::PCaloHitContainer>("ChamberHits");
   //produces<edm::PCaloHitContainer>("FibreHits");
   //produces<edm::PCaloHitContainer>("WedgeHits");
-
 }
 
-
-void NeutronHitsCollector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void NeutronHitsCollector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   edm::PSimHitContainer::const_iterator hit;
 
   // ----- MuonCSCHits -----
   //
-  std::auto_ptr<edm::PSimHitContainer> simCSC(new edm::PSimHitContainer);
-  if (neutron_label_csc.length()>0)
-  {
-    edm::Handle<edm::PSimHitContainer> MuonCSCHits;
-    iEvent.getByLabel(neutron_label_csc,MuonCSCHits);
-    for (hit = MuonCSCHits->begin();  hit != MuonCSCHits->end();  ++hit) simCSC->push_back(*hit);
+  std::unique_ptr<edm::PSimHitContainer> simCSC(new edm::PSimHitContainer);
+  if (neutron_label_csc.length() > 0) {
+    const edm::Handle<edm::PSimHitContainer>& MuonCSCHits = iEvent.getHandle(tokenCSC_);
+    for (hit = MuonCSCHits->begin(); hit != MuonCSCHits->end(); ++hit)
+      simCSC->push_back(*hit);
   }
-  iEvent.put(simCSC, "MuonCSCHits");
+  iEvent.put(std::move(simCSC), "MuonCSCHits");
 
   // ----- MuonDTHits -----
   //
-  std::auto_ptr<edm::PSimHitContainer> simDT(new edm::PSimHitContainer);
-  if (neutron_label_dt.length()>0)
-  {
-    edm::Handle<edm::PSimHitContainer> MuonDTHits;
-    iEvent.getByLabel(neutron_label_dt,MuonDTHits);
-    for (hit = MuonDTHits->begin();  hit != MuonDTHits->end();  ++hit) simDT->push_back(*hit);
+  std::unique_ptr<edm::PSimHitContainer> simDT(new edm::PSimHitContainer);
+  if (neutron_label_dt.length() > 0) {
+    const edm::Handle<edm::PSimHitContainer>& MuonDTHits = iEvent.getHandle(tokenDT_);
+    for (hit = MuonDTHits->begin(); hit != MuonDTHits->end(); ++hit)
+      simDT->push_back(*hit);
   }
-  iEvent.put(simDT, "MuonDTHits");
+  iEvent.put(std::move(simDT), "MuonDTHits");
 
   // ----- MuonRPCHits -----
   //
-  std::auto_ptr<edm::PSimHitContainer> simRPC(new edm::PSimHitContainer);
-  if (neutron_label_rpc.length()>0)
-  {
-    edm::Handle<edm::PSimHitContainer> MuonRPCHits;
-    iEvent.getByLabel(neutron_label_rpc,MuonRPCHits);
-    for (hit = MuonRPCHits->begin();  hit != MuonRPCHits->end();  ++hit) simRPC->push_back(*hit);
+  std::unique_ptr<edm::PSimHitContainer> simRPC(new edm::PSimHitContainer);
+  if (neutron_label_rpc.length() > 0) {
+    const edm::Handle<edm::PSimHitContainer>& MuonRPCHits = iEvent.getHandle(tokenRPC_);
+    for (hit = MuonRPCHits->begin(); hit != MuonRPCHits->end(); ++hit)
+      simRPC->push_back(*hit);
   }
-  iEvent.put(simRPC, "MuonRPCHits");
+  iEvent.put(std::move(simRPC), "MuonRPCHits");
 
   // Further, produce a bunch of empty collections
 
   // ----- calorimetry -----
   //
-  std::auto_ptr<edm::PCaloHitContainer> calout1(new edm::PCaloHitContainer);
-  iEvent.put(calout1, "EcalHitsEB");
-  std::auto_ptr<edm::PCaloHitContainer> calout2(new edm::PCaloHitContainer);
-  iEvent.put(calout2, "EcalHitsEE");
-  std::auto_ptr<edm::PCaloHitContainer> calout3(new edm::PCaloHitContainer);
-  iEvent.put(calout3, "EcalHitsES");
-  std::auto_ptr<edm::PCaloHitContainer> calout4(new edm::PCaloHitContainer);
-  iEvent.put(calout4, "HcalHits");
-  std::auto_ptr<edm::PCaloHitContainer> calout5(new edm::PCaloHitContainer);
-  iEvent.put(calout5, "CaloHitsTk");
-  std::auto_ptr<edm::PCaloHitContainer> calout6(new edm::PCaloHitContainer);
-  iEvent.put(calout6, "CastorPL");
-  std::auto_ptr<edm::PCaloHitContainer> calout7(new edm::PCaloHitContainer);
-  iEvent.put(calout7, "CastorFI");
-  std::auto_ptr<edm::PCaloHitContainer> calout8(new edm::PCaloHitContainer);
-  iEvent.put(calout8, "CastorBU");
-  std::auto_ptr<edm::PCaloHitContainer> calout9(new edm::PCaloHitContainer);
-  iEvent.put(calout9, "CastorTU");
-  std::auto_ptr<edm::PCaloHitContainer> calout10(new edm::PCaloHitContainer);
-  iEvent.put(calout10, "EcalTBH4BeamHits");
-  std::auto_ptr<edm::PCaloHitContainer> calout11(new edm::PCaloHitContainer);
-  iEvent.put(calout11, "HcalTB06BeamHits");
-  std::auto_ptr<edm::PCaloHitContainer> calout12(new edm::PCaloHitContainer);
-  iEvent.put(calout12, "ZDCHITS");
-  //std::auto_ptr<edm::PCaloHitContainer> calout13(new edm::PCaloHitContainer);
-  //iEvent.put(calout13, "ChamberHits");
-  //std::auto_ptr<edm::PCaloHitContainer> calout14(new edm::PCaloHitContainer);
-  //iEvent.put(calout14, "FibreHits");
-  //std::auto_ptr<edm::PCaloHitContainer> calout15(new edm::PCaloHitContainer);
-  //iEvent.put(calout15, "WedgeHits");
+  std::unique_ptr<edm::PCaloHitContainer> calout1(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout1), "EcalHitsEB");
+  std::unique_ptr<edm::PCaloHitContainer> calout2(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout2), "EcalHitsEE");
+  std::unique_ptr<edm::PCaloHitContainer> calout3(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout3), "EcalHitsES");
+  std::unique_ptr<edm::PCaloHitContainer> calout4(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout4), "HcalHits");
+  std::unique_ptr<edm::PCaloHitContainer> calout5(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout5), "CaloHitsTk");
+  std::unique_ptr<edm::PCaloHitContainer> calout6(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout6), "CastorPL");
+  std::unique_ptr<edm::PCaloHitContainer> calout7(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout7), "CastorFI");
+  std::unique_ptr<edm::PCaloHitContainer> calout8(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout8), "CastorBU");
+  std::unique_ptr<edm::PCaloHitContainer> calout9(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout9), "CastorTU");
+  std::unique_ptr<edm::PCaloHitContainer> calout10(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout10), "EcalTBH4BeamHits");
+  std::unique_ptr<edm::PCaloHitContainer> calout11(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout11), "HcalTB06BeamHits");
+  std::unique_ptr<edm::PCaloHitContainer> calout12(new edm::PCaloHitContainer);
+  iEvent.put(std::move(calout12), "ZDCHITS");
+  //std::unique_ptr<edm::PCaloHitContainer> calout13(new edm::PCaloHitContainer);
+  //iEvent.put(std::move(calout13), "ChamberHits");
+  //std::unique_ptr<edm::PCaloHitContainer> calout14(new edm::PCaloHitContainer);
+  //iEvent.put(std::move(calout14), "FibreHits");
+  //std::unique_ptr<edm::PCaloHitContainer> calout15(new edm::PCaloHitContainer);
+  //iEvent.put(std::move(calout15), "WedgeHits");
 
   // ----- Tracker -----
   //
-  std::auto_ptr<edm::PSimHitContainer> trout1(new edm::PSimHitContainer);
-  iEvent.put(trout1, "TrackerHitsPixelBarrelLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout2(new edm::PSimHitContainer);
-  iEvent.put(trout2, "TrackerHitsPixelBarrelHighTof");
-  std::auto_ptr<edm::PSimHitContainer> trout3(new edm::PSimHitContainer);
-  iEvent.put(trout3, "TrackerHitsTIBLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout4(new edm::PSimHitContainer);
-  iEvent.put(trout4, "TrackerHitsTIBHighTof");
-  std::auto_ptr<edm::PSimHitContainer> trout5(new edm::PSimHitContainer);
-  iEvent.put(trout5, "TrackerHitsTIDLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout6(new edm::PSimHitContainer);
-  iEvent.put(trout6, "TrackerHitsTIDHighTof");
-  std::auto_ptr<edm::PSimHitContainer> trout7(new edm::PSimHitContainer);
-  iEvent.put(trout7, "TrackerHitsPixelEndcapLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout8(new edm::PSimHitContainer);
-  iEvent.put(trout8, "TrackerHitsPixelEndcapHighTof");
-  std::auto_ptr<edm::PSimHitContainer> trout9(new edm::PSimHitContainer);
-  iEvent.put(trout9, "TrackerHitsTOBLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout10(new edm::PSimHitContainer);
-  iEvent.put(trout10, "TrackerHitsTOBHighTof");
-  std::auto_ptr<edm::PSimHitContainer> trout11(new edm::PSimHitContainer);
-  iEvent.put(trout11, "TrackerHitsTECLowTof");
-  std::auto_ptr<edm::PSimHitContainer> trout12(new edm::PSimHitContainer);
-  iEvent.put(trout12, "TrackerHitsTECHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout1(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout1), "TrackerHitsPixelBarrelLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout2(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout2), "TrackerHitsPixelBarrelHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout3(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout3), "TrackerHitsTIBLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout4(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout4), "TrackerHitsTIBHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout5(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout5), "TrackerHitsTIDLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout6(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout6), "TrackerHitsTIDHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout7(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout7), "TrackerHitsPixelEndcapLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout8(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout8), "TrackerHitsPixelEndcapHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout9(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout9), "TrackerHitsTOBLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout10(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout10), "TrackerHitsTOBHighTof");
+  std::unique_ptr<edm::PSimHitContainer> trout11(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout11), "TrackerHitsTECLowTof");
+  std::unique_ptr<edm::PSimHitContainer> trout12(new edm::PSimHitContainer);
+  iEvent.put(std::move(trout12), "TrackerHitsTECHighTof");
 
   // ----- Forward stuff -----
   //
-  std::auto_ptr<edm::PSimHitContainer> fwout1(new edm::PSimHitContainer);
-  iEvent.put(fwout1, "TotemHitsT1");
-  std::auto_ptr<edm::PSimHitContainer> fwout2(new edm::PSimHitContainer);
-  iEvent.put(fwout2, "TotemHitsT2Gem");
-  std::auto_ptr<edm::PSimHitContainer> fwout3(new edm::PSimHitContainer);
-  iEvent.put(fwout3, "TotemHitsRP");
-  std::auto_ptr<edm::PSimHitContainer> fwout4(new edm::PSimHitContainer);
-  iEvent.put(fwout4, "FP420SI");
-  std::auto_ptr<edm::PSimHitContainer> fwout5(new edm::PSimHitContainer);
-  iEvent.put(fwout5, "BSCHits");
+  std::unique_ptr<edm::PSimHitContainer> fwout1(new edm::PSimHitContainer);
+  iEvent.put(std::move(fwout1), "TotemHitsT1");
+  std::unique_ptr<edm::PSimHitContainer> fwout2(new edm::PSimHitContainer);
+  iEvent.put(std::move(fwout2), "TotemHitsT2Gem");
+  std::unique_ptr<edm::PSimHitContainer> fwout3(new edm::PSimHitContainer);
+  iEvent.put(std::move(fwout3), "TotemHitsRP");
+  std::unique_ptr<edm::PSimHitContainer> fwout4(new edm::PSimHitContainer);
+  iEvent.put(std::move(fwout4), "FP420SI");
+  std::unique_ptr<edm::PSimHitContainer> fwout5(new edm::PSimHitContainer);
+  iEvent.put(std::move(fwout5), "BSCHits");
 
   // ----- SimTracks & SimVertices -----
   //
-  std::auto_ptr<edm::SimTrackContainer> simTr(new edm::SimTrackContainer);
-  iEvent.put(simTr);
-  std::auto_ptr<edm::SimVertexContainer> simVe(new edm::SimVertexContainer);
-  iEvent.put(simVe);
-
-
+  std::unique_ptr<edm::SimTrackContainer> simTr(new edm::SimTrackContainer);
+  iEvent.put(std::move(simTr));
+  std::unique_ptr<edm::SimVertexContainer> simVe(new edm::SimVertexContainer);
+  iEvent.put(std::move(simVe));
 }
-
 
 void NeutronHitsCollector::beginJob() {}
 
-
 void NeutronHitsCollector::endJob() {}
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(NeutronHitsCollector);

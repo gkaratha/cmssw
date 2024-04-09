@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
 # Use this object to modify parameters specifically for Run 2
-from Configuration.StandardSequences.Eras import eras
 
 #### PF CLUSTER HO ####
 
@@ -20,7 +19,7 @@ _localMaxSeeds_HO = cms.PSet(
               seedingThresholdPt = cms.double(0.0)
               )
     ),
-    nNeighbours = cms.int32(4)
+    nNeighbours = cms.int32(4),
 )
 
 #topo clusters
@@ -50,7 +49,7 @@ _positionCalcHO_cross_nodepth = cms.PSet(
 )
 
 _positionCalcHO_all_nodepth = _positionCalcHO_cross_nodepth.clone(
-    posCalcNCrystals = cms.int32(-1)
+    posCalcNCrystals = -1
 )
 
 #pf clusters
@@ -78,7 +77,9 @@ _pfClusterizer_HO = cms.PSet(
 particleFlowClusterHO = cms.EDProducer(
     "PFClusterProducer",
     recHitsSource = cms.InputTag("particleFlowRecHitHO"),
+    usePFThresholdsFromDB = cms.bool(False),
     recHitCleaners = cms.VPSet(),
+    seedCleaners  = cms.VPSet(),
     seedFinder = _localMaxSeeds_HO,
     initialClusteringStep = _topoClusterizer_HO,
     pfClusterBuilder = _pfClusterizer_HO,
@@ -106,4 +107,5 @@ def _modifyParticleFlowClusterHOForRun2( object ) :
     object.pfClusterBuilder.allCellsPositionCalc.logWeightDenominator = cms.double(0.05)
 
 # Call the function above to modify particleFlowClusterHO only if the run2 era is active
-eras.run2_common.toModify( particleFlowClusterHO, func=_modifyParticleFlowClusterHOForRun2 )
+from Configuration.Eras.Modifier_run2_common_cff import run2_common
+run2_common.toModify( particleFlowClusterHO, func=_modifyParticleFlowClusterHOForRun2 )

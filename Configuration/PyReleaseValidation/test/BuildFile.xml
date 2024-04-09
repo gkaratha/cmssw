@@ -1,0 +1,4 @@
+<test name="test-das-selected-lumis" command="test-das-selected-lumis.sh">
+</test>
+<test name="test-runTheMatrix-interactive" command="test-runTheMatrix_interactive.sh">
+</test>

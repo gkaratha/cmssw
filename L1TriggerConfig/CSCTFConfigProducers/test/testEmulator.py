@@ -29,14 +29,13 @@ process.load('Configuration/EventContent/EventContent_cff')
 # https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideFrontierConditions
 process.GlobalTag.globaltag = 'GR10_H_V4::All'
 
-process.GlobalTag.connect = "frontier://(proxyurl=http://localhost:3128)(serverurl=http://localhost:8000/FrontierOnProd)(serverurl=http://localhost:8000/FrontierOnProd)(retrieve-ziplevel=0)(failovertoserver=no)/CMS_COND_31X_GLOBALTAG"
-
 # Message Logger
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.debugModules = ['*']
-process.MessageLogger.categories = ['*']
-process.MessageLogger.destinations = ['cout']
+
+process.MessageLogger.cerr.enable = False
 process.MessageLogger.cout = cms.untracked.PSet(
+    enable = cms.untracked.bool(True),
     threshold = cms.untracked.string('INFO'),
     DEBUG=cms.untracked.PSet(
         limit=cms.untracked.int32(-1)

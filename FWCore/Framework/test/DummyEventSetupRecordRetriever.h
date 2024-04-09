@@ -4,7 +4,7 @@
 //
 // Package:     Framework
 // Class  :     DummyEventSetupRecordRetriever
-// 
+//
 /**\class DummyEventSetupRecordRetriever DummyEventSetupRecordRetriever.h FWCore/Framework/interface/DummyEventSetupRecordRetriever.h
 
  Description: <one line class summary>
@@ -29,37 +29,30 @@
 
 // forward declarations
 namespace edm {
-   class DummyEventSetupRecordRetriever :
-     public EventSetupRecordIntervalFinder, 
-     public ESProducer
-   {
-   
-   public:
-      DummyEventSetupRecordRetriever() {
-         this->findingRecord<DummyEventSetupRecord>();
-         setWhatProduced(this);
-      }
-      
-      std::auto_ptr<DummyEventSetupData> produce(const DummyEventSetupRecord&) {
-         std::auto_ptr<DummyEventSetupData> data(new DummyEventSetupData(1));
-         return data;
-      }
-   protected:
+  class DummyEventSetupRecordRetriever : public EventSetupRecordIntervalFinder, public ESProducer {
+  public:
+    DummyEventSetupRecordRetriever() {
+      this->findingRecord<DummyEventSetupRecord>();
+      setWhatProduced(this);
+    }
 
-      virtual void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
-                                   const edm::IOVSyncValue& /*iTime*/, 
-                                   edm::ValidityInterval& iInterval) {
-         iInterval = edm::ValidityInterval(IOVSyncValue::beginOfTime(),
-                                            IOVSyncValue::endOfTime());
-      }
+    std::unique_ptr<DummyEventSetupData> produce(const DummyEventSetupRecord&) {
+      return std::make_unique<DummyEventSetupData>(1);
+    }
 
-   private:
-      DummyEventSetupRecordRetriever(const DummyEventSetupRecordRetriever&); // stop default
+  protected:
+    virtual void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+                                const edm::IOVSyncValue& /*iTime*/,
+                                edm::ValidityInterval& iInterval) {
+      iInterval = edm::ValidityInterval(IOVSyncValue::beginOfTime(), IOVSyncValue::endOfTime());
+    }
 
-      const DummyEventSetupRecordRetriever& operator=(const DummyEventSetupRecordRetriever&); // stop default
+  private:
+    DummyEventSetupRecordRetriever(const DummyEventSetupRecordRetriever&);  // stop default
 
-      // ---------- member data --------------------------------
+    const DummyEventSetupRecordRetriever& operator=(const DummyEventSetupRecordRetriever&);  // stop default
 
-};
-}
+    // ---------- member data --------------------------------
+  };
+}  // namespace edm
 #endif

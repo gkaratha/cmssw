@@ -10,64 +10,62 @@ A rechit type suitable for tracking algorithm that use soft hit-to-track assigne
 such as the Deterministic Annealing Filter (DAF) or the Multi Track Filter (MTF).
 it contains an OwnVector with the component rechits and a vector of weights	
 */
-class SiTrackerMultiRecHit : public BaseTrackerRecHit
-{
+class SiTrackerMultiRecHit : public BaseTrackerRecHit {
 public:
   typedef BaseTrackerRecHit Base;
-  SiTrackerMultiRecHit():
-    theHits(),
-    theWeights(),
-    annealing_(0){}
-  virtual ~SiTrackerMultiRecHit(){}	
-  
-  
-  SiTrackerMultiRecHit(const LocalPoint&, const LocalError&, GeomDet const & idet,
-		       const std::vector< std::pair<const TrackingRecHit*, float> >&, double);
-  
-  virtual SiTrackerMultiRecHit* clone() const {return new SiTrackerMultiRecHit(*this);}
+  SiTrackerMultiRecHit() : theHits(), theWeights(), annealing_(0) {}
+  ~SiTrackerMultiRecHit() override {}
+
+  SiTrackerMultiRecHit(const LocalPoint&,
+                       const LocalError&,
+                       GeomDet const& idet,
+                       const std::vector<std::pair<const TrackingRecHit*, float> >&,
+                       double);
+
+  SiTrackerMultiRecHit* clone() const override { return new SiTrackerMultiRecHit(*this); }
 #ifdef NO_DICT
-  virtual RecHitPointer cloneSH() const { return std::make_shared<SiTrackerMultiRecHit>(*this);}
+  RecHitPointer cloneSH() const override { return std::make_shared<SiTrackerMultiRecHit>(*this); }
 #endif
-  
-//  virtual int dimension() const {return 2;}
-  virtual int dimension() const; 
-  virtual void getKfComponents( KfComponentsHolder & holder ) const;
+
+  //  virtual int dimension() const {return 2;}
+  int dimension() const override;
+  void getKfComponents(KfComponentsHolder& holder) const override;
 
   // at the momement nobody care of MultiHit!!!
   // used by trackMerger (to be improved)
-  virtual OmniClusterRef const & firstClusterRef() const { return static_cast<BaseTrackerRecHit const *>(&theHits.front())->firstClusterRef();}
+  OmniClusterRef const& firstClusterRef() const override {
+    return static_cast<BaseTrackerRecHit const&>(theHits.front()).firstClusterRef();
+  }
 
   /// Access to component RecHits (if any)
-  virtual std::vector<const TrackingRecHit*> recHits() const;
-   
+  std::vector<const TrackingRecHit*> recHits() const override;
+
   /// Non-const access to component RecHits (if any)
-  virtual std::vector<TrackingRecHit*> recHits() ;
-  
+  std::vector<TrackingRecHit*> recHits() override;
+
   //vector of weights
-  std::vector<float> const & weights() const {return theWeights;}
-  std::vector<float>  & weights() {return theWeights;}
+  std::vector<float> const& weights() const { return theWeights; }
+  std::vector<float>& weights() { return theWeights; }
 
   //returns the weight for the i component
-  float  weight(unsigned int i) const {return theWeights[i];}
-  float  & weight(unsigned int i) {return theWeights[i];}
+  using TrackingRecHit::weight;
+  float weight(unsigned int i) const { return theWeights[i]; }
+  float& weight(unsigned int i) { return theWeights[i]; }
 
   //get the annealing
   virtual double getAnnealingFactor() const { return annealing_; }
-	
-  bool sharesInput(const TrackingRecHit* other,
-		   SharedInputType what) const;
+
+  bool sharesInput(const TrackingRecHit* other, SharedInputType what) const override;
 
 private:
-  
   edm::OwnVector<TrackingRecHit> theHits;
   std::vector<float> theWeights;
-  double annealing_;	
-
+  double annealing_;
 };
 
 // Comparison operators
-inline bool operator<( const SiTrackerMultiRecHit& one, const SiTrackerMultiRecHit& other) {
-  if ( one.geographicalId() < other.geographicalId() ) {
+inline bool operator<(const SiTrackerMultiRecHit& one, const SiTrackerMultiRecHit& other) {
+  if (one.geographicalId() < other.geographicalId()) {
     return true;
   } else {
     return false;

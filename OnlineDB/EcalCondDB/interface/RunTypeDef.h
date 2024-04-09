@@ -10,32 +10,32 @@
  *   Def for Location information
  */
 class RunTypeDef : public IDef {
-  public:
+public:
   friend class EcalCondDBInterface;
-  
+
   RunTypeDef();
-  virtual ~RunTypeDef();
+  ~RunTypeDef() override;
 
   // Methods for user data
   std::string getRunType() const;
   void setRunType(std::string runtype);
-  
+
   std::string getDescription() const;
 
   // Methods from IUniqueDBObject
-  int fetchID() throw(std::runtime_error);
-  void setByID(int id) throw(std::runtime_error);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators.  m_desc is not considered, it cannot be written to DB anyhow
   inline bool operator==(const RunTypeDef &t) const { return m_runType == t.m_runType; }
   inline bool operator!=(const RunTypeDef &t) const { return m_runType != t.m_runType; }
-  
- protected:
+
+protected:
   // User data for this def
   std::string m_runType;
   std::string m_desc;
 
-  void fetchAllDefs( std::vector<RunTypeDef>* fillVec) throw(std::runtime_error);
+  void fetchAllDefs(std::vector<RunTypeDef> *fillVec) noexcept(false);
 };
 
 #endif

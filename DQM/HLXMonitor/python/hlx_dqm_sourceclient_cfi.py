@@ -3,13 +3,13 @@ import FWCore.ParameterSet.Config as cms
 #source = cms.Source("EmptySource")
 
 # name of DQM Source program
-hlxdqmsource = cms.EDAnalyzer("HLXMonitor",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+hlxdqmsource = DQMEDAnalyzer('HLXMonitor',
 
     Style = cms.untracked.string('BX'), ## BX for bunch crossing vs. Num events
 
     outputFile = cms.untracked.string('DQM_V0001'),
     # 2 random data
-    NewRun_Reset = cms.untracked.bool(True),
     PrimaryHLXDAQIP = cms.untracked.string('vmepcs2f17-18'),
     SecondaryHLXDAQIP = cms.untracked.string('vmepcs2f17-19'),
     subSystemName = cms.untracked.string('HLX'),

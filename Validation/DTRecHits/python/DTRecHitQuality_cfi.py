@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-rechivalidation = cms.EDAnalyzer("DTRecHitQuality",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+rechivalidation = DQMEDAnalyzer("DTRecHitQuality",
     doStep2 = cms.untracked.bool(False),
     # Switches for analysis at various steps
     doStep1 = cms.untracked.bool(False),
@@ -13,10 +14,9 @@ rechivalidation = cms.EDAnalyzer("DTRecHitQuality",
     segment4DLabel = cms.untracked.InputTag('dt4DSegments'),
     doall = cms.untracked.bool(False),
     local = cms.untracked.bool(False)
-
 )
 
-seg2dvalidation = cms.EDAnalyzer("DTSegment2DQuality",
+seg2dvalidation = DQMEDAnalyzer("DTSegment2DQuality",
     sigmaResPos = cms.double(0.013),
     simHitLabel = cms.untracked.InputTag('g4SimHits',"MuonDTHits"),
     segment2DLabel = cms.untracked.InputTag('dt2DSegments'),
@@ -24,7 +24,7 @@ seg2dvalidation = cms.EDAnalyzer("DTSegment2DQuality",
     sigmaResAngle = cms.double(0.008)
 )
 
-seg2dsuperphivalidation = cms.EDAnalyzer("DTSegment2DSLPhiQuality",
+seg2dsuperphivalidation = DQMEDAnalyzer("DTSegment2DSLPhiQuality",
     sigmaResPos = cms.double(0.013),
     simHitLabel = cms.untracked.InputTag('g4SimHits',"MuonDTHits"),
     sigmaResAngle = cms.double(0.008),
@@ -34,7 +34,7 @@ seg2dsuperphivalidation = cms.EDAnalyzer("DTSegment2DSLPhiQuality",
     local = cms.untracked.bool(False)
 )
 
-seg4dvalidation = cms.EDAnalyzer("DTSegment4DQuality",
+seg4dvalidation = DQMEDAnalyzer("DTSegment4DQuality",
     #resolution on angle
     sigmaResAlpha = cms.double(0.001),
     sigmaResBeta = cms.double(0.007),
@@ -52,9 +52,8 @@ seg4dvalidation = cms.EDAnalyzer("DTSegment4DQuality",
 dtLocalRecoValidation = cms.Sequence(rechivalidation*seg2dvalidation*seg2dsuperphivalidation*seg4dvalidation)
 dtLocalRecoValidation_no2D = cms.Sequence(rechivalidation*seg2dsuperphivalidation*seg4dvalidation)
 
-from Configuration.StandardSequences.Eras import eras
-if eras.fastSim.isChosen():
-    rechivalidation.simHitLabel = cms.untracked.InputTag("MuonSimHits","MuonDTHits")
-    seg2dvalidation.simHitLabel = cms.untracked.InputTag("MuonSimHits","MuonDTHits")
-    seg2dsuperphivalidation.simHitLabel = cms.untracked.InputTag("MuonSimHits","MuonDTHits")
-    seg4dvalidation.simHitLabel = cms.untracked.InputTag("MuonSimHits","MuonDTHits")
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(rechivalidation, simHitLabel = "MuonSimHits:MuonDTHits")
+fastSim.toModify(seg2dvalidation, simHitLabel = "MuonSimHits:MuonDTHits")
+fastSim.toModify(seg2dsuperphivalidation, simHitLabel = "MuonSimHits:MuonDTHits")
+fastSim.toModify(seg4dvalidation, simHitLabel = "MuonSimHits:MuonDTHits")

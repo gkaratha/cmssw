@@ -4,14 +4,15 @@ process = cms.Process("HVTKMapsCreator")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.MessageLogger.infos.placeholder = cms.untracked.bool(False)
-process.MessageLogger.infos.threshold = cms.untracked.string("INFO")
-process.MessageLogger.infos.default = cms.untracked.PSet(
-    limit = cms.untracked.int32(10000000)
+process.MessageLogger.files.infos = cms.untracked.PSet(
+    threshold = cms.untracked.string("INFO"),
+    default = cms.untracked.PSet(
+        limit = cms.untracked.int32(10000000)
+    ),
+    FwkReport = cms.untracked.PSet(
+        reportEvery = cms.untracked.int32(10000)
     )
-process.MessageLogger.infos.FwkReport = cms.untracked.PSet(
-    reportEvery = cms.untracked.int32(10000)
-    )
+)
 process.MessageLogger.cerr.threshold = cms.untracked.string("WARNING")
 
 
@@ -22,9 +23,11 @@ process.source = cms.Source("EmptySource",
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-process.TkDetMap = cms.Service("TkDetMap")
-process.load("DQMServices.Core.DQMStore_cfg")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
+# load TrackerTopology (needed for TkDetMap and TkHistoMap)
+process.load("Configuration.Geometry.GeometryExtended2017_cff")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.trackerTopology = cms.ESProducer("TrackerTopologyEP")
 
 #This is where we configure the input and output files for the LV/HV TkMaps we want to create
 #LV/HVStatusFile is a file that contains a list of all the 15148 Tracker DetIDs and for each of them a number 0=OFF 1=ON

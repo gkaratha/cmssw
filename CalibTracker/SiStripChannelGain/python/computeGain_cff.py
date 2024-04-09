@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-SiStripCalib = cms.EDAnalyzer("SiStripGainFromCalibTree",
+SiStripCalib = cms.EDAnalyzer(
+    "SiStripGainFromCalibTree",
     OutputGains         = cms.string('Gains_ASCII.txt'),
-    Tracks              = cms.untracked.InputTag('CalibrationTracksRefit'),
     AlgoMode            = cms.untracked.string('CalibTree'),
 
     minTrackMomentum    = cms.untracked.double(2),
@@ -10,6 +10,12 @@ SiStripCalib = cms.EDAnalyzer("SiStripGainFromCalibTree",
     maxChi2OverNDF      = cms.untracked.double(9999999.0),
     maxMPVError         = cms.untracked.double(25.0),
     maxNrStrips         = cms.untracked.uint32(8),
+
+    harvestingMode      = cms.untracked.bool(False),
+    calibrationMode     = cms.untracked.string('StdBunch'),
+    DQMdir              = cms.untracked.string('AlCaReco/SiStripGains'),
+    ChargeHisto         = cms.untracked.vstring('TIB','TIB_layer_1','TOB','TOB_layer_1','TIDminus','TIDplus','TECminus','TECplus'),
+
 
     Validation          = cms.untracked.bool(False),
     OldGainRemoving     = cms.untracked.bool(False),
@@ -25,14 +31,20 @@ SiStripCalib = cms.EDAnalyzer("SiStripGainFromCalibTree",
     saveSummary         = cms.untracked.bool(False),
 
     GoodFracForTagProd  = cms.untracked.double(0.98),
-    NClustersForTagProd = cms.untracked.double(1E8),
+    NClustersForTagProd = cms.untracked.double(8E8),
     
 
-    SinceAppendMode     = cms.bool(True),
-    TimeFromEndRun      = cms.untracked.bool(True),
-    IOVMode             = cms.string('Job'),
-    Record              = cms.string('SiStripApvGainRcd'),
-    doStoreOnDB         = cms.bool(True)
+    SinceAppendMode         = cms.bool(True),
+    TimeFromEndRun          = cms.untracked.bool(False),
+    TimeFromStartOfRunRange = cms.untracked.bool(True),
+    IOVMode                 = cms.string('AlgoDriven'),
+    Record                  = cms.string('SiStripApvGainRcd'),
+    doStoreOnDB             = cms.bool(True),
+
+    treePath            = cms.untracked.string('gainCalibrationTree/tree'),
+    gain                = cms.untracked.PSet(label = cms.untracked.string('shallowGainCalibration'), prefix = cms.untracked.string("GainCalibration"), suffix = cms.untracked.string('')),
+    evtinfo             = cms.untracked.PSet(label = cms.untracked.string('shallowEventRun'), prefix = cms.untracked.string(""), suffix = cms.untracked.string('')),
+    tracks              = cms.untracked.PSet(label = cms.untracked.string('shallowTracks'), prefix = cms.untracked.string("track"), suffix = cms.untracked.string('')),
 )
 
 SiStripCalibValidation = SiStripCalib.clone()

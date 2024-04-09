@@ -1,4 +1,4 @@
-#ifndef CandMCTag_H
+#ifndef CandMCTag_h
 #define CandMCTag_h
 
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -11,5 +11,5 @@ namespace CandMCTagUtils {
   bool isParton(const reco::Candidate &c);
   bool isLightParton(const reco::Candidate &c);
 
-}
-#endif
+}  // namespace CandMCTagUtils
+#endif  // CandMCTag_h

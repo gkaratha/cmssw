@@ -8,7 +8,8 @@ import FWCore.ParameterSet.Config as cms
 #
 # \author Stefano Argiro
 #
-HcalPhiSymMon = cms.EDAnalyzer("DQMHcalPhiSymAlCaReco",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+HcalPhiSymMon = DQMEDAnalyzer('DQMHcalPhiSymAlCaReco',
     # product to monitor
     hbheInputMB = cms.InputTag("hbherecoMB"),
     hoInputMB = cms.InputTag("horecoMB"),
@@ -21,6 +22,8 @@ HcalPhiSymMon = cms.EDAnalyzer("DQMHcalPhiSymAlCaReco",
     # File to save 
     SaveToFile = cms.untracked.bool(False),
     FileName = cms.untracked.string('MonitorAlCaHcalPhiSym.root'),
+    #driven by DQMServices/Core/python/DQMStore_cfi.py
+    perLSsaving = cms.untracked.bool(False), 
     # DQM folder to write to
     FolderName = cms.untracked.string('AlCaReco/HcalPhiSym')
 )

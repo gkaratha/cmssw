@@ -4,7 +4,7 @@
 //
 // Package:     FWCore/Framework
 // Class  :     one::EDFilterBase
-// 
+//
 /**\class one::EDFilterBase EDFilterBase.h "FWCore/Framework/interface/one/EDFilterBase.h"
 
  Description: Base class for edm::one::EDFilter<>
@@ -19,7 +19,6 @@
 //
 
 // system include files
-#include <mutex>
 
 // user include files
 #include "FWCore/Framework/interface/ProducerBase.h"
@@ -28,6 +27,7 @@
 #include "FWCore/Framework/interface/SharedResourcesAcquirer.h"
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
 #include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
+#include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
 
 // forward declarations
 namespace edm {
@@ -35,27 +35,28 @@ namespace edm {
   class ModuleCallingContext;
   class PreallocationConfiguration;
   class ActivityRegistry;
-  class ProductRegistry;
   class ThinnedAssociationsHelper;
-  
+  class EventForTransformer;
+  class ServiceWeakToken;
+
   namespace maker {
-    template<typename T> class ModuleHolderT;
+    template <typename T>
+    class ModuleHolderT;
   }
 
   namespace one {
 
-    class EDFilterBase : public ProducerBase, public EDConsumerBase
-    {
-      
+    class EDFilterBase : public ProducerBase, public EDConsumerBase {
     public:
-      template <typename T> friend class edm::maker::ModuleHolderT;
-      template <typename T> friend class edm::WorkerT;
+      template <typename T>
+      friend class edm::maker::ModuleHolderT;
+      template <typename T>
+      friend class edm::WorkerT;
       typedef EDFilterBase ModuleType;
 
-      
       EDFilterBase();
-      virtual ~EDFilterBase();
-      
+      ~EDFilterBase() override;
+
       static void fillDescriptions(ConfigurationDescriptions& descriptions);
       static void prevalidate(ConfigurationDescriptions& descriptions);
       static const std::string& baseType();
@@ -63,69 +64,100 @@ namespace edm {
       // Warning: the returned moduleDescription will be invalid during construction
       ModuleDescription const& moduleDescription() const { return moduleDescription_; }
 
+      virtual bool wantsProcessBlocks() const = 0;
+      virtual bool wantsInputProcessBlocks() const = 0;
+      virtual bool wantsGlobalRuns() const = 0;
+      virtual bool wantsGlobalLuminosityBlocks() const = 0;
+      bool wantsStreamRuns() const { return false; }
+      bool wantsStreamLuminosityBlocks() const { return false; };
+
+      virtual SerialTaskQueue* globalRunsQueue();
+      virtual SerialTaskQueue* globalLuminosityBlocksQueue();
+
     private:
-      bool doEvent(EventPrincipal const& ep, EventSetup const& c,
-                   ActivityRegistry*,
-                   ModuleCallingContext const*);
-      void doPreallocate(PreallocationConfiguration const&) {}
+      bool doEvent(EventTransitionInfo const&, ActivityRegistry*, ModuleCallingContext const*);
+      void doTransformAsync(WaitingTaskHolder iTask,
+                            size_t iTransformIndex,
+                            EventPrincipal const& iEvent,
+                            ActivityRegistry*,
+                            ModuleCallingContext,
+                            ServiceWeakToken const&);
+      //For now this is a placeholder
+      /*virtual*/ void preActionBeforeRunEventAsync(WaitingTaskHolder,
+                                                    ModuleCallingContext const&,
+                                                    Principal const&) const {}
+
+      void doPreallocate(PreallocationConfiguration const&);
+      virtual void preallocRuns(unsigned int);
+      virtual void preallocLumis(unsigned int);
       void doBeginJob();
       void doEndJob();
-      
-      void doBeginRun(RunPrincipal const& rp, EventSetup const& c,
-                      ModuleCallingContext const*);
-      void doEndRun(RunPrincipal const& rp, EventSetup const& c,
-                    ModuleCallingContext const*);
-      void doBeginLuminosityBlock(LuminosityBlockPrincipal const& lbp, EventSetup const& c,
-                                  ModuleCallingContext const*);
-      void doEndLuminosityBlock(LuminosityBlockPrincipal const& lbp, EventSetup const& c,
-                                ModuleCallingContext const*);
-      
-      void doPreForkReleaseResources();
-      void doPostForkReacquireResources(unsigned int iChildIndex, unsigned int iNumberOfChildren);
 
-      //For now, the following are just dummy implemenations with no ability for users to override
-      void doRespondToOpenInputFile(FileBlock const& fb);
-      void doRespondToCloseInputFile(FileBlock const& fb);
-      void doRegisterThinnedAssociations(ProductRegistry const&,
-                                         ThinnedAssociationsHelper&) { }
+      void doBeginProcessBlock(ProcessBlockPrincipal const&, ModuleCallingContext const*);
+      void doAccessInputProcessBlock(ProcessBlockPrincipal const&, ModuleCallingContext const*);
+      void doEndProcessBlock(ProcessBlockPrincipal const&, ModuleCallingContext const*);
+      void doBeginRun(RunTransitionInfo const&, ModuleCallingContext const*);
+      void doEndRun(RunTransitionInfo const&, ModuleCallingContext const*);
+      void doBeginLuminosityBlock(LumiTransitionInfo const&, ModuleCallingContext const*);
+      void doEndLuminosityBlock(LumiTransitionInfo const&, ModuleCallingContext const*);
+
+      void doRespondToOpenInputFile(FileBlock const&) {}
+      void doRespondToCloseInputFile(FileBlock const&) {}
+      void doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
+      void doRegisterThinnedAssociations(ProductRegistry const&, ThinnedAssociationsHelper&) {}
 
       void registerProductsAndCallbacks(EDFilterBase* module, ProductRegistry* reg) {
         registerProducts(module, reg, moduleDescription_);
       }
-      std::string workerType() const {return "WorkerT<EDFilter>";}
-      
+      std::string workerType() const { return "WorkerT<EDFilter>"; }
+
+      SharedResourcesAcquirer& sharedResourcesAcquirer() { return resourcesAcquirer_; }
+
       virtual bool filter(Event&, EventSetup const&) = 0;
       virtual void beginJob() {}
-      virtual void endJob(){}
+      virtual void endJob() {}
 
-      virtual void preForkReleaseResources() {}
-      virtual void postForkReacquireResources(unsigned int /*iChildIndex*/, unsigned int /*iNumberOfChildren*/) {}
+      virtual void preallocThreads(unsigned int) {}
 
+      virtual void doBeginProcessBlock_(ProcessBlock const&);
+      virtual void doAccessInputProcessBlock_(ProcessBlock const&);
+      virtual void doEndProcessBlock_(ProcessBlock const&);
       virtual void doBeginRun_(Run const& rp, EventSetup const& c);
       virtual void doEndRun_(Run const& rp, EventSetup const& c);
       virtual void doBeginLuminosityBlock_(LuminosityBlock const& lbp, EventSetup const& c);
       virtual void doEndLuminosityBlock_(LuminosityBlock const& lbp, EventSetup const& c);
 
+      virtual void doBeginProcessBlockProduce_(ProcessBlock&);
+      virtual void doEndProcessBlockProduce_(ProcessBlock&);
       virtual void doBeginRunProduce_(Run& rp, EventSetup const& c);
       virtual void doEndRunProduce_(Run& rp, EventSetup const& c);
       virtual void doBeginLuminosityBlockProduce_(LuminosityBlock& lbp, EventSetup const& c);
       virtual void doEndLuminosityBlockProduce_(LuminosityBlock& lbp, EventSetup const& c);
-      
+
+      virtual size_t transformIndex_(edm::BranchDescription const& iBranch) const;
+      virtual ProductResolverIndex transformPrefetch_(std::size_t iIndex) const;
+      virtual void transformAsync_(WaitingTaskHolder iTask,
+                                   std::size_t iIndex,
+                                   edm::EventForTransformer& iEvent,
+                                   edm::ActivityRegistry* iAct,
+                                   ServiceWeakToken const& iToken) const;
+
+      virtual void clearInputProcessBlockCaches();
+
+      bool hasAcquire() const { return false; }
+      bool hasAccumulator() const { return false; }
+
       virtual SharedResourcesAcquirer createAcquirer();
 
-      void setModuleDescription(ModuleDescription const& md) {
-        moduleDescription_ = md;
-      }
+      void setModuleDescription(ModuleDescription const& md) { moduleDescription_ = md; }
       ModuleDescription moduleDescription_;
       std::vector<BranchID> previousParentage_;
       ParentageID previousParentageId_;
 
       SharedResourcesAcquirer resourcesAcquirer_;
-      std::mutex mutex_;
     };
-    
-  }
-}
 
+  }  // namespace one
+}  // namespace edm
 
 #endif

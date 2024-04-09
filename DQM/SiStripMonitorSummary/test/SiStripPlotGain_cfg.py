@@ -2,9 +2,15 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("CALIB")
 process.MessageLogger = cms.Service("MessageLogger",
-                                    out = cms.untracked.PSet(threshold = cms.untracked.string('INFO')),
-                                    destinations = cms.untracked.vstring('out')
-                                    )
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
+    files = cms.untracked.PSet(
+        out = cms.untracked.PSet(
+            threshold = cms.untracked.string('INFO')
+        )
+    )
+)
 
 process.source = cms.Source("EmptyIOVSource",
                             firstValue = cms.uint64(109574),
@@ -16,6 +22,7 @@ process.source = cms.Source("EmptyIOVSource",
 # the DB Geometry is NOT used because in this cfg only one tag is taken from the DB and no GT is used. To be fixed if this is a problem
 process.load('Configuration.Geometry.GeometryExtended_cff')
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
@@ -34,7 +41,6 @@ process.poolDBESSource = cms.ESSource(
                                       )
 
 
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 process.analysis = cms.EDAnalyzer("SiStripPlotGain")
 
 

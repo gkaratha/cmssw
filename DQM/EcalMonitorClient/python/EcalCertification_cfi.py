@@ -1,10 +1,11 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 from DQM.EcalCommon.CommonParams_cfi import ecalCommonParams
 
 from DQM.EcalMonitorClient.CertificationClient_cfi import ecalCertificationClient
 
-ecalCertification = cms.EDAnalyzer("EcalDQMonitorClient",
+ecalCertification = DQMEDHarvester("EcalDQMonitorClient",
     moduleName = cms.untracked.string("Ecal Certification Client"),
     # workers to be turned on
     workers = cms.untracked.vstring(
@@ -14,6 +15,6 @@ ecalCertification = cms.EDAnalyzer("EcalDQMonitorClient",
     workerParameters = cms.untracked.PSet(
         CertificationClient = ecalCertificationClient.clone()
     ),
-    commonParameters = ecalCommonParams.clone(willConvertToEDM = cms.untracked.bool(False)),
+    commonParameters = ecalCommonParams.clone(willConvertToEDM = False),
     verbosity = cms.untracked.int32(0)
 )

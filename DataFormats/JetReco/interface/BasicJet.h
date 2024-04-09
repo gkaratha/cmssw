@@ -13,33 +13,31 @@
  *
  ************************************************************/
 
-
 #include "DataFormats/JetReco/interface/Jet.h"
 
 namespace reco {
-class BasicJet : public Jet {
- public:
-  
-  /** Default constructor*/
-  BasicJet() {}
-  
-  /** Constructor from values*/
-  BasicJet(const LorentzVector& fP4, const Point& fVertex);
-  BasicJet(const LorentzVector& fP4, const Point& fVertex, const Jet::Constituents& fConstituents);
-  
-  virtual ~BasicJet() {};
+  class BasicJet : public Jet {
+  public:
+    /** Default constructor*/
+    BasicJet() {}
 
-  /// Polymorphic clone
-  virtual BasicJet* clone () const;
+    /** Constructor from values*/
+    BasicJet(const LorentzVector& fP4, const Point& fVertex);
+    BasicJet(const LorentzVector& fP4, const Point& fVertex, const Jet::Constituents& fConstituents);
 
-  /// Print object
-  virtual std::string print () const;
-  
- private:
-  /// Polymorphic overlap
-  virtual bool overlap( const Candidate & ) const;
-};
-}
+    ~BasicJet() override{};
+
+    /// Polymorphic clone
+    BasicJet* clone() const override;
+
+    /// Print object
+    std::string print() const override;
+
+  private:
+    /// Polymorphic overlap
+    bool overlap(const Candidate&) const override;
+  };
+}  // namespace reco
 // temporary fix before include_checcker runs globally
-#include "DataFormats/JetReco/interface/BasicJetCollection.h" //INCLUDECHECKER:SKIP
+#include "DataFormats/JetReco/interface/BasicJetCollection.h"  //INCLUDECHECKER:SKIP
 #endif

@@ -11,196 +11,158 @@
 #include <unistd.h>
 #include <memory>
 #include <atomic>
-#include <thread>
-#include "tbb/task.h"
-#include "boost/shared_ptr.hpp"
+#include "oneapi/tbb/task_arena.h"
+#include "FWCore/Concurrency/interface/WaitingTask.h"
 #include "FWCore/Concurrency/interface/SerialTaskQueue.h"
+#include "FWCore/Concurrency/interface/FunctorTask.h"
 
 class SerialTaskQueue_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SerialTaskQueue_test);
   CPPUNIT_TEST(testPush);
-  CPPUNIT_TEST(testPushAndWait);
   CPPUNIT_TEST(testPause);
   CPPUNIT_TEST(stressTest);
   CPPUNIT_TEST_SUITE_END();
-  
+
 public:
   void testPush();
-  void testPushAndWait();
   void testPause();
   void stressTest();
-  void setUp(){}
-  void tearDown(){}
+  void setUp() {}
+  void tearDown() {}
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( SerialTaskQueue_test );
+CPPUNIT_TEST_SUITE_REGISTRATION(SerialTaskQueue_test);
 
-void SerialTaskQueue_test::testPush()
-{
-   std::atomic<unsigned int> count{0};
-   
-   edm::SerialTaskQueue queue;
-   {
-      boost::shared_ptr<tbb::task> waitTask{new (tbb::task::allocate_root()) tbb::empty_task{},
-                                            [](tbb::task* iTask){tbb::task::destroy(*iTask);} };
-      waitTask->set_ref_count(1+3);
-      tbb::task* pWaitTask = waitTask.get();
-   
-      queue.push([&count,pWaitTask]{
-         CPPUNIT_ASSERT(count++ == 0);
-         usleep(10);
-         pWaitTask->decrement_ref_count();
-      });
+void SerialTaskQueue_test::testPush() {
+  std::atomic<unsigned int> count{0};
 
-      queue.push([&count,pWaitTask]{
-         CPPUNIT_ASSERT(count++ == 1);
-         usleep(10);
-         pWaitTask->decrement_ref_count();
-      });
+  edm::SerialTaskQueue queue;
+  {
+    std::atomic<unsigned int> waitingTasks{3};
+    oneapi::tbb::task_group group;
 
-      queue.push([&count,pWaitTask]{
-         CPPUNIT_ASSERT(count++ == 2);
-         usleep(10);
-         pWaitTask->decrement_ref_count();
-      });
+    queue.push(group, [&count, &waitingTasks] {
+      CPPUNIT_ASSERT(count++ == 0);
+      usleep(10);
+      --waitingTasks;
+    });
 
-      waitTask->wait_for_all();
-      CPPUNIT_ASSERT(count==3);
-   }
-   
+    queue.push(group, [&count, &waitingTasks] {
+      CPPUNIT_ASSERT(count++ == 1);
+      usleep(10);
+      --waitingTasks;
+    });
+
+    queue.push(group, [&count, &waitingTasks] {
+      CPPUNIT_ASSERT(count++ == 2);
+      usleep(10);
+      --waitingTasks;
+    });
+
+    do {
+      group.wait();
+    } while (0 != waitingTasks.load());
+    CPPUNIT_ASSERT(count == 3);
+  }
 }
 
-void SerialTaskQueue_test::testPushAndWait()
-{
-   std::atomic<unsigned int> count{0};
-   
-   edm::SerialTaskQueue queue;
-   {
-      queue.push([&count]{
-         CPPUNIT_ASSERT(count++ == 0);
-         usleep(10);
+void SerialTaskQueue_test::testPause() {
+  std::atomic<unsigned int> count{0};
+
+  edm::SerialTaskQueue queue;
+  {
+    queue.pause();
+    {
+      std::atomic<unsigned int> waitingTasks{1};
+      oneapi::tbb::task_group group;
+
+      queue.push(group, [&count, &waitingTasks] {
+        CPPUNIT_ASSERT(count++ == 0);
+        --waitingTasks;
+      });
+      usleep(1000);
+      CPPUNIT_ASSERT(0 == count);
+      queue.resume();
+      do {
+        group.wait();
+      } while (0 != waitingTasks.load());
+      CPPUNIT_ASSERT(count == 1);
+    }
+
+    {
+      std::atomic<unsigned int> waitingTasks{3};
+      oneapi::tbb::task_group group;
+
+      queue.push(group, [&count, &queue, &waitingTasks] {
+        queue.pause();
+        CPPUNIT_ASSERT(count++ == 1);
+        --waitingTasks;
+      });
+      queue.push(group, [&count, &waitingTasks] {
+        CPPUNIT_ASSERT(count++ == 2);
+        --waitingTasks;
+      });
+      queue.push(group, [&count, &waitingTasks] {
+        CPPUNIT_ASSERT(count++ == 3);
+        --waitingTasks;
+      });
+      usleep(100);
+      //can't do == since the queue may not have processed the first task yet
+      CPPUNIT_ASSERT(2 >= count);
+      queue.resume();
+      do {
+        group.wait();
+      } while (0 != waitingTasks.load());
+      CPPUNIT_ASSERT(count == 4);
+    }
+  }
+}
+
+void SerialTaskQueue_test::stressTest() {
+  //note group needs to live longer than queue
+  oneapi::tbb::task_group group;
+  edm::SerialTaskQueue queue;
+
+  unsigned int index = 100;
+  const unsigned int nTasks = 1000;
+  while (0 != --index) {
+    std::atomic<unsigned int> waitingTasks{2};
+    std::atomic<unsigned int> count{0};
+
+    std::atomic<bool> waitToStart{true};
+    {
+      group.run([&queue, &waitToStart, &waitingTasks, &count, &group] {
+        while (waitToStart.load()) {
+        }
+        for (unsigned int i = 0; i < nTasks; ++i) {
+          ++waitingTasks;
+          queue.push(group, [&count, &waitingTasks] {
+            ++count;
+            --waitingTasks;
+          });
+        }
+
+        --waitingTasks;
       });
 
-      queue.push([&count]{
-         CPPUNIT_ASSERT(count++ == 1);
-         usleep(10);
+      group.run([&queue, &waitToStart, &waitingTasks, &count, &group] {
+        waitToStart = false;
+        for (unsigned int i = 0; i < nTasks; ++i) {
+          ++waitingTasks;
+          queue.push(group, [&count, &waitingTasks] {
+            ++count;
+            --waitingTasks;
+          });
+        }
+        --waitingTasks;
       });
+    }
+    do {
+      group.wait();
+    } while (0 != waitingTasks.load());
 
-      queue.pushAndWait([&count]{
-         CPPUNIT_ASSERT(count++ == 2);
-         usleep(10);
-      }); 
-
-      CPPUNIT_ASSERT(count==3);
-   }
+    CPPUNIT_ASSERT(2 * nTasks == count);
+  }
 }
-
-void SerialTaskQueue_test::testPause()
-{
-   std::atomic<unsigned int> count{0};
-   
-   edm::SerialTaskQueue queue;
-   {
-      queue.pause();
-      {
-         boost::shared_ptr<tbb::task> waitTask{new (tbb::task::allocate_root()) tbb::empty_task{},
-                                             [](tbb::task* iTask){tbb::task::destroy(*iTask);} };
-         waitTask->set_ref_count(1+1);
-         tbb::task* pWaitTask = waitTask.get();
-   
-         queue.push([&count,pWaitTask]{
-            CPPUNIT_ASSERT(count++ == 0);
-            pWaitTask->decrement_ref_count();
-         });
-         usleep(1000);
-         CPPUNIT_ASSERT(0==count);
-         queue.resume();
-         waitTask->wait_for_all();
-         CPPUNIT_ASSERT(count==1);
-      }
-
-      {
-         boost::shared_ptr<tbb::task> waitTask{new (tbb::task::allocate_root()) tbb::empty_task{},
-                                             [](tbb::task* iTask){tbb::task::destroy(*iTask);} };
-         waitTask->set_ref_count(1+3);
-         tbb::task* pWaitTask = waitTask.get();
-   
-         queue.push([&count,&queue,pWaitTask]{
-            queue.pause();
-            CPPUNIT_ASSERT(count++ == 1);
-            pWaitTask->decrement_ref_count();
-         });
-         queue.push([&count,&queue,pWaitTask]{
-            CPPUNIT_ASSERT(count++ == 2);
-            pWaitTask->decrement_ref_count();
-         });
-         queue.push([&count,&queue,pWaitTask]{
-            CPPUNIT_ASSERT(count++ == 3);
-            pWaitTask->decrement_ref_count();
-         });
-         usleep(100);
-         //can't do == since the queue may not have processed the first task yet
-         CPPUNIT_ASSERT(2>=count);
-         queue.resume();
-         waitTask->wait_for_all();
-         CPPUNIT_ASSERT(count==4);
-      }
-   }
-   
-}
-
-namespace {
-   void join_thread(std::thread* iThread){
-      if(iThread->joinable()){iThread->join();}
-   }
-}
-
-void SerialTaskQueue_test::stressTest()
-{
-   edm::SerialTaskQueue queue;
-   
-   unsigned int index = 100;
-   const unsigned int nTasks = 1000;
-   while(0 != --index) {
-      boost::shared_ptr<tbb::task> waitTask{new (tbb::task::allocate_root()) tbb::empty_task{},
-                                            [](tbb::task* iTask){tbb::task::destroy(*iTask);} };
-      waitTask->set_ref_count(3);
-      tbb::task* pWaitTask=waitTask.get();
-      std::atomic<unsigned int> count{0};
-      
-      std::atomic<bool> waitToStart{true};
-      {
-         std::thread pushThread([&queue,&waitToStart,pWaitTask,&count]{
-	    //gcc 4.7 doesn't preserve the 'atomic' nature of waitToStart in the loop
-	    while(waitToStart.load()) {__sync_synchronize();};
-            for(unsigned int i = 0; i<nTasks;++i) {
-               pWaitTask->increment_ref_count();
-               queue.push([i,&count,pWaitTask] {
-                  ++count;
-                  pWaitTask->decrement_ref_count();
-               });
-            }
-         
-            pWaitTask->decrement_ref_count();
-            });
-         
-         waitToStart=false;
-         for(unsigned int i=0; i<nTasks;++i) {
-            pWaitTask->increment_ref_count();
-            queue.push([i,&count,pWaitTask] {
-               ++count;
-               pWaitTask->decrement_ref_count();
-            });
-         }
-         pWaitTask->decrement_ref_count();
-         boost::shared_ptr<std::thread>(&pushThread,join_thread);
-      }
-      waitTask->wait_for_all();
-
-      CPPUNIT_ASSERT(2*nTasks==count);
-   }
-}
-
-
 
 #include <Utilities/Testing/interface/CppUnit_testdriver.icpp>

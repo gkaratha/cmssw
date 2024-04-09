@@ -27,6 +27,12 @@ options.register('streamLabel',
                  VarParsing.VarParsing.varType.string,
                  "Stream label used in json discovery.")
 
+options.register('scanOnce',
+                 False, # default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Don't repeat file scans: use what was found during the initial scan. EOR file is ignored and the state is set to 'past end of run'.")
+
 options.register('delayMillis',
                  500, # default value
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -43,7 +49,7 @@ options.register('skipFirstLumis',
                  False, # default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
-                 "Skip (and ignore the minEventsPerLumi parameter) for the files which have been available at the begining of the processing. ")
+                 "Skip (and ignore the minEventsPerLumi parameter) for the files which have been available at the beginning of the processing.")
 
 options.register('deleteDatFiles',
                  False, # default value
@@ -57,18 +63,27 @@ options.register('endOfRunKills',
                  VarParsing.VarParsing.varType.bool,
                  "Kill the processing as soon as the end-of-run file appears, even if there are/will be unprocessed lumisections.")
 
+options.register('loadFiles',
+                 True, # default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Tells the source to load the data files. If set to False, the source will create skeleton lumi transitions.")
+
 options.parseArguments()
 
 # Input source
 DQMProtobufReader = cms.Source("DQMProtobufReader",
+    # DQMFileIterator
     runNumber = cms.untracked.uint32(options.runNumber),
     runInputDir = cms.untracked.string(options.runInputDir),
     streamLabel = cms.untracked.string(options.streamLabel),
+    scanOnce = cms.untracked.bool(options.scanOnce),
     datafnPosition = cms.untracked.uint32(options.datafnPosition),
-
     delayMillis = cms.untracked.uint32(options.delayMillis),
     nextLumiTimeoutMillis = cms.untracked.int32(options.nextLumiTimeoutMillis),
+    # DQMProtobufReader
     skipFirstLumis = cms.untracked.bool(options.skipFirstLumis),
     deleteDatFiles = cms.untracked.bool(options.deleteDatFiles),
-    endOfRunKills  = cms.untracked.bool(options.endOfRunKills),
+    endOfRunKills = cms.untracked.bool(options.endOfRunKills),
+    loadFiles = cms.untracked.bool(options.loadFiles),
 )

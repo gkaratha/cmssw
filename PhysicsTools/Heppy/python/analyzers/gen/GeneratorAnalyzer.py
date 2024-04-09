@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import range
 from PhysicsTools.Heppy.analyzers.core.Analyzer import Analyzer
 from PhysicsTools.Heppy.analyzers.core.AutoHandle import AutoHandle
 from PhysicsTools.Heppy.physicsutils.genutils import isNotFromHadronicShower, realGenMothers, realGenDaughters
@@ -83,12 +85,12 @@ class GeneratorAnalyzer( Analyzer ):
             #        "  ".join("%d[%d]" % (p.daughter(i).pdgId(), p.daughter(i).status()) for i in xrange(p.numberOfDaughters())))
             if id in self.savePreFSRParticleIds:
                 # for light objects, we want them pre-radiation
-                if any((p.mother(j).pdgId() == p.pdgId()) for j in xrange(p.numberOfMothers())):
+                if any((p.mother(j).pdgId() == p.pdgId()) for j in range(p.numberOfMothers())):
                     #print "    fail auto-decay"
                     continue
             else:
                 # everything else, we want it after radiation, i.e. just before decay
-                if any((p.daughter(j).pdgId() == p.pdgId() and p.daughter(j).status() > 2) for j in xrange(p.numberOfDaughters())):
+                if any((p.daughter(j).pdgId() == p.pdgId() and p.daughter(j).status() > 2) for j in range(p.numberOfDaughters())):
                     #print "    fail auto-decay"
                     continue
             # FIXME find a better criterion to discard there
@@ -109,7 +111,7 @@ class GeneratorAnalyzer( Analyzer ):
                 if interestingPdgId(mom.pdgId()) or (getattr(mom,'rawIndex',-1) in keymap):
                     #print "    interesting mom"
                     # exclude extra x from p -> p + x
-                    if not any(mom.daughter(j2).pdgId() == mom.pdgId() for j2 in xrange(mom.numberOfDaughters())):
+                    if not any(mom.daughter(j2).pdgId() == mom.pdgId() for j2 in range(mom.numberOfDaughters())):
                         #print "         pass no-self-decay"
                         ok = True
                     # Account for generator feature with Higgs decaying to itself with same four-vector but no daughters
@@ -123,6 +125,9 @@ class GeneratorAnalyzer( Analyzer ):
                 if not ok and p.pt() > 10 and id in [1,2,3,4,5,21,22] and any(interestingPdgId(d.pdgId()) for d in realGenDaughters(mom)):
                     # interesting for being a parton brother of an interesting particle (to get the extra jets in ME+PS) 
                     ok = True 
+                if not ok and id in [11, 13, 15] and abs(mom.pdgId()) in [1,2,3,4,5,21]:
+                    # Lepton e.g. in off-shell DY with the mother being one of the incoming partons
+                    ok = True
             if ok:
                 gp = p
                 gp.rawIndex = rawIndex # remember its index, so that we can set the mother index later
@@ -138,7 +143,7 @@ class GeneratorAnalyzer( Analyzer ):
                 if ancestor.key() in keymap:
                     gp.motherIndex = keymap[ancestor.key()]
                     if ancestor.pdgId() != good[gp.motherIndex].pdgId():
-                        print "Error keying %d: motherIndex %d, ancestor.pdgId %d, good[gp.motherIndex].pdgId() %d " % (igp, gp.motherIndex, ancestor.pdgId(),  good[gp.motherIndex].pdgId())
+                        print("Error keying %d: motherIndex %d, ancestor.pdgId %d, good[gp.motherIndex].pdgId() %d " % (igp, gp.motherIndex, ancestor.pdgId(),  good[gp.motherIndex].pdgId()))
                     break
                 ancestor = None if ancestor.numberOfMothers() == 0 else ancestor.motherRef(0)
             if abs(gp.pdgId()) not in [1,2,3,4,5,11,12,13,14,15,16,21]:
@@ -163,12 +168,12 @@ class GeneratorAnalyzer( Analyzer ):
                 p.motherId = -9999
                 p.grandmotherId = -9999
             if verbose:
-                print "%3d  {%6d}: %+8d  %3d :  %8.2f   %+5.2f   %+5.2f : %d %2d : %+8d {%3d}: %s" % ( ip,p.rawIndex,
+                print("%3d  {%6d}: %+8d  %3d :  %8.2f   %+5.2f   %+5.2f : %d %2d : %+8d {%3d}: %s" % ( ip,p.rawIndex,
                         p.pdgId(), p.status(), p.pt(), p.eta(), p.phi(), len(moms), p.numberOfDaughters(), 
                         p.motherId, p.motherIndex,
-                        "  ".join("%d[%d]" % (p.daughter(i).pdgId(), p.daughter(i).status()) for i in xrange(p.numberOfDaughters())))
+                        "  ".join("%d[%d]" % (p.daughter(i).pdgId(), p.daughter(i).status()) for i in range(p.numberOfDaughters()))))
         if verbose:
-            print "\n\n"
+            print("\n\n")
 
         if self.makeAllGenParticles:
             event.genParticles = allGenParticles

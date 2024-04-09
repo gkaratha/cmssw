@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 ################# Quality Tests for jets #########################
-qTesterJet = cms.EDAnalyzer("QualityTester",
+from DQMServices.Core.DQMQualityTester import DQMQualityTester
+qTesterJet = DQMQualityTester(
      qtList = cms.untracked.FileInPath('DQMOffline/JetMET/test/JetQualityTests.xml'),
      prescaleFactor = cms.untracked.int32(1),
      testInEventloop = cms.untracked.bool(False),
@@ -9,7 +11,7 @@ qTesterJet = cms.EDAnalyzer("QualityTester",
  )
 
 ################# Quality Tests for MET #########################
-qTesterMET = cms.EDAnalyzer("QualityTester",
+qTesterMET = DQMQualityTester(
      qtList = cms.untracked.FileInPath('DQMOffline/JetMET/test/METQualityTests.xml'),
      prescaleFactor = cms.untracked.int32(1),
      testInEventloop = cms.untracked.bool(False),
@@ -17,7 +19,7 @@ qTesterMET = cms.EDAnalyzer("QualityTester",
  )
 
 ################# Data Certification #########################
-dataCertificationJetMET = cms.EDAnalyzer('DataCertificationJetMET',
+dataCertificationJetMET = DQMEDHarvester('DataCertificationJetMET',
                               fileName       = cms.untracked.string(""),
                               refFileName    = cms.untracked.string(""),
                               OutputFile     = cms.untracked.bool(False),
@@ -60,6 +62,10 @@ dataCertificationJetMET = cms.EDAnalyzer('DataCertificationJetMET',
                               tcMETMeanTest           = cms.untracked.bool(False),
                               tcMETKSTest             = cms.untracked.bool(False),
 
+                              isHI                    = cms.untracked.bool(False),
 )
 
-
+dataCertificationJetMETHI = dataCertificationJetMET.clone(
+    isHI    = True,
+    jetAlgo = "ak"
+)

@@ -6,7 +6,7 @@
  */
 
 #ifndef HCALDIGISCLIENT_H
-#define	HCALDIGISCLIENT_H
+#define HCALDIGISCLIENT_H
 
 #include <memory>
 
@@ -22,88 +22,71 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
 
 class HcalDigisClient : public DQMEDHarvester {
 public:
-    explicit HcalDigisClient(const edm::ParameterSet&);
+  explicit HcalDigisClient(const edm::ParameterSet &);
 
-    ~HcalDigisClient();
+  ~HcalDigisClient() override;
 
 private:
+  void dqmEndJob(DQMStore::IBooker &ibooker, DQMStore::IGetter &igetter) override {
+    igetter.setCurrentFolder(dirName_);  // This sets the DQMStore (should apply to ibooker as well
+    runClient(ibooker, igetter);
+  }
 
-    virtual void dqmEndJob(DQMStore::IBooker &ibooker, DQMStore::IGetter & igetter ) {
-      igetter.setCurrentFolder("HcalDigisV/HcalDigiTask"); // moved this line from constructor
+  struct HistLim {
+    HistLim(int nbin, double mini, double maxi) : n(nbin), min(mini), max(maxi) {}
+    int n;
+    double min;
+    double max;
+  };
 
-      // the following booking clas were moved from the constructor
-      booking(ibooker, "HB");
-      booking(ibooker, "HE");
-      booking(ibooker, "HO");
-      booking(ibooker, "HF");
+  virtual void runClient(DQMStore::IBooker &ib, DQMStore::IGetter &ig);
+  int HcalDigisEndjob(const std::vector<MonitorElement *> &hcalMEs, std::string subdet_, DQMStore::IBooker &ib);
 
-      igetter.setCurrentFolder(dirName_); // This sets the DQMStore (should apply to ibooker as well
-      runClient(ibooker, igetter);
-    }
+  MonitorElement *monitor(std::string name);
 
-    struct HistLim {
+  void book1D(DQMStore::IBooker &ib, std::string name, int n, double min, double max) {
+    if (!msm_->count(name))
+      (*msm_)[name] = ib.book1D(name.c_str(), name.c_str(), n, min, max);
+  }
 
-        HistLim(int nbin, double mini, double maxi)
-        : n(nbin), min(mini), max(maxi) {
-        }
-        int n;
-        double min;
-        double max;
-    };
+  void book1D(DQMStore::IBooker &ib, std::string name, const HistLim &limX) {
+    if (!msm_->count(name))
+      (*msm_)[name] = ib.book1D(name.c_str(), name.c_str(), limX.n, limX.min, limX.max);
+  }
 
-    virtual void runClient(DQMStore::IBooker &ib, DQMStore::IGetter &ig);
-    int HcalDigisEndjob(const std::vector<MonitorElement*> &hcalMEs, std::string subdet_);
+  void fill1D(std::string name, double X, double weight = 1) { msm_->find(name)->second->Fill(X, weight); }
 
-    MonitorElement* monitor(std::string name);
+  void book2D(DQMStore::IBooker &ib, std::string name, const HistLim &limX, const HistLim &limY) {
+    if (!msm_->count(name))
+      (*msm_)[name] = ib.book2D(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max);
+  }
 
-    void book1D(DQMStore::IBooker &ib, std::string name, int n, double min, double max) {
-        if (!msm_->count(name)) (*msm_)[name] = ib.book1D(name.c_str(), name.c_str(), n, min, max);
-    }
+  void fill2D(std::string name, double X, double Y, double weight = 1) { msm_->find(name)->second->Fill(X, Y, weight); }
 
-    void book1D(DQMStore::IBooker &ib, std::string name, const HistLim& limX) {
-        if (!msm_->count(name)) (*msm_)[name] = ib.book1D(name.c_str(), name.c_str(), limX.n, limX.min, limX.max);
-    }
+  void bookPf(DQMStore::IBooker &ib, std::string name, const HistLim &limX, const HistLim &limY) {
+    if (!msm_->count(name))
+      (*msm_)[name] =
+          ib.bookProfile(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max);
+  }
 
-    void fill1D(std::string name, double X, double weight = 1) {
-        msm_->find(name)->second->Fill(X, weight);
-    }
+  void bookPf(DQMStore::IBooker &ib, std::string name, const HistLim &limX, const HistLim &limY, const char *option) {
+    if (!msm_->count(name))
+      (*msm_)[name] =
+          ib.bookProfile(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max, option);
+  }
 
-    void book2D(DQMStore::IBooker &ib, std::string name, const HistLim& limX, const HistLim& limY) {
-        if (!msm_->count(name)) (*msm_)[name] = ib.book2D(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max);
-    }
+  void fillPf(std::string name, double X, double Y) { msm_->find(name)->second->Fill(X, Y); }
 
-    void fill2D(std::string name, double X, double Y, double weight = 1) {
-        msm_->find(name)->second->Fill(X, Y, weight);
-    }
+  std::string str(int x);
 
-    void bookPf(DQMStore::IBooker &ib, std::string name, const HistLim& limX, const HistLim& limY) {
-        if (!msm_->count(name)) (*msm_)[name] = ib.bookProfile(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max);
-    }
-
-    void bookPf(DQMStore::IBooker &ib, std::string name, const HistLim& limX, const HistLim& limY, const char *option) {
-        if (!msm_->count(name)) (*msm_)[name] = ib.bookProfile(name.c_str(), name.c_str(), limX.n, limX.min, limX.max, limY.n, limY.min, limY.max, option);
-    }
-
-    void fillPf(std::string name, double X, double Y) {
-        msm_->find(name)->second->Fill(X, Y);
-    }
-
-    void booking(DQMStore::IBooker &ib, std::string subdetopt);
-
-    std::string str(int x);
-
-    double integralMETH2D(MonitorElement* ME, int i0, int i1, int j0, int j1);
-    void scaleMETH2D(MonitorElement* ME, double s);
-    std::map<std::string, MonitorElement*> *msm_;
-    std::string outputFile_;
-    std::string dirName_;
+  double integralMETH2D(MonitorElement *ME, int i0, int i1, int j0, int j1);
+  void scaleMETH2D(MonitorElement *ME, double s);
+  std::map<std::string, MonitorElement *> *msm_;
+  std::string outputFile_;
+  std::string dirName_;
 };
 
-
-
-#endif	/* HCALDIGISCLIENT_H */
-
+#endif /* HCALDIGISCLIENT_H */

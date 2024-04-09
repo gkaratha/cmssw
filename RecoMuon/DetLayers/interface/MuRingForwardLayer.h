@@ -16,50 +16,39 @@ class ForwardDetRingBuilder;
 class GeomDet;
 
 class MuRingForwardLayer : public RingedForwardLayer {
-
- public:  
-
+public:
   /// Constructor, takes ownership of pointers
   MuRingForwardLayer(const std::vector<const ForwardDetRing*>& rings);
 
-  virtual ~MuRingForwardLayer();
-
+  ~MuRingForwardLayer() override;
 
   // GeometricSearchDet interface
 
-  virtual const std::vector<const GeomDet*>& basicComponents() const {return theBasicComps;}
-  
-  virtual const std::vector<const GeometricSearchDet*>& components() const;
+  const std::vector<const GeomDet*>& basicComponents() const override { return theBasicComps; }
 
-  virtual std::vector<DetWithState> 
-  compatibleDets( const TrajectoryStateOnSurface& startingState,
-		  const Propagator& prop, 
-		  const MeasurementEstimator& est) const;
-  
-  virtual std::vector<DetGroup> 
-  groupedCompatibleDets( const TrajectoryStateOnSurface& startingState,
-			 const Propagator& prop,
-			 const MeasurementEstimator& est) const;
+  const std::vector<const GeometricSearchDet*>& components() const override;
 
+  std::vector<DetWithState> compatibleDets(const TrajectoryStateOnSurface& startingState,
+                                           const Propagator& prop,
+                                           const MeasurementEstimator& est) const override;
 
+  std::vector<DetGroup> groupedCompatibleDets(const TrajectoryStateOnSurface& startingState,
+                                              const Propagator& prop,
+                                              const MeasurementEstimator& est) const override;
 
   // DetLayer interface
-  virtual SubDetector subDetector() const;
-
+  SubDetector subDetector() const override;
 
   // Extension of the interface
 
   /// Return the vector of rings.
-  virtual const std::vector<const ForwardDetRing*>& rings() const {return theRings;}
+  virtual const std::vector<const ForwardDetRing*>& rings() const { return theRings; }
 
-
- private:  
+private:
   std::vector<const ForwardDetRing*> theRings;
-  std::vector <const GeometricSearchDet*> theComponents; // duplication of the above
-  std::vector<const GeomDet*> theBasicComps; // All chambers
-  BaseBinFinder<double> * theBinFinder;
+  std::vector<const GeometricSearchDet*> theComponents;  // duplication of the above
+  std::vector<const GeomDet*> theBasicComps;             // All chambers
+  BaseBinFinder<double>* theBinFinder;
   bool isOverlapping;
-
 };
 #endif
-

@@ -9,7 +9,8 @@
  ************************************************************/
 
 #include "DataFormats/Provenance/interface/EventID.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
+#include "FWCore/Utilities/interface/get_underlying_safe.h"
 
 #include <memory>
 
@@ -18,9 +19,8 @@ namespace edm {
   class ProcessConfiguration;
   class VectorInputSource;
 
-  class SecondaryProducer: public EDProducer {
+  class SecondaryProducer : public one::EDProducer<> {
   public:
-
     /** standard constructor*/
     explicit SecondaryProducer(ParameterSet const& pset);
 
@@ -28,40 +28,30 @@ namespace edm {
     virtual ~SecondaryProducer();
 
     /**Accumulates the pileup events into this event*/
-    virtual void produce(Event& e1, EventSetup const& c);
+    void produce(Event& e1, EventSetup const& c) override;
 
-    void processOneEvent(EventPrincipal const& eventPrincipal, Event& e);
+    bool processOneEvent(EventPrincipal const& eventPrincipal, Event& e);
 
   private:
-
-    virtual void put(Event &) {}
-
-    virtual void beginJob();
-
-    virtual void endJob();
-
+    virtual void put(Event&) {}
+    void beginJob() override;
+    void endJob() override;
     std::shared_ptr<VectorInputSource> makeSecInput(ParameterSet const& ps);
 
-    std::shared_ptr<ProductRegistry> productRegistry_;
+    std::shared_ptr<ProductRegistry const> productRegistry() const { return get_underlying_safe(productRegistry_); }
+    std::shared_ptr<ProductRegistry>& productRegistry() { return get_underlying_safe(productRegistry_); }
 
-    std::shared_ptr<VectorInputSource> const secInput_;
-
-    std::unique_ptr<ProcessConfiguration> processConfiguration_;
-
-    std::unique_ptr<EventPrincipal> eventPrincipal_;
-
+    edm::propagate_const<std::shared_ptr<ProductRegistry>> productRegistry_;
+    edm::propagate_const<std::shared_ptr<VectorInputSource>> secInput_;
+    edm::propagate_const<std::unique_ptr<ProcessConfiguration>> processConfiguration_;
+    edm::propagate_const<std::unique_ptr<EventPrincipal>> eventPrincipal_;
     bool sequential_;
-
     bool specified_;
-
     bool sameLumiBlock_;
-
     bool firstEvent_;
-
     bool firstLoop_;
-
     EventNumber_t expectedEventNumber_;
   };
-}//edm
+}  // namespace edm
 
 #endif

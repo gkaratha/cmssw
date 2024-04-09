@@ -13,79 +13,66 @@
   *
   * \author J. Mans - Minnesota
   */
-class CaloTowerGeometry : public CaloSubdetectorGeometry 
-{
-   public:
+class CaloTowerGeometry : public CaloSubdetectorGeometry {
+public:
+  typedef std::vector<IdealObliquePrism> CellVec;
 
-      typedef std::vector<IdealObliquePrism> CellVec ;
+  typedef CaloCellGeometry::CCGFloat CCGFloat;
+  typedef CaloCellGeometry::Pt3D Pt3D;
+  typedef CaloCellGeometry::Pt3DVec Pt3DVec;
 
-      typedef CaloCellGeometry::CCGFloat CCGFloat ;
-      typedef CaloCellGeometry::Pt3D     Pt3D     ;
-      typedef CaloCellGeometry::Pt3DVec  Pt3DVec  ;
+  typedef CaloTowerAlignmentRcd AlignmentRecord;
+  typedef CaloTowerGeometryRecord AlignedRecord;
+  typedef PCaloTowerRcd PGeometryRecord;
+  typedef CaloTowerDetId DetIdType;
 
-      typedef CaloTowerAlignmentRcd    AlignmentRecord ;
-      typedef CaloTowerGeometryRecord  AlignedRecord   ;
-      typedef PCaloTowerRcd            PGeometryRecord ;
-      typedef CaloTowerDetId           DetIdType       ;
+  enum { k_NumberOfParametersPerShape = 5 };
 
-      //enum { k_NumberOfCellsForCorners = CaloTowerDetId::kSizeForDenseIndexing } ;
+  static std::string dbString() { return "PCaloTowerRcd"; }
 
-      //enum { k_NumberOfShapes = 41 } ;
+  unsigned int numberOfShapes() const override { return k_NumberOfShapes; }
+  unsigned int numberOfParametersPerShape() const override { return k_NumberOfParametersPerShape; }
+  virtual unsigned int numberOfCellsForCorners() const { return k_NumberOfCellsForCorners; }
 
-      enum { k_NumberOfParametersPerShape = 5 } ;
+  CaloTowerGeometry(const CaloTowerTopology* cttopo);
+  ~CaloTowerGeometry() override;
 
-      static std::string dbString() { return "PCaloTowerRcd" ; }
+  static std::string producerTag() { return "TOWER"; }
 
-      virtual unsigned int numberOfShapes() const { return k_NumberOfShapes ; }
-      virtual unsigned int numberOfParametersPerShape() const { return k_NumberOfParametersPerShape ; }
-      virtual unsigned int numberOfCellsForCorners() const { return k_NumberOfCellsForCorners ; }
+  static unsigned int numberOfAlignments() { return 0; }
+  unsigned int alignmentTransformIndexLocal(const DetId& id);
+  unsigned int alignmentTransformIndexGlobal(const DetId& id);
 
+  static void localCorners(Pt3DVec& lc, const CCGFloat* pv, unsigned int i, Pt3D& ref);
 
-      CaloTowerGeometry(const CaloTowerTopology *cttopo_);
-      virtual ~CaloTowerGeometry();  
+  void newCell(const GlobalPoint& f1,
+               const GlobalPoint& f2,
+               const GlobalPoint& f3,
+               const CCGFloat* parm,
+               const DetId& detId) override;
 
-      static std::string producerTag() { return "TOWER" ; }
+  std::shared_ptr<const CaloCellGeometry> getGeometry(const DetId& id) const override {
+    return cellGeomPtr(m_cttopo->denseIndex(id));
+  }
 
-      static unsigned int numberOfAlignments() { return 0 ; }
+  void getSummary(CaloSubdetectorGeometry::TrVec& trVector,
+                  CaloSubdetectorGeometry::IVec& iVector,
+                  CaloSubdetectorGeometry::DimVec& dimVector,
+                  CaloSubdetectorGeometry::IVec& dinsVector) const override;
 
-      //static unsigned int alignmentTransformIndexLocal( const DetId& id ) ;
-      unsigned int alignmentTransformIndexLocal( const DetId& id ) ;
+protected:
+  unsigned int indexFor(const DetId& id) const override { return m_cttopo->denseIndex(id); }
+  unsigned int sizeForDenseIndex(const DetId& id) const override { return m_cttopo->sizeForDenseIndexing(); }
 
-      //static unsigned int alignmentTransformIndexGlobal( const DetId& id ) ;
-      unsigned int alignmentTransformIndexGlobal( const DetId& id ) ;
+  // Modify the RawPtr class
+  const CaloCellGeometry* getGeometryRawPtr(uint32_t index) const override;
 
-      static void localCorners( Pt3DVec&        lc  ,
-				const CCGFloat* pv  , 
-				unsigned int    i   ,
-				Pt3D&           ref   ) ;
-
-      virtual void newCell( const GlobalPoint& f1 ,
-			    const GlobalPoint& f2 ,
-			    const GlobalPoint& f3 ,
-			    const CCGFloat*    parm,
-			    const DetId&       detId     ) ;
-				
-      virtual const CaloCellGeometry* getGeometry( const DetId& id ) const {
-          return cellGeomPtr( cttopo->denseIndex(id) ) ;
-      }
-
-  virtual void getSummary( CaloSubdetectorGeometry::TrVec&  trVector,
-			   CaloSubdetectorGeometry::IVec&   iVector,
-			   CaloSubdetectorGeometry::DimVec& dimVector,
-			   CaloSubdetectorGeometry::IVec& dinsVector ) const ;
-
-   protected:
-
-      virtual const CaloCellGeometry* cellGeomPtr( uint32_t index ) const ;
-      virtual unsigned int indexFor(const DetId& id) const { return  cttopo->denseIndex(id); }
-      virtual unsigned int sizeForDenseIndex(const DetId& id) const { return cttopo->sizeForDenseIndexing(); }
-
-   private:
-      const CaloTowerTopology* cttopo;
-      int k_NumberOfCellsForCorners;
-	  int k_NumberOfShapes;
-      CellVec m_cellVec ;
-	  CaloSubdetectorGeometry::IVec m_dins;
+private:
+  const CaloTowerTopology* m_cttopo;
+  int k_NumberOfCellsForCorners;
+  int k_NumberOfShapes;
+  CellVec m_cellVec;
+  CaloSubdetectorGeometry::IVec m_dins;
 };
 
 #endif

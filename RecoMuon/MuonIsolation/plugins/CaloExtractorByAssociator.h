@@ -25,6 +25,11 @@
 
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+
 class TrackAssociatorParameters;
 class TrackDetectorAssociator;
 class MuonServiceProxy;
@@ -32,27 +37,26 @@ class MuonServiceProxy;
 namespace muonisolation {
 
   class CaloExtractorByAssociator : public reco::isodeposit::IsoDepositExtractor {
-
   public:
-
     //! constructors
     CaloExtractorByAssociator(){};
-    CaloExtractorByAssociator(const edm::ParameterSet& par, edm::ConsumesCollector && iC);
+    CaloExtractorByAssociator(const edm::ParameterSet& par, edm::ConsumesCollector&& iC);
 
     //! destructor
-    virtual ~CaloExtractorByAssociator();
+    ~CaloExtractorByAssociator() override;
 
     //! allows to set extra vetoes (in addition to the muon) -- no-op at this point
-    virtual void fillVetos (const edm::Event & ev, const edm::EventSetup & evSetup, const reco::TrackCollection & tracks);
+    void fillVetos(const edm::Event& ev, const edm::EventSetup& evSetup, const reco::TrackCollection& tracks) override;
     //! no-op: by design of this extractor the deposits are pulled out all at a time
-    virtual reco::IsoDeposit
-      deposit(const edm::Event & ev, const edm::EventSetup & evSetup, const reco::Track & track) const;
+    reco::IsoDeposit deposit(const edm::Event& ev,
+                             const edm::EventSetup& evSetup,
+                             const reco::Track& track) const override;
     //! return deposits for 3 calorimeter subdetectors (ecal, hcal, ho) -- in this order
-    virtual std::vector<reco::IsoDeposit>
-      deposits(const edm::Event & ev, const edm::EventSetup & evSetup, const reco::Track & track) const;
+    std::vector<reco::IsoDeposit> deposits(const edm::Event& ev,
+                                           const edm::EventSetup& evSetup,
+                                           const reco::Track& track) const override;
 
   private:
-
     //! use towers or rec hits
     bool theUseRecHitsFlag;
 
@@ -97,10 +101,12 @@ namespace muonisolation {
     //! the event setup proxy, it takes care the services update
     MuonServiceProxy* theService;
 
-
     //! associator, its' parameters and the propagator
     TrackAssociatorParameters* theAssociatorParameters;
     TrackDetectorAssociator* theAssociator;
+
+    edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> bFieldToken_;
+    edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeomToken_;
 
     //! flag to turn on/off printing of a time report
     bool thePrintTimeReport;
@@ -110,9 +116,8 @@ namespace muonisolation {
     double noiseHcal(const CaloTower& tower) const;
     double noiseHOcal(const CaloTower& tower) const;
     double noiseRecHit(const DetId& detId) const;
-
   };
 
-}
+}  // namespace muonisolation
 
 #endif

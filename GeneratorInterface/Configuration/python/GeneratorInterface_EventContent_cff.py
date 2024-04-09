@@ -15,9 +15,11 @@ GeneratorInterfaceRAW = cms.PSet(
         'keep LHERunInfoProduct_*_*_*',
         'keep LHEEventProduct_*_*_*',
         'keep GenRunInfoProduct_generator_*_*',
+        'keep GenLumiInfoHeader_generator_*_*',
         'keep GenLumiInfoProduct_generator_*_*',
         'keep GenEventInfoProduct_generator_*_*',
         'keep edmHepMCProduct_generatorSmeared_*_*',
+        'keep edmHepMCProduct_LHCTransport_*_*',
         'keep GenFilterInfo_*_*_*',
         'keep *_genParticles_*_*'
     )
@@ -29,9 +31,11 @@ GeneratorInterfaceRECO = cms.PSet(
         'keep LHERunInfoProduct_*_*_*',
         'keep LHEEventProduct_*_*_*',
         'keep GenRunInfoProduct_generator_*_*',
+        'keep GenLumiInfoHeader_generator_*_*',
         'keep GenLumiInfoProduct_generator_*_*',
         'keep GenEventInfoProduct_generator_*_*',
         'keep edmHepMCProduct_generatorSmeared_*_*',
+        'keep edmHepMCProduct_LHCTransport_*_*',
         'keep GenFilterInfo_*_*_*',
         'keep *_genParticles_*_*'
     )
@@ -43,6 +47,7 @@ GeneratorInterfaceAOD = cms.PSet(
         'keep LHERunInfoProduct_*_*_*',
         'keep LHEEventProduct_*_*_*',
         'keep GenRunInfoProduct_generator_*_*',
+        'keep GenLumiInfoHeader_generator_*_*',
         'keep GenLumiInfoProduct_generator_*_*',
         'keep GenEventInfoProduct_generator_*_*',
         'keep GenFilterInfo_*_*_*',

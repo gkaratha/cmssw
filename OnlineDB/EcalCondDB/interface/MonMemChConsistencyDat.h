@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MonMemChConsistencyDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MonMemChConsistencyDat();
-  ~MonMemChConsistencyDat();
+  ~MonMemChConsistencyDat() override;
 
   // User data methods
-  inline std::string getTable() { return "MON_MEM_CH_CONSISTENCY_DAT"; }
+  inline std::string getTable() override { return "MON_MEM_CH_CONSISTENCY_DAT"; }
 
   inline void setProcessedEvents(int proc) { m_processedEvents = proc; }
   inline int getProcessedEvents() const { return m_processedEvents; }
@@ -35,20 +35,15 @@ class MonMemChConsistencyDat : public IDataItem {
 
   inline void setTaskStatus(bool status) { m_taskStatus = status; }
   inline bool getTaskStatus() const { return m_taskStatus; }
-  
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
 
-  void writeDB(const EcalLogicID* ecid, const MonMemChConsistencyDat* item, MonRunIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, MonMemChConsistencyDat >* data, MonRunIOV* iov)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MonMemChConsistencyDat* item, MonRunIOV* iov) noexcept(false);
 
+  void writeArrayDB(const std::map<EcalLogicID, MonMemChConsistencyDat>* data, MonRunIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, MonMemChConsistencyDat >* fillVec, MonRunIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, MonMemChConsistencyDat>* fillVec, MonRunIOV* iov) noexcept(false);
 
   // User data
   int m_processedEvents;
@@ -57,7 +52,6 @@ class MonMemChConsistencyDat : public IDataItem {
   int m_problemsGainZero;
   int m_problemsGainSwitch;
   bool m_taskStatus;
-  
 };
 
 #endif

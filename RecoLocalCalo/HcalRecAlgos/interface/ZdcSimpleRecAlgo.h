@@ -31,26 +31,40 @@
     
    \author E. Garcia CSU &  J. Gomez UMD
 */
+class HcalTimeSlew;
 
 class ZdcSimpleRecAlgo {
 public:
   /** Full featured constructor for ZDC */
-  ZdcSimpleRecAlgo(bool correctForTimeslew, 
-		   bool correctForContainment, float fixedPhaseNs, int recoMethod, int lowGainOffset, double lowGainFrac);
+  ZdcSimpleRecAlgo(bool correctForTimeslew,
+                   bool correctForContainment,
+                   float fixedPhaseNs,
+                   int recoMethod,
+                   int lowGainOffset,
+                   double lowGainFrac);
   /** Simple constructor for PMT-based detectors */
   ZdcSimpleRecAlgo(int recoMethod);
-    void initPulseCorr(int toadd); 
-  ZDCRecHit reconstruct(const ZDCDataFrame& digi, const std::vector<unsigned int>& myNoiseTS, const std::vector<unsigned int>& mySignalTS, const HcalCoder& coder, const HcalCalibrations& calibs) const;
-  HcalCalibRecHit reconstruct(const HcalCalibDataFrame& digi, const std::vector<unsigned int>& myNoiseTS, const std::vector<unsigned int>& mySignalTS, const HcalCoder& coder, const HcalCalibrations& calibs) const;
+  void initPulseCorr(int toadd, const HcalTimeSlew* hcalTimeSlew_delay);
+  ZDCRecHit reconstruct(const ZDCDataFrame& digi,
+                        const std::vector<unsigned int>& myNoiseTS,
+                        const std::vector<unsigned int>& mySignalTS,
+                        const HcalCoder& coder,
+                        const HcalCalibrations& calibs) const;
+  HcalCalibRecHit reconstruct(const HcalCalibDataFrame& digi,
+                              const std::vector<unsigned int>& myNoiseTS,
+                              const std::vector<unsigned int>& mySignalTS,
+                              const HcalCoder& coder,
+                              const HcalCalibrations& calibs) const;
+
 private:
   int recoMethod_;
   bool correctForTimeslew_;
-   bool correctForPulse_;
-     float phaseNS_;
-   // new lowGainEnergy variables
-   int lowGainOffset_;
-   double lowGainFrac_;
-  std::auto_ptr<HcalPulseContainmentCorrection> pulseCorr_;
+  bool correctForPulse_;
+  float phaseNS_;
+  // new lowGainEnergy variables
+  int lowGainOffset_;
+  double lowGainFrac_;
+  std::unique_ptr<HcalPulseContainmentCorrection> pulseCorr_;
 };
 
 #endif

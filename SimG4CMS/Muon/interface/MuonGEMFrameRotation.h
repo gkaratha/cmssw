@@ -14,21 +14,14 @@
 #include "SimG4CMS/Muon/interface/MuonFrameRotation.h"
 #include "SimG4CMS/Muon/interface/MuonG4Numbering.h"
 
-#include "G4Step.hh"
-
-class DDCompactView;
+class MuonGeometryConstants;
+class G4Step;
 
 class MuonGEMFrameRotation : public MuonFrameRotation {
-
 public:
-  MuonGEMFrameRotation( const DDCompactView& cpv );
-  virtual ~MuonGEMFrameRotation();
-  virtual Local3DPoint transformPoint(const Local3DPoint &, const G4Step *) const;
-
-private:
-  MuonG4Numbering* g4numbering;
-  int              theSectorLevel;
+  MuonGEMFrameRotation(const MuonGeometryConstants& muonConstants);
+  ~MuonGEMFrameRotation() override;
+  Local3DPoint transformPoint(const Local3DPoint&, const G4Step*) const override;
 };
-
 
 #endif

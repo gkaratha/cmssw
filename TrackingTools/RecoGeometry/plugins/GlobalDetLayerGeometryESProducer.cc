@@ -10,27 +10,36 @@
 
 using namespace edm;
 
-GlobalDetLayerGeometryESProducer::GlobalDetLayerGeometryESProducer(const edm::ParameterSet & p) 
-{
+GlobalDetLayerGeometryESProducer::GlobalDetLayerGeometryESProducer(const edm::ParameterSet& p) {
   std::string myName = p.getParameter<std::string>("ComponentName");
-  setWhatProduced(this,myName);
+  auto cc = setWhatProduced(this, myName);
+  trackerToken_ = cc.consumes();
+  muonToken_ = cc.consumes();
+  mtdToken_ = cc.consumes();
 }
- 
+
 GlobalDetLayerGeometryESProducer::~GlobalDetLayerGeometryESProducer() {}
 
-boost::shared_ptr<DetLayerGeometry> 
-GlobalDetLayerGeometryESProducer::produce(const RecoGeometryRecord & iRecord){ 
-  
-  edm::ESHandle<GeometricSearchTracker> tracker;  
-  edm::ESHandle<MuonDetLayerGeometry> muon;
+std::unique_ptr<DetLayerGeometry> GlobalDetLayerGeometryESProducer::produce(const RecoGeometryRecord& iRecord) {
+  auto const& tracker = iRecord.get(trackerToken_);
+  auto const& muon = iRecord.get(muonToken_);
+  edm::ESHandle<MTDDetLayerGeometry> mtd;
 
-  iRecord.getRecord<TrackerRecoGeometryRecord>().get(tracker);
-  iRecord.getRecord<MuonRecoGeometryRecord>().get(muon);
+  // get the MTD if it is available
+  if (auto mtdRecord = iRecord.tryToGetRecord<MTDRecoGeometryRecord>()) {
+    mtd = mtdRecord->getHandle(mtdToken_);
+    if (!mtd.isValid()) {
+      LogInfo("GlobalDetLayergGeometryBuilder") << "No MTD geometry is available.";
+    }
+  } else {
+    LogInfo("GlobalDetLayerGeometryBuilder") << "No MTDRecoGeometryRecord is available.";
+  }
 
-  geometry_  = boost::shared_ptr<DetLayerGeometry>(new GlobalDetLayerGeometry(tracker.product(),
-									      muon.product() ));
-  return geometry_;
+  // if we've got MTD initialize it
+  if (mtd.isValid())
+    return std::make_unique<GlobalDetLayerGeometry>(&tracker, &muon, mtd.product());
+
+  return std::make_unique<GlobalDetLayerGeometry>(&tracker, &muon);
 }
-
 
 DEFINE_FWK_EVENTSETUP_MODULE(GlobalDetLayerGeometryESProducer);

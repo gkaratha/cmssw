@@ -9,13 +9,13 @@
 #include "OnlineDB/EcalCondDB/interface/ODFEPedestalOffsetInfo.h"
 
 class ODPedestalOffsetsDat : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODPedestalOffsetsDat();
-  ~ODPedestalOffsetsDat();
+  ~ODPedestalOffsetsDat() override;
 
   // User data methods
-  inline std::string getTable() { return "PEDESTAL_OFFSETS_DAT"; }
+  inline std::string getTable() override { return "PEDESTAL_OFFSETS_DAT"; }
 
   inline void setId(int dac) { m_ID = dac; }
   inline int getId() const { return m_ID; }
@@ -41,20 +41,14 @@ class ODPedestalOffsetsDat : public IODConfig {
   inline void setHigh(int dac) { m_high = dac; }
   inline int getHigh() const { return m_high; }
 
+private:
+  void prepareWrite() noexcept(false) override;
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+  void writeDB(const ODPedestalOffsetsDat* item, ODFEPedestalOffsetInfo* iov) noexcept(false);
 
-  void writeDB(const ODPedestalOffsetsDat* item, ODFEPedestalOffsetInfo* iov )
-    throw(std::runtime_error);
+  void writeArrayDB(const std::vector<ODPedestalOffsetsDat>& data, ODFEPedestalOffsetInfo* iov) noexcept(false);
 
-  void writeArrayDB(const std::vector< ODPedestalOffsetsDat >& data, ODFEPedestalOffsetInfo* iov)
-    throw(std::runtime_error);
-
-
-  void fetchData(std::vector< ODPedestalOffsetsDat >* fillMap, ODFEPedestalOffsetInfo* iov)
-     throw(std::runtime_error);
+  void fetchData(std::vector<ODPedestalOffsetsDat>* fillMap, ODFEPedestalOffsetInfo* iov) noexcept(false);
 
   // User data
   int m_sm;
@@ -65,7 +59,6 @@ class ODPedestalOffsetsDat : public IODConfig {
   int m_mid;
   int m_high;
   int m_ID;
- 
 };
 
 #endif

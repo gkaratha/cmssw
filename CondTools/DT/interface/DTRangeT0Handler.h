@@ -27,42 +27,30 @@
 //---------------
 #include <string>
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTRangeT0Handler: public popcon::PopConSourceHandler<DTRangeT0> {
-
- public:
-
+class DTRangeT0Handler : public popcon::PopConSourceHandler<DTRangeT0> {
+public:
   /** Constructor
    */
-  DTRangeT0Handler( const edm::ParameterSet& ps );
+  DTRangeT0Handler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTRangeT0Handler();
+  ~DTRangeT0Handler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
- private:
-
+private:
   std::string dataTag;
   std::string fileName;
   unsigned int runNumber;
-
 };
 
-
-#endif // DTRangeT0Handler_H
-
-
-
-
-
-
+#endif  // DTRangeT0Handler_H

@@ -6,10 +6,7 @@ process = cms.Process("CONDOBJMON")
 #-------------------------------------------------
 ###process.load("DQM.SiStripMonitorSummary.Tags21X_cff")
 
-process.load("DQM.SiStripCommon.TkHistoMap_cfi")
-
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 
 #-------------------------------------------------
@@ -30,6 +27,7 @@ process.source = cms.Source("EmptyIOVSource",
 # the DB Geometry is NOT used because in this cfg only one tag is taken from the DB and no GT is used. To be fixed if this is a problem
 process.load('Configuration.Geometry.GeometryExtended_cff')
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
 
 process.a = cms.ESSource("PoolDBESSource",
    BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
@@ -85,21 +83,24 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
     )
 process.MessageLogger = cms.Service("MessageLogger",
-                                    debugModules = cms.untracked.vstring(''),
-                                    cout = cms.untracked.PSet(
-    threshold = cms.untracked.string('INFO')
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
     ),
-                                    destinations = cms.untracked.vstring('cout')
-                                    )
+    cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
+        threshold = cms.untracked.string('INFO')
+    ),
+    debugModules = cms.untracked.vstring('')
+)
 
-process.qTester = cms.EDAnalyzer("QualityTester",
+from DQMServices.Core.DQMQualityTester import DQMQualityTester
+process.qTester = DQMQualityTester(
                                qtList = cms.untracked.FileInPath('DQM/SiStripMonitorSummary/data/CondDBQtests.xml'),
                                QualityTestPrescaler = cms.untracked.int32(1),
                                getQualityTestsFromFile = cms.untracked.bool(True)
                                )
 
 process.DQMStore = cms.Service("DQMStore",
-                               referenceFileName = cms.untracked.string(''),
                                verbose = cms.untracked.int32(1)
                                )
 

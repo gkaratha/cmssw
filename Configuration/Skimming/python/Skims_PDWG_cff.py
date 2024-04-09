@@ -7,6 +7,104 @@ skimRecoContent = RECOEventContent.clone()
 skimRecoContent.outputCommands.append("drop *_MEtoEDMConverter_*_*")
 skimRecoContent.outputCommands.append("drop *_*_*_SKIM")
 
+from Configuration.EventContent.EventContent_cff import RAWEventContent
+skimRawContent = RAWEventContent.clone()
+skimRawContent.outputCommands.append("drop *_MEtoEDMConverter_*_*")
+skimRawContent.outputCommands.append("drop *_*_*_SKIM")
+
+from Configuration.EventContent.EventContent_cff import RAWAODEventContent
+skimRawAODContent = RAWAODEventContent.clone()
+skimRawAODContent.outputCommands.append("drop *_MEtoEDMConverter_*_*")
+skimRawAODContent.outputCommands.append("drop *_*_*_SKIM")
+
+#####################
+# event splitting special skims
+
+# select events 1, 5, 9, ...
+evtSplit_Prescaler_P1 = cms.EDFilter("Prescaler",
+    prescaleFactor = cms.int32(4),
+    prescaleOffset = cms.int32(1)
+)
+# select events 2, 6, 10, ...
+evtSplit_Prescaler_P2 = cms.EDFilter("Prescaler",
+    prescaleFactor = cms.int32(4),
+    prescaleOffset = cms.int32(2)
+)
+# select events 3, 7, 11, ...
+evtSplit_Prescaler_P3 = cms.EDFilter("Prescaler",
+    prescaleFactor = cms.int32(4),
+    prescaleOffset = cms.int32(3)
+)
+# select events 4, 8, 12, ...
+evtSplit_Prescaler_P4 = cms.EDFilter("Prescaler",
+    prescaleFactor = cms.int32(4),
+    prescaleOffset = cms.int32(0)
+)
+
+evtSplit_SkimPath_P1 = cms.Path(evtSplit_Prescaler_P1)
+evtSplit_SkimPath_P2 = cms.Path(evtSplit_Prescaler_P2)
+evtSplit_SkimPath_P3 = cms.Path(evtSplit_Prescaler_P3)
+evtSplit_SkimPath_P4 = cms.Path(evtSplit_Prescaler_P4)
+
+SKIMStreamevtSplitSkimP1 = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'evtSplitSkimP1',
+    paths = (evtSplit_SkimPath_P1),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW')
+    )
+SKIMStreamevtSplitSkimP2 = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'evtSplitSkimP2',
+    paths = (evtSplit_SkimPath_P2),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW')
+    )
+SKIMStreamevtSplitSkimP3 = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'evtSplitSkimP3',
+    paths = (evtSplit_SkimPath_P3),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW')
+    )
+SKIMStreamevtSplitSkimP4 = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'evtSplitSkimP4',
+    paths = (evtSplit_SkimPath_P4),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW')
+    )
+
+#####################
+
+from Configuration.Skimming.PDWG_BPHSkim_cff import *
+BPHSkimPath = cms.Path(BPHSkimSequence)
+SKIMStreamBPHSkim = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'BPHSkim',
+    paths = (BPHSkimPath),
+    content = BPHSkim_EventContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+#####################
+
+from Configuration.Skimming.PDWG_EXONoBPTXSkim_cff import *
+EXONoBPTXSkimPath = cms.Path()
+SKIMStreamEXONoBPTXSkim = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXONoBPTXSkim',
+    paths = (EXONoBPTXSkimPath),
+    content = EXONoBPTXSkim_EventContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
 #####################
 
 from Configuration.Skimming.PDWG_DiJetAODSkim_cff import *
@@ -58,6 +156,19 @@ SKIMStreamHSCPSD = cms.FilteredStream(
 
 #####################
 
+from Configuration.Skimming.PDWG_ReserveDMu_SD_cff import *
+ReserveDMuPath = cms.Path(ReserveDMu)
+SKIMStreamReserveDMu = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'ReserveDMu',
+    paths = (ReserveDMuPath),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW')
+    )
+
+#####################
+
 from Configuration.Skimming.PDWG_DiPhoton_SD_cff import *
 CaloIdIsoPhotonPairsPath = cms.Path(CaloIdIsoPhotonPairsFilter)
 R9IdPhotonPairsPath = cms.Path(R9IdPhotonPairsFilter)
@@ -73,6 +184,17 @@ SKIMStreamDiPhoton = cms.FilteredStream(
     dataTier = cms.untracked.string('RAW-RECO')
     )
 
+########## B-Parking #########
+from Configuration.Skimming.pwdgSkimBPark_cfi import *
+SkimBParkPath = cms.Path(SkimBPark)
+SKIMStreamSkimBPark = cms.FilteredStream(
+    responsible = 'BPH PAG',
+    name = 'SkimBPark',
+    paths = ( SkimBParkPath ),
+    content = skimContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW-RECO')
+)
 
 from Configuration.EventContent.EventContent_cff import AODEventContent
 skimAodContent = AODEventContent.clone()
@@ -89,17 +211,6 @@ skimAodContent.outputCommands.append("drop *_*_*_SKIM")
 #    selectEvents = cms.untracked.PSet(),
 #    dataTier = cms.untracked.string('AOD')
 #    )
-
-from Configuration.Skimming.PDWG_EXOHSCP_cff import *
-EXOHSCPPath = cms.Path(exoticaHSCPSeq)
-SKIMStreamEXOHSCP = cms.FilteredStream(
-    responsible = 'PDWG',
-    name = 'EXOHSCP',
-    paths = (EXOHSCPPath),
-    content = EXOHSCPSkim_EventContent.outputCommands,
-    selectEvents = cms.untracked.PSet(),
-    dataTier = cms.untracked.string('USER')
-    )
 
 from Configuration.Skimming.PDWG_HWWSkim_cff import *
 HWWmmPath = cms.Path(diMuonSequence)
@@ -140,11 +251,137 @@ SKIMStreamEXOHPTE = cms.FilteredStream(
     dataTier = cms.untracked.string('AOD')
     )
 
+from Configuration.Skimming.PDWG_EXOMONOPOLE_cff import *
+EXOMONOPOLEPath = cms.Path(EXOMonopoleSkimSequence)
+SKIMStreamEXOMONOPOLE = cms.FilteredStream(
+        responsible = 'PDWG',
+        name = 'EXOMONOPOLE',
+        paths = (EXOMONOPOLEPath),
+        content = EXOMonopoleSkimContent.outputCommands,
+        selectEvents = cms.untracked.PSet(),
+        dataTier = cms.untracked.string('USER')
+        )
+
+from Configuration.Skimming.PDWG_EXOHighMET_cff import *
+EXOHighMETPath = cms.Path(EXOHighMETSequence)
+SKIMStreamEXOHighMET = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXOHighMET',
+    paths = (EXOHighMETPath),
+    content = skimContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW-RECO')
+    )
+
+from Configuration.Skimming.PDWG_EXODisplacedJet_cff import *
+EXODisplacedJetPath = cms.Path(EXODisplacedJetSkimSequence)
+SKIMStreamEXODisplacedJet = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXODisplacedJet',
+    paths = (EXODisplacedJetPath),
+    content = skimRawAODContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+from Configuration.Skimming.PDWG_EXODelayedJet_cff import *
+EXODelayedJetPath = cms.Path(EXODelayedJetSkimSequence)
+SKIMStreamEXODelayedJet = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXODelayedJet',
+    paths = (EXODelayedJetPath),
+    content = skimRawAODContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('AOD')
+    )
+
+from Configuration.Skimming.PDWG_EXODelayedJetMET_cff import *
+EXODelayedJetMETPath = cms.Path(EXODelayedJetMETSkimSequence)
+SKIMStreamEXODelayedJetMET = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXODelayedJetMET',
+    paths = (EXODelayedJetMETPath),
+    content = skimRawAODContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('AOD')
+    )
+
+from Configuration.Skimming.PDWG_EXOLLPJetHCAL_cff import *
+EXOLLPJetHCALPath = cms.Path(EXOLLPJetHCALSkimSequence)
+SKIMStreamEXOLLPJetHCAL = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXOLLPJetHCAL',
+    paths = (EXOLLPJetHCALPath),
+    content = skimRawAODContent.outputCommands+['keep *_hbhereco__*'],
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('AOD')
+    )
+
+from Configuration.Skimming.PDWG_EXODTCluster_cff import *
+EXODTClusterPath = cms.Path(EXODTClusterSkimSequence)
+SKIMStreamEXODTCluster = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXODTCluster',
+    paths = (EXODTClusterPath),
+    content = skimRawAODContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('AOD')
+    )
+
+from Configuration.Skimming.PDWG_EXOCSCCluster_cff import *
+EXOCSCClusterPath = cms.Path(EXOCSCClusterSkimSequence)
+SKIMStreamEXOCSCCluster = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXOCSCCluster',
+    paths = (EXOCSCClusterPath),
+    content = skimRawAODContent.outputCommands+['keep *_csc2DRecHits_*_*','keep *_dt1DRecHits_*_*'],
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+
+from Configuration.Skimming.PDWG_EXODisappTrk_cff import *
+EXODisappTrkPath = cms.Path(EXODisappTrkSkimSequence)
+SKIMStreamEXODisappTrk = cms.FilteredStream(
+    responsible = 'PDWG', 
+    name = 'EXODisappTrk', 
+    paths = (EXODisappTrkPath),
+    content = EXODisappTrkSkimContent.outputCommands, 
+    selectEvents = cms.untracked.PSet(), 
+    dataTier = cms.untracked.string('USER')
+    )
+
+from Configuration.Skimming.PDWG_EXODisappMuon_cff import *
+EXODisappMuonPath = cms.Path(EXODisappMuonSkimSequence)
+SKIMStreamEXODisappMuon = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXODisappMuon',
+    paths = (EXODisappMuonPath),
+    content = EXODisappMuonSkimContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+from Configuration.Skimming.PDWG_EXOSoftDisplacedVertices_cff import *
+EXOSoftDisplacedVerticesPath = cms.Path(EXOSoftDisplacedVerticesSkimSequence)
+SKIMStreamEXOSoftDisplacedVertices = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EXOSoftDisplacedVertices',
+    paths = (EXOSoftDisplacedVerticesPath ),
+    content = EXOSoftDisplacedVerticesSkimContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('AOD')
+)
+
 #####################
 # For the Data on Data Mixing in TSG
-from HLTrigger.Configuration.HLT_FULL_cff import fragment as _fragment
-hltGtDigis = _fragment.hltGtDigis.clone()
-hltGtDigisPath = cms.Path(hltGtDigis)
+from HLTrigger.Configuration.HLT_Fake1_cff import fragment as _fragment
+if "hltGtDigis" in _fragment.__dict__:
+    hltGtDigis = _fragment.hltGtDigis.clone()
+    hltGtDigisPath = cms.Path(hltGtDigis)
+else:
+    hltBoolEnd = _fragmet.hltBoolEnd.clone()
+    hltGtDigisPath = cms.Path(hltBoolEnd)
 
 # The events to be used as PileUp
 from Configuration.Skimming.PDWG_HLTZEROBIASPU_SD_cff import *
@@ -168,6 +405,28 @@ SKIMStreamHLTZEROBIASSIGSD = cms.FilteredStream(
     content = skimRecoContent.outputCommands,
     selectEvents = cms.untracked.PSet(),
     dataTier = cms.untracked.string('RAW') # for the moment, it could be DIGI in the future
+    )
+
+from Configuration.Skimming.PDWG_EGMJME_SD_cff import *
+EGMJMEPath = cms.Path(EGMJME)
+SKIMStreamEGMJME = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'EGMJME',
+    paths = (EGMJMEPath),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW-RECO')
+    )
+
+from Configuration.Skimming.PDWG_MUOJME_SD_cff import *
+MUOJMEPath = cms.Path(MUOJME)
+SKIMStreamMUOJME = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'MUOJME',
+    paths = (MUOJMEPath),
+    content = skimRawContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('RAW-RECO')
     )
 
 ####################
@@ -269,3 +528,33 @@ SKIMStreamEXOEMu = cms.FilteredStream(
     dataTier = cms.untracked.string('AOD')
     )
 """
+
+#####################
+
+from Configuration.Skimming.PDWG_MuonPOGSkim_cff import *
+MuonPOGSkimTrackPath = cms.Path(MuonPOGSkimTrackSequence)
+MuonPOGSkimSTAPath   = cms.Path(MuonPOGSkimSTASequence)
+SKIMStreamMuonPOGSkim     = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'MuonPOGSkim',
+    paths = (MuonPOGSkimTrackPath,MuonPOGSkimSTAPath),
+    content = MuonPOG_EventContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+
+MuonPOGJPsiSkimTrackPath = cms.Path(MuonPOGJPsiSkimTrackSequence)
+MuonPOGJPsiSkimSTAPath   = cms.Path(MuonPOGJPsiSkimSTASequence)
+
+SKIMStreamMuonPOGJPsiSkim     = cms.FilteredStream(
+    responsible = 'PDWG',
+    name = 'MuonPOGJPsiSkim',
+    paths = (MuonPOGJPsiSkimTrackPath,MuonPOGJPsiSkimSTAPath),
+    content = MuonPOG_EventContent.outputCommands,
+    selectEvents = cms.untracked.PSet(),
+    dataTier = cms.untracked.string('USER')
+    )
+
+
+#####################

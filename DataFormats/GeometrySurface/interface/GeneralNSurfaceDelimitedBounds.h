@@ -15,36 +15,29 @@
 
 class GeneralNSurfaceDelimitedBounds final : public Bounds {
 public:
+  typedef std::pair<const Surface*, SurfaceOrientation::Side> SurfaceAndSide;
+  typedef std::vector<SurfaceAndSide> SurfaceContainer;
 
-    typedef std::pair<const Surface*, SurfaceOrientation::Side>  SurfaceAndSide;
-    typedef std::vector<SurfaceAndSide>                          SurfaceContainer;
+  GeneralNSurfaceDelimitedBounds(const Surface* surf, const std::vector<SurfaceAndSide>& limits)
+      : theLimits(limits), theSurface(surf) {}
 
-    GeneralNSurfaceDelimitedBounds( const Surface*  surf, 
-				    const std::vector<SurfaceAndSide>& limits) :
-	theLimits( limits), theSurface(surf) {}
-
-  virtual float length()    const { return 0;}
-  virtual float width()     const { return 0;}
-  virtual float thickness() const { return 0;}
-
+  float length() const override { return 0; }
+  float width() const override { return 0; }
+  float thickness() const override { return 0; }
 
   using Bounds::inside;
 
-  virtual bool inside( const Local3DPoint& lp) const {
-    return myInside(lp,0);
-  }
-    
-  virtual bool inside( const Local3DPoint&, const LocalError&, float scale=1.f) const;
+  bool inside(const Local3DPoint& lp) const override { return myInside(lp, 0); }
 
-  virtual Bounds* clone() const {return new GeneralNSurfaceDelimitedBounds(*this);}
-    
+  bool inside(const Local3DPoint&, const LocalError&, float scale = 1.f) const override;
+
+  Bounds* clone() const override { return new GeneralNSurfaceDelimitedBounds(*this); }
+
 private:
+  SurfaceContainer theLimits;
+  const Surface* theSurface;
 
-    SurfaceContainer theLimits;
-    const Surface*   theSurface;
-
-    bool myInside( const Local3DPoint& lp, float tolerance) const;
-
+  bool myInside(const Local3DPoint& lp, float tolerance) const;
 };
 
 #endif

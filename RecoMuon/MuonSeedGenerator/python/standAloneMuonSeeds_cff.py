@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 # Geometries
-# from Geometry.CommonDetUnit.bareGlobalTrackingGeometry_cfi import *
+# from Geometry.CommonTopologies.bareGlobalTrackingGeometry_cfi import *
 # from RecoMuon.DetLayers.muonDetLayerGeometry_cfi import *
 
 # Old stand alone muon seed producer used priod to 2-X-X
@@ -18,4 +18,5 @@ mergedStandAloneMuonSeeds = cms.EDProducer("MuonSeedMerger",
                                            )
 
 #standAloneMuonSeeds = cms.Sequence(ancientMuonSeed*MuonSeed*mergedStandAloneMuonSeeds)
-standAloneMuonSeeds = cms.Sequence(ancientMuonSeed)
+standAloneMuonSeedsTask = cms.Task(ancientMuonSeed)
+standAloneMuonSeeds = cms.Sequence(standAloneMuonSeedsTask)

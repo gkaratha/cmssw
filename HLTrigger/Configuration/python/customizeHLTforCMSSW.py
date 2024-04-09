@@ -1,277 +1,287 @@
 import FWCore.ParameterSet.Config as cms
 
-# reusable functions
-def producers_by_type(process, *types):
-    return (module for module in process._Process__producers.values() if module._TypedParameterizable__type in types)
+# helper functions
+from HLTrigger.Configuration.common import *
 
-def esproducers_by_type(process, *types):
-    return (module for module in process._Process__esproducers.values() if module._TypedParameterizable__type in types)
+# add one customisation function per PR
+# - put the PR number into the name of the function
+# - add a short comment
+# for example:
 
+# CCCTF tuning
+# def customiseFor12718(process):
+#     for pset in process._Process__psets.values():
+#         if hasattr(pset,'ComponentType'):
+#             if (pset.ComponentType == 'CkfBaseTrajectoryFilter'):
+#                 if not hasattr(pset,'minGoodStripCharge'):
+#                     pset.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
+#     return process
 
-# Update to replace old jet corrector mechanism
-from HLTrigger.Configuration.customizeHLTforNewJetCorrectors import customizeHLTforNewJetCorrectors
+def customiseHCALFor2018Input(process):
+    """Customise the HLT to run on Run 2 data/MC using the old readout for the HCAL barel"""
 
-# Possibility to put different ring dependent cut on ADC (PR #9232)                                                              
-def customiseFor9232(process):
-    if hasattr(process,'hltEcalPhiSymFilter'):
-        if hasattr(process.hltEcalPhiSymFilter,'ampCut_barrel'):
-            delattr(process.hltEcalPhiSymFilter,'ampCut_barrel')
-        if hasattr(process.hltEcalPhiSymFilter,'ampCut_endcap'):
-            delattr(process.hltEcalPhiSymFilter,'ampCut_endcap')
-    return process
+    for producer in producers_by_type(process, "HBHEPhase1Reconstructor"):
+        # switch on the QI8 processing for 2018 HCAL barrel
+        producer.processQIE8 = True
 
-# upgrade RecoTrackSelector to allow BTV-like cuts (PR #8679)
-def customiseFor8679(process):
-    if hasattr(process,'hltBSoftMuonMu5L3') :
-       delattr(process.hltBSoftMuonMu5L3,'min3DHit')
-       setattr(process.hltBSoftMuonMu5L3,'minLayer', cms.int32(0))
-       setattr(process.hltBSoftMuonMu5L3,'min3DLayer', cms.int32(0))
-       setattr(process.hltBSoftMuonMu5L3,'minPixelHit', cms.int32(0))
-       setattr(process.hltBSoftMuonMu5L3,'usePV', cms.bool(False))
-       setattr(process.hltBSoftMuonMu5L3,'vertexTag', cms.InputTag(''))
-    return process
+    # adapt CaloTowers threshold for 2018 HCAL barrel with only one depth
+    for producer in producers_by_type(process, "CaloTowersCreator"):
+        producer.HBThreshold1  = 0.7
+        producer.HBThreshold2  = 0.7
+        producer.HBThreshold   = 0.7
 
+    # adapt Particle Flow threshold for 2018 HCAL barrel with only one depth
+    from RecoParticleFlow.PFClusterProducer.particleFlowClusterHBHE_cfi import _thresholdsHB, _thresholdsHEphase1, _seedingThresholdsHB
 
-# Updating the config (PR #8356)
-def customiseFor8356(process):
-    MTRBPSet = cms.PSet(
-        Rescale_eta = cms.double( 3.0 ),
-        Rescale_phi = cms.double( 3.0 ),
-        Rescale_Dz = cms.double( 3.0 ),
-        EtaR_UpperLimit_Par1 = cms.double( 0.25 ),
-        EtaR_UpperLimit_Par2 = cms.double( 0.15 ),
-        PhiR_UpperLimit_Par1 = cms.double( 0.6 ),
-        PhiR_UpperLimit_Par2 = cms.double( 0.2 ),
-        UseVertex = cms.bool( False ),
-        Pt_fixed = cms.bool( False ),
-        Z_fixed = cms.bool( True ),
-        Phi_fixed = cms.bool( False ),
-        Eta_fixed = cms.bool( False ),
-        Pt_min = cms.double( 1.5 ),
-        Phi_min = cms.double( 0.1 ),
-        Eta_min = cms.double( 0.1 ),
-        DeltaZ = cms.double( 15.9 ),
-        DeltaR = cms.double( 0.2 ),
-        DeltaEta = cms.double( 0.2 ),
-        DeltaPhi = cms.double( 0.2 ),
-        maxRegions = cms.int32( 2 ),
-        precise = cms.bool( True ),
-        OnDemand = cms.int32( -1 ),
-        MeasurementTrackerName = cms.InputTag( "hltESPMeasurementTracker" ),
-        beamSpot = cms.InputTag( "hltOnlineBeamSpot" ),
-        vertexCollection = cms.InputTag( "pixelVertices" ),
-        input = cms.InputTag( 'hltL2Muons','UpdatedAtVtx' )
+    logWeightDenominatorHCAL2018 = cms.VPSet(
+        cms.PSet(
+            depths = cms.vint32(1, 2, 3, 4),
+            detector = cms.string('HCAL_BARREL1'),
+            logWeightDenominator = _thresholdsHB
+        ),
+        cms.PSet(
+            depths = cms.vint32(1, 2, 3, 4, 5, 6, 7),
+            detector = cms.string('HCAL_ENDCAP'),
+            logWeightDenominator = _thresholdsHEphase1
+        )
     )
 
-    for l3MPModule in producers_by_type(process, 'L3MuonProducer'):
-	if hasattr(l3MPModule, 'GlbRefitterParameters'):
-            l3MPModule.GlbRefitterParameters.RefitFlag = cms.bool(True)
-        if hasattr(l3MPModule, 'L3TrajBuilderParameters'):
-            if hasattr(l3MPModule.L3TrajBuilderParameters, 'MuonTrackingRegionBuilder'):
-                l3MPModule.L3TrajBuilderParameters.MuonTrackingRegionBuilder = MTRBPSet
+    for producer in producers_by_type(process, "PFRecHitProducer"):
+        if producer.producers[0].name.value() == 'PFHBHERecHitCreator':
+            producer.producers[0].qualityTests[0].cuts[0].threshold = _thresholdsHB
 
-    listL3seedingModule = ['hltL3TrajSeedIOHit','hltL3NoFiltersNoVtxTrajSeedIOHit','hltHIL3TrajSeedIOHit']
-    for l3IOTrajModule in listL3seedingModule:
-	if hasattr(process, l3IOTrajModule):
-	    if hasattr(getattr(process, l3IOTrajModule), 'MuonTrackingRegionBuilder'):
-                setattr(getattr(process, l3IOTrajModule), 'MuonTrackingRegionBuilder', MTRBPSet)
+    for producer in producers_by_type(process, "PFClusterProducer"):
+        if producer.seedFinder.thresholdsByDetector[0].detector.value() == 'HCAL_BARREL1':
+            producer.seedFinder.thresholdsByDetector[0].seedingThreshold = _seedingThresholdsHB
+            producer.initialClusteringStep.thresholdsByDetector[0].gatheringThreshold = _thresholdsHB
+            producer.pfClusterBuilder.recHitEnergyNorms[0].recHitEnergyNorm = _thresholdsHB
+            producer.pfClusterBuilder.positionCalc.logWeightDenominatorByDetector = logWeightDenominatorHCAL2018
+            producer.pfClusterBuilder.allCellsPositionCalc.logWeightDenominatorByDetector = logWeightDenominatorHCAL2018
+
+    for producer in producers_by_type(process, "PFMultiDepthClusterProducer"):
+        producer.pfClusterBuilder.allCellsPositionCalc.logWeightDenominatorByDetector = logWeightDenominatorHCAL2018
+
+    # done
+    return process
+
+def customiseFor2017DtUnpacking(process):
+    """Adapt the HLT to run the legacy DT unpacking
+    for pre2018 data/MC workflows as the default"""
+
+    if hasattr(process,'hltMuonDTDigis'):
+        process.hltMuonDTDigis = cms.EDProducer( "DTUnpackingModule",
+            useStandardFEDid = cms.bool( True ),
+            maxFEDid = cms.untracked.int32( 779 ),
+            inputLabel = cms.InputTag( "rawDataCollector" ),
+            minFEDid = cms.untracked.int32( 770 ),
+            dataType = cms.string( "DDU" ),
+            readOutParameters = cms.PSet(
+                localDAQ = cms.untracked.bool( False ),
+                debug = cms.untracked.bool( False ),
+                rosParameters = cms.PSet(
+                    localDAQ = cms.untracked.bool( False ),
+                    debug = cms.untracked.bool( False ),
+                    writeSC = cms.untracked.bool( True ),
+                    readDDUIDfromDDU = cms.untracked.bool( True ),
+                    readingDDU = cms.untracked.bool( True ),
+                    performDataIntegrityMonitor = cms.untracked.bool( False )
+                    ),
+                performDataIntegrityMonitor = cms.untracked.bool( False )
+                ),
+            dqmOnly = cms.bool( False )
+        )
+
+    return process
+
+def customisePixelGainForRun2Input(process):
+    """Customise the HLT to run on Run 2 data/MC using the old definition of the pixel calibrations
+
+    Up to 11.0.x, the pixel calibarations were fully specified in the configuration:
+        VCaltoElectronGain      =   47
+        VCaltoElectronGain_L1   =   50
+        VCaltoElectronOffset    =  -60
+        VCaltoElectronOffset_L1 = -670
+
+    Starting with 11.1.x, the calibrations for Run 3 were moved to the conditions, leaving in the configuration only:
+        VCaltoElectronGain      =    1
+        VCaltoElectronGain_L1   =    1
+        VCaltoElectronOffset    =    0
+        VCaltoElectronOffset_L1 =    0
+
+    Since the conditions for Run 2 have not been updated to the new scheme, the HLT configuration needs to be reverted.
+    """
+    # revert the Pixel parameters to be compatible with the Run 2 conditions
+    for producer in producers_by_type(process, "SiPixelClusterProducer"):
+        producer.VCaltoElectronGain = 47
+        producer.VCaltoElectronGain_L1 = 50
+        producer.VCaltoElectronOffset = -60
+        producer.VCaltoElectronOffset_L1 = -670
+
+    for pluginType in ["SiPixelRawToClusterCUDA", "SiPixelRawToClusterCUDAPhase1", "SiPixelRawToClusterCUDAHIonPhase1"]:
+        for producer in producers_by_type(process, pluginType):
+            producer.VCaltoElectronGain = 47
+            producer.VCaltoElectronGain_L1 = 50
+            producer.VCaltoElectronOffset = -60
+            producer.VCaltoElectronOffset_L1 = -670
+
+    return process
+
+def customisePixelL1ClusterThresholdForRun2Input(process):
+    # revert the pixel Layer 1 cluster threshold to be compatible with Run2:
+    for producer in producers_by_type(process, "SiPixelClusterProducer"):
+        if hasattr(producer,"ClusterThreshold_L1"):
+            producer.ClusterThreshold_L1 = 2000
+    for pluginType in ["SiPixelRawToClusterCUDA", "SiPixelRawToClusterCUDAPhase1", "SiPixelRawToClusterCUDAHIonPhase1"]:
+        for producer in producers_by_type(process, pluginType):
+            if hasattr(producer,"clusterThreshold_layer1"):
+                producer.clusterThreshold_layer1 = 2000
+    for producer in producers_by_type(process, "SiPixelDigisClustersFromSoA"):
+        if hasattr(producer,"clusterThreshold_layer1"):
+            producer.clusterThreshold_layer1 = 2000
+
+    return process
+
+def customiseCTPPSFor2018Input(process):
+    for prod in producers_by_type(process, 'CTPPSGeometryESModule'):
+        prod.isRun2 = True
+    for prod in producers_by_type(process, 'CTPPSPixelRawToDigi'):
+        prod.isRun3 = False
+
+    return process
+
+def customiseEGammaRecoFor2018Input(process):
+    for prod in producers_by_type(process, 'PFECALSuperClusterProducer'):
+        if hasattr(prod, 'regressionConfig'):
+            prod.regressionConfig.regTrainedWithPS = cms.bool(False)
+
+    return process
+
+def customiseBeamSpotFor2018Input(process):
+    """Customisation for the HLT BeamSpot when running on Run-2 (2018) data:
+       - For Run-2 data, disable the use of the BS transient record, in order to read the BS record from SCAL.
+       - Additionally, remove all instances of OnlineBeamSpotESProducer (not needed if useTransientRecord=False).
+       - See CMSHLT-2271 and CMSHLT-2300 for further details.
+    """
+    for prod in producers_by_type(process, 'BeamSpotOnlineProducer'):
+        prod.useTransientRecord = False
+    onlineBeamSpotESPLabels = [prod.label_() for prod in esproducers_by_type(process, 'OnlineBeamSpotESProducer')]
+    for espLabel in onlineBeamSpotESPLabels:
+        delattr(process, espLabel)
+
+    # re-introduce SCAL digis, if missing
+    if not hasattr(process, 'hltScalersRawToDigi') and hasattr(process, 'HLTBeamSpot') and isinstance(process.HLTBeamSpot, cms.Sequence):
+
+        if hasattr(process, 'hltOnlineBeamSpot'):
+            process.hltOnlineBeamSpot.src = 'hltScalersRawToDigi'
+
+        if hasattr(process, 'hltPixelTrackerHVOn'):
+            process.hltPixelTrackerHVOn.DcsStatusLabel = 'hltScalersRawToDigi'
+
+        if hasattr(process, 'hltStripTrackerHVOn'):
+            process.hltStripTrackerHVOn.DcsStatusLabel = 'hltScalersRawToDigi'
+
+        process.hltScalersRawToDigi = cms.EDProducer( "ScalersRawToDigi",
+            scalersInputTag = cms.InputTag( "rawDataCollector" )
+        )
+
+        process.HLTBeamSpot.insert(0, process.hltScalersRawToDigi)
+
+    return process
+
+def customiseECALCalibrationsFor2018Input(process):
+    """Customisation to apply the ECAL Run-2 Ultra-Legacy calibrations (CMSHLT-2339)"""
+    if hasattr(process, 'GlobalTag'):
+      if not hasattr(process.GlobalTag, 'toGet'):
+        process.GlobalTag.toGet = cms.VPSet()
+      process.GlobalTag.toGet += [
+        cms.PSet(
+          record = cms.string('EcalLaserAlphasRcd'),
+          tag = cms.string('EcalLaserAlphas_UL_Run1_Run2_2018_lastIOV_movedTo1')
+        ),
+        cms.PSet(
+          record = cms.string('EcalIntercalibConstantsRcd'),
+          tag = cms.string('EcalIntercalibConstants_UL_Run1_Run2_2018_lastIOV_movedTo1')
+        )
+      ]
+    else:
+      print('# customiseECALCalibrationsFor2018Input -- the process.GlobalTag ESSource does not exist: no customisation applied.')
+
+    return process
+
+def customiseFor2018Input(process):
+    """Customise the HLT to run on Run 2 data/MC"""
+    process = customisePixelGainForRun2Input(process)
+    process = customisePixelL1ClusterThresholdForRun2Input(process)
+    process = customiseHCALFor2018Input(process)
+    process = customiseCTPPSFor2018Input(process)
+    process = customiseEGammaRecoFor2018Input(process)
+    process = customiseBeamSpotFor2018Input(process)
+    process = customiseECALCalibrationsFor2018Input(process)
 
     return process
 
 
-# Simplified TrackerTopologyEP config (PR #7966)
-def customiseFor7966(process):
-    if hasattr(process, 'trackerTopology'):
-        params = process.trackerTopology.parameterNames_()
-        for param in params:
-            delattr(process.trackerTopology, param)
-        setattr(process.trackerTopology, 'appendToDataLabel', cms.string(""))
-    if hasattr(process,'TrackerDigiGeometryESModule'):
-        if hasattr(process.TrackerDigiGeometryESModule,'trackerGeometryConstants'):
-            delattr(process.TrackerDigiGeometryESModule,'trackerGeometryConstants')
-    return process
-
-# Removal of 'upgradeGeometry' from TrackerDigiGeometryESModule (PR #7794)
-def customiseFor7794(process):
-    if hasattr(process, 'TrackerDigiGeometryESModule'):
-        if hasattr(process.TrackerDigiGeometryESModule, 'trackerGeometryConstants'):
-            if hasattr(process.TrackerDigiGeometryESModule.trackerGeometryConstants, 'upgradeGeometry'):
-                delattr(process.TrackerDigiGeometryESModule.trackerGeometryConstants, 'upgradeGeometry')
-    return process
-
-
-# Removal of L1 Stage 1 unpacker configuration from config (PR #10087)
-def customiseFor10087(process):
-    if hasattr(process, 'hltCaloStage1Digis'):
-        if hasattr(process.hltCaloStage1Digis, 'FWId'):
-            delattr(process.hltCaloStage1Digis, 'FWId')
-        if hasattr(process.hltCaloStage1Digis, 'FedId'):
-            delattr(process.hltCaloStage1Digis, 'FedId')
-    return process
-
-def customiseFor10234(process):
-    if hasattr(process, 'hltCaloStage1Digis'):
-        if hasattr(process.hltCaloStage1Digis, 'FWId'):
-            delattr(process.hltCaloStage1Digis, 'FWId')
-        if hasattr(process.hltCaloStage1Digis, 'FedId'):
-            delattr(process.hltCaloStage1Digis, 'FedId')
-    return process
-
-def customiseFor10353(process):
-    # Take care of geometry changes in HCAL
-    if not hasattr(process,'hcalDDDSimConstants'):
-        process.hcalDDDSimConstants = cms.ESProducer( 'HcalDDDSimConstantsESModule' )
-    if not hasattr(process,'hcalDDDRecConstants'):
-        process.hcalDDDRecConstants = cms.ESProducer( 'HcalDDDRecConstantsESModule' )
-    return process
-
-# upgrade RecoTrackSelector to allow selection on originalAlgo (PR #10418)
-def customiseFor10418(process):
-    if hasattr(process,'hltBSoftMuonMu5L3') :
-       setattr(process.hltBSoftMuonMu5L3,'originalAlgorithm', cms.vstring())
-       setattr(process.hltBSoftMuonMu5L3,'algorithmMaskContains', cms.vstring())
-    return process
-
-# migrate RPCPointProducer to a global::EDProducer (PR #10927)
-def customiseFor10927(process):
-    if any(module.type_() is 'RPCPointProducer' for module in process.producers.itervalues()):
-        if not hasattr(process, 'CSCObjectMapESProducer'):
-            process.CSCObjectMapESProducer = cms.ESProducer( 'CSCObjectMapESProducer' )
-        if not hasattr(process, 'DTObjectMapESProducer'):
-            process.DTObjectMapESProducer = cms.ESProducer( 'DTObjectMapESProducer' )
-    return process
-
-# change RecoTrackRefSelector to stream::EDProducer (PR #10911)
-def customiseFor10911(process):
-    if hasattr(process,'hltBSoftMuonMu5L3'):
-        # Switch module type from EDFilter to EDProducer
-        process.hltBSoftMuonMu5L3 = cms.EDProducer("RecoTrackRefSelector", **process.hltBSoftMuonMu5L3.parameters_())
-    return process
-
-# Fix MeasurementTrackerEvent configuration in several TrackingRegionProducers (PR 11183)
-def customiseFor11183(process):
-    def useMTEName(componentName):
-        if componentName in ["CandidateSeededTrackingRegionsProducer", "TrackingRegionsFromBeamSpotAndL2Tau"]:
-            return "whereToUseMeasurementTracker"
-        return "howToUseMeasurementTracker"
-
-    def replaceInPSet(pset, moduleLabel):
-        for paramName in pset.parameterNames_():
-            param = getattr(pset, paramName)
-            if isinstance(param, cms.PSet):
-                if hasattr(param, "ComponentName") and param.ComponentName.value() in ["CandidateSeededTrackingRegionsProducer", "TauRegionalPixelSeedGenerator"]:
-                    useMTE = useMTEName(param.ComponentName.value())
-
-                    if hasattr(param.RegionPSet, "measurementTrackerName"):
-                        param.RegionPSet.measurementTrackerName = cms.InputTag(param.RegionPSet.measurementTrackerName.value())
-                        if hasattr(param.RegionPSet, useMTE):
-                            raise Exception("Assumption of CandidateSeededTrackingRegionsProducer not having '%s' parameter failed" % useMTE)
-                        setattr(param.RegionPSet, useMTE, cms.string("ForSiStrips"))
-                    else:
-                        setattr(param.RegionPSet, useMTE, cms.string("Never"))
-                else:
-                    replaceInPSet(param, moduleLabel)
-            elif isinstance(param, cms.VPSet):
-                for element in param:
-                    replaceInPSet(element, moduleLabel)
-
-    for label, module in process.producers_().iteritems():
-        replaceInPSet(module, label)
+def customiseForOffline(process):
+    # For running HLT offline on Run-3 Data, use "(OnlineBeamSpotESProducer).timeThreshold = 1e6",
+    # in order to pick the beamspot that was actually used by the HLT (instead of a "fake" beamspot).
+    # These same settings can be used offline for Run-3 Data and Run-3 MC alike.
+    # Note: the products of the OnlineBeamSpotESProducer are used only
+    #       if the configuration uses "(BeamSpotOnlineProducer).useTransientRecord = True".
+    # See CMSHLT-2271 and CMSHLT-2300 for further details.
+    for prod in esproducers_by_type(process, 'OnlineBeamSpotESProducer'):
+        prod.timeThreshold = int(1e6)
 
     return process
 
+def checkHLTfor43774(process):
+    filt_types = ["HLTEgammaGenericFilter","HLTEgammaGenericQuadraticEtaFilter","HLTEgammaGenericQuadraticFilter","HLTElectronGenericFilter"]
+    absAbleVar = ["DEta","deta","DetaSeed","Dphi","OneOESuperMinusOneOP","OneOESeedMinusOneOP"]
+    for filt_type in filt_types:
+        for filt in filters_by_type(process, filt_type):
+            if filt.varTag.productInstanceLabel in absAbleVar:
+                if (filt.useAbs != cms.bool(True)):
+                    print('# TSG WARNING: check value of parameter "useAbs" in',filt,'(expect True but is False)!')
 
-def customiseFor11497(process):
-    # Take care of CaloTowerTopology
-    if not hasattr(process,'CaloTowerTopologyEP'):
-        process.CaloTowerTopologyEP = cms.ESProducer( 'CaloTowerTopologyEP' )
     return process
 
-
-def customiseFor12044(process):
-    # add a label to indentify the PFProducer calibrations
-    for module in producers_by_type(process, 'PFProducer'):
-      if not 'calibrationsLabel' in module.__dict__:
-        module.calibrationsLabel = cms.string('HLT')
+def customizeHLTfor44510(process):
+    """
+    Customisation for running HLT with the updated L1 UTM and AXOL1TL condition parsing from the PR 44054
+    """
+    for producer in producers_by_type(process, "L1TGlobalProducer"):
+        if hasattr(producer, 'AXOL1TLModelVersion'):
+            delattr(producer, 'AXOL1TLModelVersion')
     return process
 
-
-def customiseFor12062(process):
-    # add a label to indentify the b-tagging calibrations
-    for module in esproducers_by_type(process, 'CombinedSecondaryVertexESProducer'):
-      if not 'recordLabel' in module.__dict__:
-        module.recordLabel = cms.string('HLT')
+def customizeHLTfor44591(process):
+    """
+    Customisation for running HLT with the updated btag info producers from the PR 44591
+    """
+    for type in ["DeepFlavourTagInfoProducer", "ParticleTransformerAK4TagInfoProducer", "DeepBoostedJetTagInfoProducer"]:
+        for producer in producers_by_type(process, type):
+            if hasattr(producer, 'unsubjet_map'):
+                delattr(producer, 'unsubjet_map')
     return process
-
-# Remove hcalTopologyConstants
-def customiseFor11920(process):
-    if hasattr(process,'HcalGeometryFromDBEP'):
-        if hasattr(process.HcalGeometryFromDBEP,'hcalTopologyConstants'):
-            delattr(process.HcalGeometryFromDBEP,'hcalTopologyConstants')
-    if hasattr(process,'HcalTopologyIdealEP'):
-        if hasattr(process.HcalTopologyIdealEP,'hcalTopologyConstants'):
-            delattr(process.HcalTopologyIdealEP,'hcalTopologyConstants')
-    if hasattr(process,'CaloTowerGeometryFromDBEP'):
-        if hasattr(process.CaloTowerGeometryFromDBEP,'hcalTopologyConstants'):
-            delattr(process.CaloTowerGeometryFromDBEP,'hcalTopologyConstants')
-    return process
-def customiseFor12346(process):
-
-    if hasattr(process, 'hltMetCleanUsingJetID'):
-       if hasattr(process.hltMetCleanUsingJetID, 'usePt'):
-           delattr(process.hltMetCleanUsingJetID, 'usePt')
-    return process
-
-def customiseFor12718(process):
-    if hasattr(process, 'HLTPSetMuonCkfTrajectoryFilter'):
-        process.HLTPSetMuonCkfTrajectoryFilter.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter0PSetTrajectoryFilterIT'):
-        process.HLTIter0PSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter1PSetTrajectoryFilterIT'):
-        process.HLTIter1PSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter2PSetTrajectoryFilterIT'):
-        process.HLTIter2PSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTPSetTrajectoryFilterForElectrons'):
-        process.HLTPSetTrajectoryFilterForElectrons.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'process.HLTIter2HighPtTkMuPSetTrajectoryFilterIT'):
-        process.HLTIter2HighPtTkMuPSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter2HighPtTkMuPSetTrajectoryFilterIT'):
-        process.HLTIter2HighPtTkMuPSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTPSetMuTrackJpsiTrajectoryFilter'):
-        process.HLTPSetMuTrackJpsiTrajectoryFilter.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter4PSetTrajectoryFilterIT'):
-        process.HLTIter4PSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    if hasattr(process, 'HLTIter3PSetTrajectoryFilterIT'):
-        process.HLTIter3PSetTrajectoryFilterIT.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
-    return process
-
+    
 # CMSSW version specific customizations
-def customiseHLTforCMSSW(process, menuType="GRun", fastSim=False):
-    import os
-    cmsswVersion = os.environ['CMSSW_VERSION']
+def customizeHLTforCMSSW(process, menuType="GRun"):
 
-    if cmsswVersion >= "CMSSW_8_0":
-        process = customiseFor12346(process)
-        process = customiseFor11920(process)
-        process = customiseFor12718(process)
-    if cmsswVersion >= "CMSSW_7_6":
-        process = customiseFor10418(process)
-        process = customiseFor10353(process)
-        process = customiseFor10911(process)
-        process = customiseFor11183(process)
-        process = customiseFor11497(process)
-        process = customiseFor12044(process)
-        process = customiseFor12062(process)
-    if cmsswVersion >= "CMSSW_7_5":
-        process = customiseFor10927(process)
-        process = customiseFor9232(process)
-        process = customiseFor8679(process)
-        process = customiseFor8356(process)
-        process = customiseFor7966(process)
-        process = customiseFor7794(process)
-        process = customiseFor10087(process)
-        process = customizeHLTforNewJetCorrectors(process)
-    if cmsswVersion >= "CMSSW_7_4":
-        process = customiseFor10234(process)
+    process = customiseForOffline(process)
+
+    # Alpaka HLT
+    from Configuration.ProcessModifiers.alpaka_cff import alpaka 
+    from Configuration.Eras.Modifier_run3_common_cff import run3_common
+    from HLTrigger.Configuration.customizeHLTforAlpaka import customizeHLTforAlpaka
+    (alpaka & run3_common).makeProcessModifier(customizeHLTforAlpaka).apply(process)
+
+    # add call to action function in proper order: newest last!
+    # process = customiseFor12718(process)
+
+    process = checkHLTfor43774(process)
+
+    # customizes AXOL1TL condition in the L1 menu
+    process = customizeHLTfor44510(process)
+
+    process = customizeHLTfor44591(process)
 
     return process

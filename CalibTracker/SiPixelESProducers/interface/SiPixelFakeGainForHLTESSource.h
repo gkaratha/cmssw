@@ -4,7 +4,7 @@
 //
 // Package:    SiPixelFakeGainForHLTESSource
 // Class:      SiPixelFakeGainForHLTESSource
-// 
+//
 /**\class SiPixelFakeGainForHLTESSource SiPixelFakeGainForHLTESSource.h CalibTracker/SiPixelGainForHLTESProducer/src/SiPixelFakeGainForHLTESSource.cc
 
  Description: <one line class summary>
@@ -18,10 +18,8 @@
 //
 //
 
-
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -33,26 +31,21 @@
 // class decleration
 //
 
-class SiPixelFakeGainForHLTESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder  {
-
- public:
+class SiPixelFakeGainForHLTESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
+public:
   SiPixelFakeGainForHLTESSource(const edm::ParameterSet &);
-  ~SiPixelFakeGainForHLTESSource();
-  
-  //      typedef edm::ESProducts<> ReturnType;
-  
-  virtual std::auto_ptr<SiPixelGainCalibrationForHLT>  produce(const SiPixelGainCalibrationForHLTRcd &);
-  
- protected:
-  
-  virtual void setIntervalFor( const edm::eventsetup::EventSetupRecordKey&,
-			       const edm::IOVSyncValue&,
-			       edm::ValidityInterval& );
-  
-  
- private:
-  
-  edm::FileInPath fp_;
+  ~SiPixelFakeGainForHLTESSource() override;
 
+  //      typedef edm::ESProducts<> ReturnType;
+
+  virtual std::unique_ptr<SiPixelGainCalibrationForHLT> produce(const SiPixelGainCalibrationForHLTRcd &);
+
+protected:
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,
+                      const edm::IOVSyncValue &,
+                      edm::ValidityInterval &) override;
+
+private:
+  edm::FileInPath fp_;
 };
 #endif

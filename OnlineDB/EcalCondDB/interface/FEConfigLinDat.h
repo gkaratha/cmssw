@@ -9,13 +9,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class FEConfigLinDat : public IDataItem {
- public:
-  friend class EcalCondDBInterface; // XXX temp should not need
+public:
+  friend class EcalCondDBInterface;  // XXX temp should not need
   FEConfigLinDat();
-  ~FEConfigLinDat();
+  ~FEConfigLinDat() override;
 
   // User data methods
-  inline std::string getTable() { return "FE_CONFIG_LIN_DAT"; }
+  inline std::string getTable() override { return "FE_CONFIG_LIN_DAT"; }
 
   inline void setMultX12(int x) { m_multx12 = x; }
   inline void setMultX6(int x) { m_multx6 = x; }
@@ -24,7 +24,6 @@ class FEConfigLinDat : public IDataItem {
   inline void setShift6(int x) { m_shift6 = x; }
   inline void setShift1(int x) { m_shift1 = x; }
 
-
   inline int getMultX12() const { return m_multx12; }
   inline int getMultX6() const { return m_multx6; }
   inline int getMultX1() const { return m_multx1; }
@@ -32,20 +31,14 @@ class FEConfigLinDat : public IDataItem {
   inline int getShift6() const { return m_shift6; }
   inline int getShift1() const { return m_shift1; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const FEConfigLinDat* item, FEConfigLinInfo* iconf)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const FEConfigLinDat* item, FEConfigLinInfo* iconf) noexcept(false);
 
+  void writeArrayDB(const std::map<EcalLogicID, FEConfigLinDat>* data, FEConfigLinInfo* iconf) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, FEConfigLinDat>* data, FEConfigLinInfo* iconf)
-  throw(std::runtime_error);
-
-
-  void fetchData(std::map< EcalLogicID, FEConfigLinDat >* fillMap, FEConfigLinInfo* iconf)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, FEConfigLinDat>* fillMap, FEConfigLinInfo* iconf) noexcept(false);
 
   // User data
   int m_multx12;
@@ -54,8 +47,6 @@ class FEConfigLinDat : public IDataItem {
   int m_shift12;
   int m_shift6;
   int m_shift1;
-
-
 };
 
 #endif

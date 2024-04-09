@@ -17,7 +17,6 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
@@ -39,21 +38,20 @@
 //
 
 class PF_PU_AssoMap : public edm::stream::EDProducer<>, public PF_PU_AssoMapAlgos {
-   public:
-      explicit PF_PU_AssoMap(const edm::ParameterSet&);
-      ~PF_PU_AssoMap();
+public:
+  explicit PF_PU_AssoMap(const edm::ParameterSet&);
+  ~PF_PU_AssoMap() override;
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-   private:
-      virtual void produce(edm::Event&, const edm::EventSetup&);
+private:
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
 
-      edm::InputTag input_AssociationType_;
+  edm::InputTag input_AssociationType_;
 
-      edm::EDGetTokenT<reco::TrackCollection> token_TrackCollection_;
+  edm::EDGetTokenT<reco::TrackCollection> token_TrackCollection_;
 };
-
 
 #endif

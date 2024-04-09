@@ -6,53 +6,68 @@
 //              appropriate container
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define plotDebug
+
 #include "SimG4CMS/Calo/interface/CaloSD.h"
 #include "SimG4Core/Notification/interface/BeginOfJob.h"
-#include "Geometry/HGCalCommonData/interface/HGCalDDDConstants.h"
+#include "SimG4Core/Notification/interface/BeginOfEvent.h"
 #include "SimG4CMS/Calo/interface/HGCNumberingScheme.h"
-#include "DetectorDescription/Core/interface/DDsvalues.h"
+#include "SimG4CMS/Calo/interface/HGCMouseBite.h"
+#include "Geometry/HGCalTBCommonData/interface/HGCalTBDDDConstants.h"
 
-#include "G4String.hh"
-#include <map>
 #include <string>
-#include <TH1F.h>
-
-class DDCompactView;
-class DDFilteredView;
+#ifdef plotDebug
+#include <TTree.h>
+#endif
 class G4LogicalVolume;
 class G4Material;
 class G4Step;
 
 class HGCSD : public CaloSD, public Observer<const BeginOfJob *> {
+public:
+  HGCSD(const std::string &,
+        const HGCalTBDDDConstants *,
+        const SensitiveDetectorCatalog &,
+        edm::ParameterSet const &,
+        const SimTrackManager *);
+  ~HGCSD() override = default;
 
-public:    
-
-  HGCSD(G4String , const DDCompactView &, const SensitiveDetectorCatalog &,
-	edm::ParameterSet const &, const SimTrackManager*);
-  virtual ~HGCSD();
-  virtual bool                  ProcessHits(G4Step * , G4TouchableHistory * );
-  virtual double                getEnergyDeposit(G4Step* );
-  virtual uint32_t              setDetUnitId(G4Step* step);
+  uint32_t setDetUnitId(const G4Step *step) override;
 
 protected:
+  double getEnergyDeposit(const G4Step *) override;
+  using CaloSD::update;
+  void update(const BeginOfJob *) override;
+  void initRun() override;
+  void initEvent(const BeginOfEvent *) override;
+  void endEvent() override;
+  bool filterHit(CaloG4Hit *, double) override;
 
-  virtual void                  update(const BeginOfJob *);
-  virtual void                  initRun();
-  virtual bool                  filterHit(CaloG4Hit*, double);
+private:
+  uint32_t setDetUnitId(ForwardSubdetector &, int, int, int, int, G4ThreeVector &);
+  bool isItinFidVolume(const G4ThreeVector &) { return true; }
 
-private:    
+  const HGCalTBDDDConstants *hgcons_;
+  std::string nameX_;
+  HGCalGeometryMode::GeometryMode geom_mode_;
+  std::unique_ptr<HGCNumberingScheme> numberingScheme_;
+  std::unique_ptr<HGCMouseBite> mouseBite_;
+  double eminHit_;
+  ForwardSubdetector myFwdSubdet_;
+  double slopeMin_;
+  int levelT_;
+  bool storeAllG4Hits_, rejectMB_, waferRot_;
+  double mouseBiteCut_;
+  bool dd4hep_;
+  std::vector<double> angles_;
 
-  uint32_t                      setDetUnitId(ForwardSubdetector&, int, int, int, int, G4ThreeVector &);
-  bool                          isItinFidVolume (G4ThreeVector&) {return true;}
-  int                           setTrackID(G4Step * step);
-
-  std::string                   nameX;
-
-  HGCalGeometryMode m_mode;
-  HGCNumberingScheme*           numberingScheme;
-  G4int                         mumPDG, mupPDG; 
-  double                        eminHit;
-  ForwardSubdetector            myFwdSubdet_;
+#ifdef plotDebug
+  TTree *tree_;
+#endif
+  uint32_t t_EventID_;
+  std::vector<int> t_Layer_, t_Parcode_;
+  std::vector<double> t_dEStep1_, t_dEStep2_, t_TrackE_;
+  std::vector<double> t_Angle_;
 };
 
-#endif // HGCSD_h
+#endif  // HGCSD_h

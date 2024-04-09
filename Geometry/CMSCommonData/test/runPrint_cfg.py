@@ -6,18 +6,8 @@ process.load("Validation.CheckOverlap.testGeometry_cfi")
 
 process.MessageLogger = cms.Service("MessageLogger",
     destinations = cms.untracked.vstring('cout'),
-    categories = cms.untracked.vstring('FwkJob'),
-    fwkJobReports = cms.untracked.vstring('FrameworkJobReport'),
     cout = cms.untracked.PSet(
         threshold = cms.untracked.string('INFO')
-    ),
-    FrameworkJobReport = cms.untracked.PSet(
-        default = cms.untracked.PSet(
-            limit = cms.untracked.int32(0)
-        ),
-        FwkJob = cms.untracked.PSet(
-            limit = cms.untracked.int32(-1)
-        )
     )
 )
 
@@ -45,9 +35,6 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     AddAntiParticle = cms.bool(False),
     firstRun = cms.untracked.uint32(1)
 )
-
-
-process.EnableFloatingPointExceptions = cms.Service("EnableFloatingPointExceptions")
 
 process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
     moduleSeeds = cms.PSet(

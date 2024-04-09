@@ -8,12 +8,11 @@
 /**
  * Class which builds TEC wheels
  */
-class CmsTrackerWheelBuilder : public CmsTrackerLevelBuilder {
-  
- private:
-  virtual void sortNS(DDFilteredView& , GeometricDet*);
-  virtual void buildComponent(DDFilteredView& , GeometricDet*, std::string);
-
+template <class FilteredView>
+class CmsTrackerWheelBuilder : public CmsTrackerLevelBuilder<FilteredView> {
+private:
+  void sortNS(FilteredView&, GeometricDet*) override;
+  void buildComponent(FilteredView&, GeometricDet*, const std::string&) override;
 };
 
 #endif

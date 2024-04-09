@@ -3,8 +3,7 @@
 
 ## import skeleton process
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
-## switch to uncheduled mode
-process.options.allowUnscheduled = cms.untracked.bool(True)
+
 #process.Tracer = cms.Service("Tracer")
 
 ## uncomment the following line to update different jet collections
@@ -14,20 +13,22 @@ from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 ## An example where the jet energy correction are updated to the current GlobalTag
 ## and a userFloat containing the previous mass of the jet and an additional
 ## b-tag discriminator are added
-from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSSoftDropMass
-process.oldJetMass = ak8PFJetsCHSSoftDropMass.clone(
+from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsPuppiSoftDropMass
+process.oldJetMass = ak8PFJetsPuppiSoftDropMass.clone(
   src = cms.InputTag("slimmedJets"),
   matched = cms.InputTag("slimmedJets") )
+patAlgosToolsTask.add(process.oldJetMass)
 
 updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJets'),
    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None'),
-   btagDiscriminators = ['pfCombinedSecondaryVertexBJetTags'] ## adding an old (Run 1) version of the CSV discriminator
+   btagDiscriminators = ['pfCombinedSecondaryVertexV2BJetTags', 'pfDeepCSVDiscriminatorsJetTags:BvsAll', 'pfDeepCSVDiscriminatorsJetTags:CvsB', 'pfDeepCSVDiscriminatorsJetTags:CvsL'], ## to add discriminators,
+   btagPrefix = 'TEST',
 )
 process.updatedPatJets.userData.userFloats.src += ['oldJetMass']
 
-## An example where the jet correction is undone
+## An example where the jet corrections are undone
 updateJetCollection(
    process,
    labelName = 'UndoneJEC',
@@ -36,7 +37,7 @@ updateJetCollection(
 )
 process.updatedPatJetsUndoneJEC.userData.userFloats.src = []
 
-## An example where the jet correction are reapplied
+## An example where the jet corrections are reapplied
 updateJetCollection(
    process,
    labelName = 'ReappliedJEC',
@@ -44,6 +45,54 @@ updateJetCollection(
    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None')
 )
 process.updatedPatJetsReappliedJEC.userData.userFloats.src = []
+
+## An example where the pileup jet id is recomputed
+from RecoJets.JetProducers.PileupJetID_cfi import pileupJetId
+process.pileupJetIdUpdated = pileupJetId.clone(
+  jets=cms.InputTag("slimmedJets"),
+  inputIsCorrected=True,
+  applyJec=True,
+  vertexes=cms.InputTag("offlineSlimmedPrimaryVertices")
+  )
+patAlgosToolsTask.add(process.pileupJetIdUpdated)
+
+updateJetCollection(
+   process,
+   labelName = 'PileupJetID',
+   jetSource = cms.InputTag('slimmedJets'),
+)
+process.updatedPatJetsPileupJetID.userData.userInts.src = ['pileupJetIdUpdated:fullId']
+process.updatedPatJetsPileupJetID.userData.userFloats.src = ['pileupJetIdUpdated:fullDiscriminant']
+
+## An example where the jet energy corrections are updated to the current GlobalTag
+## and specified b-tag discriminators are rerun and added to SoftDrop subjets
+updateJetCollection(
+   process,
+   labelName = 'SoftDropSubjets',
+   jetSource = cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked:SubJets'),
+   jetCorrections = ('AK4PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
+   btagDiscriminators = ['pfCombinedSecondaryVertexV2BJetTags', 'pfCombinedInclusiveSecondaryVertexV2BJetTags'],
+   explicitJTA = True,          # needed for subjet b tagging
+   svClustering = False,        # needed for subjet b tagging (IMPORTANT: Needs to be set to False to disable ghost-association which does not work with slimmed jets)
+   fatJets = cms.InputTag('slimmedJetsAK8'), # needed for subjet b tagging
+   rParam = 0.8,                # needed for subjet b tagging
+   algo = 'ak'                  # has to be defined but is not used with svClustering=False
+)
+process.updatedPatJetsSoftDropSubjets.userData.userFloats.src = []
+
+## An example where puppi jet specifics are computed
+from PhysicsTools.PatAlgos.patPuppiJetSpecificProducer_cfi import patPuppiJetSpecificProducer
+process.patPuppiJetSpecificProducer = patPuppiJetSpecificProducer.clone(
+  src=cms.InputTag("slimmedJetsPuppi"),
+  )
+patAlgosToolsTask.add(process.patPuppiJetSpecificProducer)
+
+updateJetCollection(
+   process,
+   labelName = 'PuppiJetSpecific',
+   jetSource = cms.InputTag('slimmedJetsPuppi'),
+)
+process.updatedPatJetsPuppiJetSpecific.userData.userFloats.src = ['patPuppiJetSpecificProducer:puppiMultiplicity', 'patPuppiJetSpecificProducer:neutralPuppiMultiplicity', 'patPuppiJetSpecificProducer:neutralHadronPuppiMultiplicity', 'patPuppiJetSpecificProducer:photonPuppiMultiplicity', 'patPuppiJetSpecificProducer:HFHadronPuppiMultiplicity', 'patPuppiJetSpecificProducer:HFEMPuppiMultiplicity' ]
 
 ## ------------------------------------------------------
 #  In addition you usually want to change the following

@@ -1,12 +1,19 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
-from DQMServices.ClientConfig.genericClientPSetHelper_cff import *
+def efficSet(nameIn, titleIn, numeratorIn, denominatorIn, typeIn="eff"):
+    pset = cms.PSet(name=cms.untracked.string(nameIn),
+                    title=cms.untracked.string(titleIn), 
+                    numerator=cms.untracked.string(numeratorIn), 
+                    denominator=cms.untracked.string(denominatorIn),
+                    type=cms.untracked.string(typeIn))
+    return pset
 
-rpcRecHitSimRecoClient = cms.EDAnalyzer("RPCRecHitValidClient",
+rpcRecHitSimRecoClient = DQMEDHarvester("RPCRecHitValidClient",
     subDir = cms.string("RPC/RPCRecHitV/SimVsReco"),
 )
 
-rpcRecHitPostValidation = cms.EDAnalyzer("DQMGenericClient",
+rpcRecHitPostValidation = DQMEDHarvester("DQMGenericClient",
     subDirs = cms.untracked.vstring("RPC/RPCRecHitV/SimVsReco",),
     #subDirs = cms.untracked.vstring("RPC/RPCRecHitV/SimVsReco",
     #                                "RPC/RPCRecHitV/SimVsDTExt",
@@ -20,16 +27,6 @@ rpcRecHitPostValidation = cms.EDAnalyzer("DQMGenericClient",
                  "Occupancy/MatchBarrelOccupancy_station", "Occupancy/RefHitBarrelOccupancy_station"),
         efficSet("Efficiency/Effic_disk", "Endcap SimHit to RecHit matching efficiency;Disk",
                  "Occupancy/MatchEndcapOccupancy_disk", "Occupancy/RefHitEndcapOccupancy_disk"),
-        efficSet("Efficiency/Noise_wheel", "Barrel un-matched RecHit to SimHit efficiency;Wheel",
-                 "Occupancy/UmBarrelOccupancy_wheel","Occupancy/RecHitBarrelOccupancy_wheel"),
-        efficSet("Efficiency/Noise_station", "Barrel un-matched RecHit to SimHit efficiency;Station",
-                 "Occupancy/UmBarrelOccupancy_station","Occupancy/RecHitBarrelOccupancy_station"),
-        efficSet("Efficiency/Noise_disk", "Endcap un-matched RecHit to SimHit efficiency;Disk",
-                 "Occupancy/UmEndcapOccupancy_disk", "Occupancy/RecHitEndcapOccupancy_disk"),
-        #efficSet("Efficiency/Lost_wheel", "Barrel un-matched SimHit to RecHit efficiency;Wheel",
-        #         "Occupancy/NUnMatchedRefHit_wheel", "Occupancy/RefHitBarrelOccupancy_wheel"),
-        #efficSet("Efficiency/Lost_disk", "Endcap un-matched SimHit to RecHit efficiency;Disk",
-        #         "Occupancy/NUnMatchedRefHit_disk", "Occupancy/RefHitEndcapOccupancy_disk"),
     ),
     resolutionSets = cms.untracked.VPSet(
         cms.PSet(
@@ -66,7 +63,7 @@ rpcRecHitPostValidation = cms.EDAnalyzer("DQMGenericClient",
     outputFileName = cms.untracked.string("")
 )
 
-rpcPointVsRecHitPostValidation = cms.EDAnalyzer("DQMGenericClient",
+rpcPointVsRecHitPostValidation = DQMEDHarvester("DQMGenericClient",
     subDirs = cms.untracked.vstring("RPC/RPCRecHitV/DTVsReco",
                                     "RPC/RPCRecHitV/CSCVsReco"),
 #                                    "RPC/RPCRecHitV/TrackVsReco"),
@@ -79,16 +76,6 @@ rpcPointVsRecHitPostValidation = cms.EDAnalyzer("DQMGenericClient",
                  "Occupancy/MatchBarrelOccupancy_station", "Occupancy/RefHitBarrelOccupancy_station"),
         efficSet("Efficiency/Effic_disk", "Endcap RPCPoint to RecHit matching efficiency;Disk",
                  "Occupancy/MatchEndcapOccupancy_disk", "Occupancy/RefHitEndcapOccupancy_disk"),
-        efficSet("Efficiency/Noise_wheel", "Barrel un-matched RecHit to RPCPoint efficiency;Wheel",
-                 "Occupancy/UmBarrelOccupancy_wheel","Occupancy/RecHitBarrelOccupancy_wheel"),
-        efficSet("Efficiency/Noise_station", "Barrel un-matched RecHit to RPCPoint efficiency;Station",
-                 "Occupancy/UmBarrelOccupancy_station","Occupancy/RecHitBarrelOccupancy_station"),
-        efficSet("Efficiency/Noise_disk", "Endcap un-matched RecHit to RPCPoint efficiency;Disk",
-                 "Occupancy/UmEndcapOccupancy_disk", "Occupancy/RecHitEndcapOccupancy_disk"),
-        #efficSet("Efficiency/Lost_wheel", "Barrel un-matched RPCPoint to RecHit efficiency;Wheel",
-        #         "Occupancy/NUnMatchedRefHit_wheel", "Occupancy/RefHitBarrelOccupancy_wheel"),
-        #efficSet("Efficiency/Lost_disk", "Endcap un-matched RPCPoint to RecHit efficiency;Disk",
-        #         "Occupancy/NUnMatchedRefHit_disk", "Occupancy/RefHitEndcapOccupancy_disk"),
     ),
     resolutionSets = cms.untracked.VPSet(
         cms.PSet(

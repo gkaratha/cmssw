@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FWHFView
-// 
+//
 /**\class FWHFView FWHFView.h Fireworks/Core/interface/FWHFView.h
 
  Description: [one line class summary]
@@ -25,26 +25,23 @@
 
 // forward declarations
 
-class FWHFView : public FWLegoViewBase
-{
+class FWHFView : public FWLegoViewBase {
 public:
-   FWHFView(TEveWindowSlot*, FWViewType::EType);
-   virtual ~FWHFView();
+  FWHFView(TEveWindowSlot*, FWViewType::EType);
+  ~FWHFView() override;
 
-   virtual void setContext(const fireworks::Context&);
-   // ---------- const member functions ---------------------
+  void setContext(const fireworks::Context&) override;
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
+  // ---------- member functions ---------------------------
 
-private:
-   FWHFView(const FWHFView&); // stop default
+  FWHFView(const FWHFView&) = delete;  // stop default
 
-   const FWHFView& operator=(const FWHFView&); // stop default
+  const FWHFView& operator=(const FWHFView&) = delete;  // stop default
 
-   // ---------- member data --------------------------------
+  // ---------- member data --------------------------------
 };
-
 
 #endif

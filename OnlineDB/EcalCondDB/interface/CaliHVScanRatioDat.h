@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class CaliHVScanRatioDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   CaliHVScanRatioDat();
-  ~CaliHVScanRatioDat();
-  
+  ~CaliHVScanRatioDat() override;
+
   // User data methods
-  inline std::string getTable() { return "CALI_HV_SCAN_RATIO_DAT"; }
+  inline std::string getTable() override { return "CALI_HV_SCAN_RATIO_DAT"; }
 
   inline void setHVRatio(float c) { m_hvratio = c; }
   inline float getHVRatio() const { return m_hvratio; }
@@ -27,22 +27,17 @@ class CaliHVScanRatioDat : public IDataItem {
   inline void setTaskStatus(bool s) { m_taskStatus = s; }
   inline bool getTaskStatus() const { return m_taskStatus; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
-  
-  void writeDB(const EcalLogicID* ecid, const CaliHVScanRatioDat* item, CaliIOV* iov)
-    throw(std::runtime_error);
-  
-  void fetchData(std::map< EcalLogicID, CaliHVScanRatioDat >* fillVec, CaliIOV* iov)
-    throw(std::runtime_error);
-  
+private:
+  void prepareWrite() noexcept(false) override;
+
+  void writeDB(const EcalLogicID* ecid, const CaliHVScanRatioDat* item, CaliIOV* iov) noexcept(false);
+
+  void fetchData(std::map<EcalLogicID, CaliHVScanRatioDat>* fillVec, CaliIOV* iov) noexcept(false);
+
   // User data
   float m_hvratio;
   float m_hvratioRMS;
   bool m_taskStatus;
-  
-  
 };
 
 #endif

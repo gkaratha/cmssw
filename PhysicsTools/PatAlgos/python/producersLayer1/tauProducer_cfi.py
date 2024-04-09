@@ -59,52 +59,10 @@ patTaus = cms.EDProducer("PATTauProducer",
 
     # tau ID (for efficiency studies)
     addTauID     = cms.bool(True),
-    tauIDSources = cms.PSet(
-        # configure many IDs as InputTag <someName> = <someTag>
-        # you can comment out those you don't want to save some
-        # disk space
-        decayModeFinding = cms.InputTag("hpsPFTauDiscriminationByDecayModeFinding"),
-        decayModeFindingNewDMs =cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMs"),
-        chargedIsoPtSum = cms.InputTag("hpsPFTauChargedIsoPtSum"),
-        neutralIsoPtSum = cms.InputTag("hpsPFTauNeutralIsoPtSum"),
-        puCorrPtSum = cms.InputTag("hpsPFTauPUcorrPtSum"),
-        neutralIsoPtSumWeight = cms.InputTag("hpsPFTauNeutralIsoPtSumWeight"),                  
-        footprintCorrection = cms.InputTag("hpsPFTauFootprintCorrection"),
-        photonPtSumOutsideSignalCone = cms.InputTag("hpsPFTauPhotonPtSumOutsideSignalCone"),
-        byIsolationMVA3oldDMwLTraw = cms.InputTag('hpsPFTauDiscriminationByIsolationMVA3oldDMwLTraw'),
-        byVLooseIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByVLooseIsolationMVA3oldDMwLT'),
-        byLooseIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByLooseIsolationMVA3oldDMwLT'),
-        byMediumIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByMediumIsolationMVA3oldDMwLT'),
-        byTightIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByTightIsolationMVA3oldDMwLT'),
-        byVTightIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByVTightIsolationMVA3oldDMwLT'),
-        byVVTightIsolationMVA3oldDMwLT = cms.InputTag('hpsPFTauDiscriminationByVVTightIsolationMVA3oldDMwLT'),                             
-        byIsolationMVA3newDMwLTraw = cms.InputTag('hpsPFTauDiscriminationByIsolationMVA3newDMwLTraw'),
-        byVLooseIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByVLooseIsolationMVA3newDMwLT'),
-        byLooseIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByLooseIsolationMVA3newDMwLT'),
-        byMediumIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByMediumIsolationMVA3newDMwLT'),
-        byTightIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByTightIsolationMVA3newDMwLT'),
-        byVTightIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByVTightIsolationMVA3newDMwLT'),
-        byVVTightIsolationMVA3newDMwLT = cms.InputTag('hpsPFTauDiscriminationByVVTightIsolationMVA3newDMwLT'),                             
-        againstMuonLoose3 = cms.InputTag("hpsPFTauDiscriminationByLooseMuonRejection3"),
-        againstMuonTight3 = cms.InputTag("hpsPFTauDiscriminationByTightMuonRejection3"),
-        byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.InputTag("hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3Hits"),
-        byMediumCombinedIsolationDeltaBetaCorr3Hits = cms.InputTag("hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr3Hits"),
-        byTightCombinedIsolationDeltaBetaCorr3Hits = cms.InputTag("hpsPFTauDiscriminationByTightCombinedIsolationDBSumPtCorr3Hits"),
-        byCombinedIsolationDeltaBetaCorrRaw3Hits = cms.InputTag("hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits"),
-        byLoosePileupWeightedIsolation3Hits = cms.InputTag("hpsPFTauDiscriminationByLoosePileupWeightedIsolation3Hits"),
-        byMediumPileupWeightedIsolation3Hits = cms.InputTag("hpsPFTauDiscriminationByMediumPileupWeightedIsolation3Hits"),
-        byTightPileupWeightedIsolation3Hits = cms.InputTag("hpsPFTauDiscriminationByTightPileupWeightedIsolation3Hits"),
-        byPhotonPtSumOutsideSignalCone = cms.InputTag("hpsPFTauDiscriminationByPhotonPtSumOutsideSignalCone"),
-        byPileupWeightedIsolationRaw3Hits = cms.InputTag("hpsPFTauDiscriminationByRawPileupWeightedIsolation3Hits"),
-        againstElectronMVA5raw = cms.InputTag("hpsPFTauDiscriminationByMVA5rawElectronRejection"),
-        againstElectronMVA5category = cms.InputTag("hpsPFTauDiscriminationByMVA5rawElectronRejection:category"),
-        againstElectronVLooseMVA5 = cms.InputTag("hpsPFTauDiscriminationByMVA5VLooseElectronRejection"),
-        againstElectronLooseMVA5 = cms.InputTag("hpsPFTauDiscriminationByMVA5LooseElectronRejection"),
-        againstElectronMediumMVA5 = cms.InputTag("hpsPFTauDiscriminationByMVA5MediumElectronRejection"),
-        againstElectronTightMVA5 = cms.InputTag("hpsPFTauDiscriminationByMVA5TightElectronRejection"),
-        againstElectronVTightMVA5 = cms.InputTag("hpsPFTauDiscriminationByMVA5VTightElectronRejection"),
-      ),
+    tauIDSources = cms.PSet(),
+    # IDs added below
 
+    skipMissingTauID = cms.bool(False), #Allow to skip a tau ID variable when not present in the event"
     # mc matching configurables
     addGenMatch      = cms.bool(True),
     embedGenMatch    = cms.bool(True),
@@ -122,3 +80,41 @@ patTaus = cms.EDProducer("PATTauProducer",
     resolutions     = cms.PSet()
 )
 
+# helper functions for ID configuration
+def singleID(pset, inputID, label):
+    setattr(pset, label, cms.PSet(inputTag=cms.InputTag(inputID), provenanceConfigLabel=cms.string(""), idLabel=cms.string("")))
+def containerID(pset, inputID, provCfgLabel, wps):
+    for wp in wps:
+        setattr(pset, wp[0], cms.PSet(inputTag=cms.InputTag(inputID), provenanceConfigLabel=cms.string(provCfgLabel), idLabel=cms.string(wp[1])))
+
+# configure many IDs
+# you can comment out those you don't want to save some disk space
+singleID(patTaus.tauIDSources, "hpsPFTauDiscriminationByDecayModeFinding", "decayModeFinding")
+singleID(patTaus.tauIDSources, "hpsPFTauDiscriminationByDecayModeFindingNewDMs", "decayModeFindingNewDMs")
+containerID(patTaus.tauIDSources, "hpsPFTauDiscriminationByMuonRejection3", "IDWPdefinitions", [
+    ["againstMuonLoose3", "ByLooseMuonRejection3"],
+    ["againstMuonTight3", "ByTightMuonRejection3"]
+    ])
+containerID(patTaus.tauIDSources, "hpsPFTauBasicDiscriminators", "IDdefinitions", [
+    ["chargedIsoPtSum", "ChargedIsoPtSum"],
+    ["neutralIsoPtSum", "NeutralIsoPtSum"],
+    ["puCorrPtSum", "PUcorrPtSum"],
+    ["neutralIsoPtSumWeight", "NeutralIsoPtSumWeight"],
+    ["footprintCorrection", "TauFootprintCorrection"],
+    ["photonPtSumOutsideSignalCone", "PhotonPtSumOutsideSignalCone"],
+    ["byCombinedIsolationDeltaBetaCorrRaw3Hits", "ByRawCombinedIsolationDBSumPtCorr3Hits"]
+    ])
+containerID(patTaus.tauIDSources, "hpsPFTauBasicDiscriminators", "IDWPdefinitions", [
+    ["byLooseCombinedIsolationDeltaBetaCorr3Hits", "ByLooseCombinedIsolationDBSumPtCorr3Hits"],
+    ["byMediumCombinedIsolationDeltaBetaCorr3Hits", "ByMediumCombinedIsolationDBSumPtCorr3Hits"],
+    ["byTightCombinedIsolationDeltaBetaCorr3Hits", "ByTightCombinedIsolationDBSumPtCorr3Hits"],
+    ["byPhotonPtSumOutsideSignalCone", "ByPhotonPtSumOutsideSignalCone"]
+    ])
+containerID(patTaus.tauIDSources, "hpsPFTauBasicDiscriminatorsdR03", "IDdefinitions", [
+    ["chargedIsoPtSumdR03", "ChargedIsoPtSumdR03"],
+    ["neutralIsoPtSumdR03", "NeutralIsoPtSumdR03"],
+    ["neutralIsoPtSumWeightdR03", "NeutralIsoPtSumWeightdR03"],
+    ["footprintCorrectiondR03", "TauFootprintCorrectiondR03"],
+    ["photonPtSumOutsideSignalConedR03", "PhotonPtSumOutsideSignalConedR03"]
+    ])
+singleID(patTaus.tauIDSources, "hpsPFTauDiscriminationByDeadECALElectronRejection", "againstElectronDeadECAL")

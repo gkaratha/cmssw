@@ -11,35 +11,16 @@
 
 #include "CondFormats/EcalObjects/interface/EcalLinearCorrections.h"
 #include "CondTools/Ecal/interface/EcalCondHeader.h"
-#include "CondTools/Ecal/interface/XMLTags.h"
-#include "CondTools/Ecal/interface/XercesString.h"
 #include <string>
-#include <xercesc/dom/DOMNode.hpp>
-#include <xercesc/dom/DOM.hpp>
-#include <xercesc/parsers/XercesDOMParser.hpp>
-#include "FWCore/Concurrency/interface/Xerces.h"
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/sax/SAXException.hpp>
-#include <xercesc/framework/LocalFileFormatTarget.hpp>
 
 class EcalLinearCorrectionsXMLTranslator {
-
 public:
+  static int readXML(const std::string& filename, EcalCondHeader& header, EcalLinearCorrections& record);
 
-  static int readXML  (const std::string& filename,
-		       EcalCondHeader& header,
-		       EcalLinearCorrections& record);
+  static int writeXML(const std::string& filename, const EcalCondHeader& header, const EcalLinearCorrections& record);
 
-  static int writeXML (const std::string& filename,
-		       const EcalCondHeader& header,
-		       const EcalLinearCorrections& record);
-
-  static std::string dumpXML(const EcalCondHeader& header,
-			     const EcalLinearCorrections& record);
-
-  //  void WriteNodeWithTime(xercesc::DOMNode* node, const std::string& value, long int& time);
-  //  static void WriteNodeWithTime(xercesc::DOMNode* node);
+private:
+  static std::string dumpXML(const EcalCondHeader& header, const EcalLinearCorrections& record);
 };
 
-
-#endif // __EcalLinearCorrectionsXMLTranslator_h_
+#endif  // __EcalLinearCorrectionsXMLTranslator_h_

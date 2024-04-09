@@ -4,32 +4,33 @@
 /** predicts phi range at a given radius r */
 
 #include "RecoTracker/TkMSParametrization/interface/PixelRecoRange.h"
-#include "RecoTracker/TkTrackingRegions/interface/TkTrackingRegionsMargin.h"
 
 #include "FWCore/Utilities/interface/Visibility.h"
 
+#include <cassert>
+
 class dso_internal OuterHitPhiPrediction {
 public:
+  using Range = PixelRecoRange<float>;
 
-  typedef PixelRecoRange<float> Range;
-  typedef TkTrackingRegionsMargin<float> Margin;
+  OuterHitPhiPrediction(const Range& phiAtVertex, const Range& curvature, float originRBound)
+      : thePhiAtVertex(phiAtVertex), theCurvature(curvature), theOriginRBound(originRBound) {
+    //       assert(theCurvature.max()>0);
+    assert(theCurvature.max() == -theCurvature.min());
+  }
 
-  OuterHitPhiPrediction( 
-      const Range & phiAtVertex, 
-      const Range & curvature, 
-      float originRBound, 
-      const Margin & tolerance = Margin(0,0))
-    : thePhiAtVertex(phiAtVertex), theCurvature(curvature),
-      theOriginRBound (originRBound), theTolerance(tolerance) { } 
+  void setTolerance(float tolerance) { theTolerance = tolerance; }
 
-  void  setTolerance(const Margin & tolerance) { theTolerance = tolerance; }
-  Range operator()(float radius) const;
+  Range operator()(float radius) const { return sym(radius); }
 
 private:
+  Range sym(float radius) const;
+  Range asym(float radius) const;
+
   Range thePhiAtVertex;
   Range theCurvature;
   float theOriginRBound;
-  Margin theTolerance;
+  float theTolerance = 0.f;
 };
 
 #endif

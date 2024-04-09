@@ -6,82 +6,119 @@ from RecoBTag.ImpactParameter.impactParameter_cff import *
 from RecoBTag.SecondaryVertex.secondaryVertex_cff import *
 from RecoBTag.Combined.combinedMVA_cff import *
 from RecoBTag.CTagging.RecoCTagging_cff import *
+from RecoBTag.Combined.deepFlavour_cff import *
+from RecoBTag.ONNXRuntime.pfDeepFlavour_cff import *
+from RecoBTag.ONNXRuntime.pfDeepDoubleX_cff import *
+from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import *
+from RecoBTag.ONNXRuntime.pfHiggsInteractionNet_cff import *
+from RecoBTag.ONNXRuntime.pfParticleNet_cff import *
+from RecoBTag.ONNXRuntime.pfParticleNetAK4_cff import *
+from RecoBTag.ONNXRuntime.pfParticleTransformerAK4_cff import *
 from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import *
+from RecoBTag.PixelCluster.pixelClusterTagInfos_cfi import *
 
-legacyBTagging = cms.Sequence(
-    (
-      # impact parameters and IP-only algorithms
-      impactParameterTagInfos *
-      ( trackCountingHighEffBJetTags +
-        trackCountingHighPurBJetTags +
-        jetProbabilityBJetTags +
-        jetBProbabilityBJetTags +
+legacyBTaggingTask = cms.Task(
+    # impact parameters and IP-only algorithms
+    impactParameterTagInfos,
+    trackCountingHighEffBJetTags,
+    jetProbabilityBJetTags,
+    jetBProbabilityBJetTags,
 
-        # SV tag infos depending on IP tag infos, and SV (+IP) based algos
-        secondaryVertexTagInfos *
-        ( simpleSecondaryVertexHighEffBJetTags +
-          simpleSecondaryVertexHighPurBJetTags +
-          combinedSecondaryVertexBJetTags
-        )
-        + inclusiveSecondaryVertexFinderTagInfos *
-        combinedInclusiveSecondaryVertexV2BJetTags
+    # SV tag infos depending on IP tag infos, and SV (+IP) based algos
+    secondaryVertexTagInfos,
+    simpleSecondaryVertexHighEffBJetTags,
+    combinedSecondaryVertexV2BJetTags,
+    inclusiveSecondaryVertexFinderTagInfos,
+    combinedInclusiveSecondaryVertexV2BJetTags,
+    ghostTrackVertexTagInfos,
+    ghostTrackBJetTags,
 
-        + ghostTrackVertexTagInfos *
-        ghostTrackBJetTags
-      ) +
-
-      # soft lepton tag infos and algos
-      softPFMuonsTagInfos *
-      softPFMuonBJetTags
-      + softPFElectronsTagInfos *
-      softPFElectronBJetTags
-    )
+    # soft lepton tag infos and algos
+    softPFMuonsTagInfos,
+    softPFMuonBJetTags,
+    softPFElectronsTagInfos,
+    softPFElectronBJetTags,
 
     # overall combined taggers
-    * combinedMVABJetTags
-    + combinedMVAV2BJetTags
+    combinedMVAV2BJetTags,
+    
+    # pixel cluster
+    pixelClusterTagInfos,
 )
+legacyBTagging = cms.Sequence(legacyBTaggingTask)
 
 # new candidate-based fwk, with PF inputs
-pfBTagging = cms.Sequence(
-    (
-      # impact parameters and IP-only algorithms
-      pfImpactParameterTagInfos *
-      ( pfTrackCountingHighEffBJetTags +
-        pfTrackCountingHighPurBJetTags +
-        pfJetProbabilityBJetTags +
-        pfJetBProbabilityBJetTags +
+pfBTaggingTask = cms.Task(
+    # impact parameters and IP-only algorithms
+    pfImpactParameterTagInfos,
+    pfTrackCountingHighEffBJetTags,
+    pfJetProbabilityBJetTags,
+    pfJetBProbabilityBJetTags,
 
-        # SV tag infos depending on IP tag infos, and SV (+IP) based algos
-        pfSecondaryVertexTagInfos *
-        ( pfSimpleSecondaryVertexHighEffBJetTags +
-          pfSimpleSecondaryVertexHighPurBJetTags +
-          pfCombinedSecondaryVertexBJetTags +
-          pfCombinedSecondaryVertexV2BJetTags
-        )
-        + inclusiveCandidateVertexing *
-        pfInclusiveSecondaryVertexFinderTagInfos *
-        pfCombinedInclusiveSecondaryVertexV2BJetTags
+    # SV tag infos depending on IP tag infos, and SV (+IP) based algos
+    pfSecondaryVertexTagInfos,
+    pfSimpleSecondaryVertexHighEffBJetTags,
+    pfCombinedSecondaryVertexV2BJetTags,
+    inclusiveCandidateVertexingTask,
+    pfInclusiveSecondaryVertexFinderTagInfos,
+    pfSimpleInclusiveSecondaryVertexHighEffBJetTags,
+    pfCombinedInclusiveSecondaryVertexV2BJetTags,
+    pfGhostTrackVertexTagInfos,
+    pfGhostTrackBJetTags,
+    pfDeepCSVTask,
+    pfDeepFlavourTask,
 
-      ) +
-
-      # soft lepton tag infos and algos
-      softPFMuonsTagInfos *
-      softPFMuonBJetTags
-      + softPFElectronsTagInfos *
-      softPFElectronBJetTags
-    ) *
+    # soft lepton tag infos and algos
+    softPFMuonsTagInfos,
+    softPFMuonBJetTags,
+    softPFElectronsTagInfos,
+    softPFElectronBJetTags,
 
     # overall combined taggers
-    ( #CSV + soft-lepton + jet probability discriminators combined
-      pfCombinedMVABJetTags
-      + pfCombinedMVAV2BJetTags
+    #CSV + soft-lepton + jet probability discriminators combined
+    pfCombinedMVAV2BJetTags,
+    pfChargeBJetTags,
+    
+    # pixel cluster
+    pixelClusterTagInfos,
 
-      #CSV + soft-lepton variables combined (btagger)
-      + pfCombinedSecondaryVertexSoftLeptonBJetTags
-    )
 )
 
-btagging = cms.Sequence(
-    pfBTagging * pfCTagging
+pfBTagging = cms.Sequence(pfBTaggingTask)
+
+btaggingTask = cms.Task(
+    pfBTaggingTask,
+    pfCTaggingTask
 )
+btagging = cms.Sequence(btaggingTask)
+
+## modifying b-tagging task in Run3 adding ParticleNet inferece
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+_pfBTaggingTask_run3 = cms.Task(
+    # Keep all the infos and DeepCSV and DeepFlavour
+    pfImpactParameterTagInfos,
+    pfTrackCountingHighEffBJetTags,
+    pfJetProbabilityBJetTags,
+    pfJetBProbabilityBJetTags,
+
+    pfSecondaryVertexTagInfos,
+    inclusiveCandidateVertexingTask,
+    pfInclusiveSecondaryVertexFinderTagInfos,
+    pfGhostTrackVertexTagInfos,
+    pfDeepCSVTask,
+    pfDeepFlavourTask,
+
+    softPFMuonsTagInfos,
+    softPFElectronsTagInfos,
+    pixelClusterTagInfos,
+
+    pfParticleNetAK4TaskForRECO,
+    pfParticleNetTask
+)
+_pfCTaggingTask_run3 = cms.Task(
+    inclusiveCandidateVertexingCvsLTask,
+    pfInclusiveSecondaryVertexFinderCvsLTagInfos,
+)
+run3_common.toReplaceWith( pfBTaggingTask, _pfBTaggingTask_run3 )
+run3_common.toReplaceWith( pfCTaggingTask, _pfCTaggingTask_run3 )
+

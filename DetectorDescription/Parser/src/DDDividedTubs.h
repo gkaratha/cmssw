@@ -1,68 +1,42 @@
-#ifndef DD_DividedTubs_H
-#define DD_DividedTubs_H
-//
-// ********************************************************************
-// 25.04.04 - M. Case ddd-ize  G4ParameterisationTubs*
-// ********************************************************************
+#ifndef DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_TUBS_H
+#define DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_TUBS_H
 
 #include "DDDividedGeometryObject.h"
-#include "DetectorDescription/Base/interface/DDTranslation.h"
+#include "DetectorDescription/Core/interface/DDTranslation.h"
+#include "DetectorDescription/Core/interface/DDDivision.h"
 
+class DDCompactView;
 class DDLogicalPart;
 class DDRotation;
 
-class DDDividedTubsRho : public DDDividedGeometryObject
-{ 
- public:
+class DDDividedTubsRho final : public DDDividedGeometryObject {
+public:
+  DDDividedTubsRho(const DDDivision& div, DDCompactView* cpv);
 
-  DDDividedTubsRho( const DDDivision& div, DDCompactView* cpv);
-
-  virtual ~DDDividedTubsRho();
-  
-  virtual double getMaxParameter() const;
-
-  virtual DDTranslation makeDDTranslation( const int copyNo ) const;
-
-  virtual DDRotation makeDDRotation( const int copyNo ) const;
-
-  virtual DDLogicalPart makeDDLogicalPart(const int copyNo) const;
-
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
-class DDDividedTubsPhi : public DDDividedGeometryObject
-{ 
- public:
+class DDDividedTubsPhi final : public DDDividedGeometryObject {
+public:
+  DDDividedTubsPhi(const DDDivision& div, DDCompactView* cpv);
 
-  DDDividedTubsPhi( const DDDivision& div, DDCompactView* cpv);
-
-  virtual ~DDDividedTubsPhi();
-  
-  virtual double getMaxParameter() const;
-
-  virtual DDTranslation makeDDTranslation( const int copyNo ) const;
-
-  virtual DDRotation makeDDRotation( const int copyNo ) const;
-
-  virtual DDLogicalPart makeDDLogicalPart(const int copyNo) const;
-
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
-class DDDividedTubsZ : public DDDividedGeometryObject
-{ 
- public:
+class DDDividedTubsZ final : public DDDividedGeometryObject {
+public:
+  DDDividedTubsZ(const DDDivision& div, DDCompactView* cpv);
 
-  DDDividedTubsZ( const DDDivision& div, DDCompactView* cpv);
-
-  virtual ~DDDividedTubsZ();
-  
-  virtual double getMaxParameter() const;
-
-  virtual DDTranslation makeDDTranslation( const int copyNo ) const;
-
-  virtual DDRotation makeDDRotation( const int copyNo ) const;
-
-  virtual DDLogicalPart makeDDLogicalPart(const int copyNo) const;
-
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
 #endif

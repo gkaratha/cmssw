@@ -3,18 +3,23 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("ANA")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.categories.append('TriggerSummaryAnalyzerAOD')
-process.MessageLogger.categories.append('TriggerSummaryAnalyzerRAW')
-process.MessageLogger.categories.append('HLTEventAnalyzerAOD')
-process.MessageLogger.categories.append('HLTEventAnalyzerRAW')
-process.MessageLogger.categories.append('L1GtTrigReport')
-process.MessageLogger.categories.append('HLTrigReport')
-process.MessageLogger.categories.append('HLTSummaryFilter')
-process.MessageLogger.categories.append('HLTConfigProvider')
+process.MessageLogger.TriggerSummaryAnalyzerAOD=dict()
+process.MessageLogger.TriggerSummaryAnalyzerRAW=dict()
+process.MessageLogger.HLTEventAnalyzerAOD=dict()
+process.MessageLogger.HLTEventAnalyzerRAW=dict()
+process.MessageLogger.L1GtTrigReport=dict()
+process.MessageLogger.L1TGlobalSummary=dict()
+process.MessageLogger.HLTrigReport=dict()
+process.MessageLogger.HLTSummaryFilter=dict()
+process.MessageLogger.HLTConfigProvider=dict()
+process.MessageLogger.HLTPrescaleProvider=dict()
+process.MessageLogger.HLTConfigData=dict()
 
-from Configuration.AlCa.autoCond import autoCond
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = autoCond['run2_mc_FULL']
+# process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+# process.load('Configuration.StandardSequences.CondDBESSource_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag as customiseGlobalTag
+# process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:run2_hlt_GRun')
+process.GlobalTag = customiseGlobalTag(None, globaltag = 'auto:run2_hlt_GRun')
 
 # process.Timing = cms.Service("Timing")
 
@@ -28,7 +33,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(2)
 )
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:RelVal_HLT_FULL_MC.root')
+    fileNames = cms.untracked.vstring('file:RelVal_HLT_GRun_DATA.root')
 )
 
 process.options = cms.untracked.PSet(

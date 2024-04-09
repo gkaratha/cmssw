@@ -6,12 +6,14 @@ process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 process.load("Geometry.CMSCommonData.cmsSimIdealGeometryXML_cfi")
 process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Geometry.HcalCommonData.hcalParameters_cfi")
-process.load("Geometry.HcalCommonData.hcalDDDSimConstants_cfi")
+process.load("Geometry.EcalCommonData.ecalSimulationParameters_cff")
+process.load("Geometry.HcalCommonData.hcalDDConstants_cff")
+process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
+process.load("Geometry.MuonNumbering.muonOffsetESProducer_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("SimG4Core.Application.g4SimHits_cfi")
-
+process.load('Configuration.StandardSequences.Generator_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run1_mc']
@@ -69,12 +71,25 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.g4SimHits.HCalSD.TestNumberingScheme = True
-process.hoSimHitStudy.TestNumbering          = True
-process.hoSimHitStudy.PrintExcessEnergy      = False
-process.hoSimHitStudy.MaxEnergy = 10.0
-process.hoSimHitStudy.ScaleEB   = 1.02
-process.hoSimHitStudy.ScaleHB   = 104.4
-process.hoSimHitStudy.ScaleHO   = 2.33
+process.HOSimHitStudy.TestNumbering          = True
+process.HOSimHitStudy.PrintExcessEnergy      = False
+process.HOSimHitStudy.MaxEnergy = 10.0
+process.HOSimHitStudy.ScaleEB   = 1.02
+process.HOSimHitStudy.ScaleHB   = 104.4
+process.HOSimHitStudy.ScaleHO   = 2.33
 
-process.p1 = cms.Path(process.generator*process.VtxSmeared*process.g4SimHits*process.hoSimHitStudy)
+process.generation_step = cms.Path(process.pgen)
+process.simulation_step = cms.Path(process.psim)
+process.analysis_step   = cms.Path(process.HOSimHitStudy)
+
+# Schedule definition 
+process.schedule = cms.Schedule(process.generation_step,
+                                process.simulation_step,
+                                process.analysis_step
+                                )
+
+# filter all path with the production filter sequence
+for path in process.paths:
+        getattr(process,path)._seq = process.generator * getattr(process,path)._seq
+
 

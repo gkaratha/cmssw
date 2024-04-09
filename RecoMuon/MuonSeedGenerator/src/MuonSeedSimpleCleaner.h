@@ -3,15 +3,12 @@
 
 #include "RecoMuon/MuonSeedGenerator/src/MuonSeedVCleaner.h"
 
-class MuonSeedSimpleCleaner: public MuonSeedVCleaner
-{
+class MuonSeedSimpleCleaner : public MuonSeedVCleaner {
 public:
-
-  virtual void clean(TrajectorySeedCollection & seeds);
+  void clean(TrajectorySeedCollection& seeds) override;
 
 private:
-  bool checkPt(const TrajectorySeed & seed) const;
+  bool checkPt(const TrajectorySeed& seed) const;
 };
 
 #endif
-

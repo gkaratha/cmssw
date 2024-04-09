@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 process = cms.Process("SIPIXELDQM")
 process.load("Geometry.TrackerSimData.trackerSimGeometryXML_cfi")
@@ -55,12 +56,13 @@ process.MessageLogger = cms.Service("MessageLogger",
 
 process.AdaptorConfig = cms.Service("AdaptorConfig")
 
-process.sipixelEDAClient = cms.EDAnalyzer("SiPixelEDAClient",
+process.sipixelEDAClient = DQMEDHarvester("SiPixelEDAClient",
     FileSaveFrequency = cms.untracked.int32(50),
     StaticUpdateFrequency = cms.untracked.int32(10)
 )
 
-process.qTester = cms.EDAnalyzer("QualityTester",
+from DQMServices.Core.DQMQualityTester import DQMQualityTester
+process.qTester = DQMQualityTester(
     qtList = cms.untracked.FileInPath('DQM/SiPixelMonitorClient/test/sipixel_qualitytest_config.xml'),
     QualityTestPrescaler = cms.untracked.int32(1),
     getQualityTestsFromFile = cms.untracked.bool(True)

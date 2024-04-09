@@ -1,15 +1,17 @@
-/*
- * Geometry for High Granularity Calorimeter
+/* for High Granularity Calorimeter
  * This geometry is essentially driven by topology, 
  * which is thus encapsulated in this class. 
  * This makes this geometry not suitable to be loaded
  * by regular CaloGeometryLoader<T>
  */
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
+#include "DataFormats/GeometrySurface/interface/Plane.h"
 #include "Geometry/HGCalGeometry/interface/HGCalGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloGenericDetId.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
-#include "Geometry/CaloGeometry/interface/TruncatedPyramid.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+#include "TrackingTools/GeomPropagators/interface/AnalyticalPropagator.h"
 
 #include <cmath>
 
@@ -19,395 +21,873 @@
 typedef CaloCellGeometry::Tr3D Tr3D;
 typedef std::vector<float> ParmVec;
 
-//#define DebugLog
+//#define EDM_ML_DEBUG
 
-HGCalGeometry::HGCalGeometry( const HGCalTopology& topology_ )
-  : m_topology( topology_ ),
-    m_cellVec( topology_.totalGeomModules()),
-    m_validGeomIds( topology_.totalGeomModules()),
-    m_halfType( topology_.detectorType()),
-    m_subdet( topology_.subDetector()) {
-  
-  m_validIds.reserve( topology().totalModules());
-#ifdef DebugLog
-  std::cout << "Expected total # of Geometry Modules " 
-	    << topology().totalGeomModules() << std::endl;
+const bool debugLocate = false;
+
+HGCalGeometry::HGCalGeometry(const HGCalTopology& topology_)
+    : m_topology(topology_),
+      m_validGeomIds(topology_.totalGeomModules()),
+      m_det(topology_.detector()),
+      m_subdet(topology_.subDetector()),
+      twoBysqrt3_(2.0 / std::sqrt(3.0)) {
+  if (m_det == DetId::HGCalHSc) {
+    m_cellVec2 = CellVec2(topology_.totalGeomModules());
+  } else {
+    m_cellVec = CellVec(topology_.totalGeomModules());
+  }
+  m_validIds.reserve(m_topology.totalModules());
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HGCalGeom") << "Expected total # of Geometry Modules " << m_topology.totalGeomModules();
 #endif
 }
 
-HGCalGeometry::~HGCalGeometry() { }
+void HGCalGeometry::fillNamedParams(DDFilteredView fv) {}
 
-void HGCalGeometry::fillNamedParams (DDFilteredView fv) {}
+void HGCalGeometry::initializeParms() {}
 
-void HGCalGeometry::initializeParms() {
-}
-
-void HGCalGeometry::localCorners(Pt3DVec&        lc,
-				 const CCGFloat* pv,
-				 unsigned int    i,
-				 Pt3D&           ref) {
-  FlatTrd::localCorners( lc, pv, ref ) ;
-}
-
-void HGCalGeometry::newCell( const GlobalPoint& f1 ,
-			     const GlobalPoint& f2 ,
-			     const GlobalPoint& f3 ,
-			     const CCGFloat*    parm ,
-			     const DetId&       detId ) {
-
-  DetId geomId;
-  int   cells;
-  HGCalTopology::DecodedDetId id = topology().decode(detId);
-  if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-    geomId = (detId.subdetId() == HGCEE ? 
-	      (DetId)(HGCEEDetId(detId).geometryCell()) :
-	      (DetId)(HGCHEDetId(detId).geometryCell()));
-    cells = topology().dddConstants().maxCells(id.iLay,true);
+void HGCalGeometry::localCorners(Pt3DVec& lc, const CCGFloat* pv, unsigned int i, Pt3D& ref) {
+  if (m_det == DetId::HGCalHSc) {
+    FlatTrd::localCorners(lc, pv, ref);
   } else {
-    geomId = (DetId)(HGCalDetId(detId).geometryCell());
-    cells = topology().dddConstants().numberCellsHexagon(id.iSec);
+    FlatHexagon::localCorners(lc, pv, ref);
   }
-  const uint32_t cellIndex (topology().detId2denseGeomId(detId));
+}
 
-  m_cellVec.at( cellIndex ) = FlatTrd( cornersMgr(), f1, f2, f3, parm ) ;
-  m_validGeomIds.at( cellIndex ) = geomId ;
+void HGCalGeometry::newCell(
+    const GlobalPoint& f1, const GlobalPoint& f2, const GlobalPoint& f3, const CCGFloat* parm, const DetId& detId) {
+  DetId geomId = getGeometryDetId(detId);
+  int cells(0);
+  HGCalTopology::DecodedDetId id = m_topology.decode(detId);
+  if (m_topology.waferHexagon6()) {
+    cells = m_topology.dddConstants().numberCellsHexagon(id.iSec1);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "NewCell " << HGCalDetId(detId) << " GEOM " << HGCalDetId(geomId);
+#endif
+  } else if (m_topology.tileTrapezoid()) {
+    cells = 1;
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "NewCell " << HGCScintillatorDetId(detId) << " GEOM "
+                                  << HGCScintillatorDetId(geomId);
+#endif
+  } else {
+    cells = m_topology.dddConstants().numberCellsHexagon(id.iLay, id.iSec1, id.iSec2, false);
+#ifdef EDM_ML_DEBUG
+    if (detId.det() == DetId::Forward)
+      edm::LogVerbatim("HGCalGeom") << "NewCell " << HFNoseDetId(detId) << " GEOM " << HFNoseDetId(geomId);
+    else
+      edm::LogVerbatim("HGCalGeom") << "NewCell " << HGCSiliconDetId(detId) << " GEOM " << HGCSiliconDetId(geomId);
+#endif
+  }
+  const uint32_t cellIndex(m_topology.detId2denseGeomId(geomId));
 
-#ifdef DebugLog
+  if (m_det == DetId::HGCalHSc) {
+    m_cellVec2.at(cellIndex) = FlatTrd(cornersMgr(), f1, f2, f3, parm);
+  } else {
+    m_cellVec.at(cellIndex) = FlatHexagon(cornersMgr(), f1, f2, f3, parm);
+  }
+  m_validGeomIds.at(cellIndex) = geomId;
+
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HGCalGeom") << "Store for DetId " << std::hex << detId.rawId() << " GeomId " << geomId.rawId()
+                                << std::dec << " Index " << cellIndex << " cells " << cells;
   unsigned int nOld = m_validIds.size();
 #endif
-  for (int cell = 0; cell < cells; ++cell) {
-    id.iCell = cell;
-    m_validIds.push_back( topology().encode(id));
-    if ((topology().dddConstants().geomMode() == HGCalGeometryMode::Square) &&
-	(!m_halfType)) {
-      id.iSubSec = -id.iSubSec;
-      m_validIds.push_back( topology().encode(id));
-      id.iSubSec = -id.iSubSec;
+  if (m_topology.waferHexagon6()) {
+    for (int cell = 0; cell < cells; ++cell) {
+      id.iCell1 = cell;
+      DetId idc = m_topology.encode(id);
+      if (m_topology.valid(idc)) {
+        m_validIds.emplace_back(idc);
+#ifdef EDM_ML_DEBUG
+        edm::LogVerbatim("HGCalGeom") << "Valid Id [" << cell << "] " << HGCalDetId(idc);
+#endif
+      }
     }
-  }
-
-#ifdef DebugLog
-  std::cout << "HGCalGeometry::newCell-> [" << cellIndex << "]"
-	    << " front:" << f1.x() << '/' << f1.y() << '/' << f1.z() 
-     	    << " back:" <<  f2.x() << '/' << f2.y() << '/' << f2.z()
-	    << " eta|phi " << m_cellVec[cellIndex].etaPos() << ":"
-	    << m_cellVec[cellIndex].phiPos() << " id:";
-  if (topology().dddConstants().geomMode() != HGCalGeometryMode::Square) {
-    std::cout << HGCalDetId(detId);
-  } else if (m_subdet == HGCEE) {
-    std::cout << HGCEEDetId(detId);
+  } else if (m_topology.tileTrapezoid()) {
+    DetId idc = m_topology.encode(id);
+    if (m_topology.valid(idc)) {
+      HGCScintillatorDetId hid(idc);
+      std::pair<int, int> typm = m_topology.dddConstants().tileType(hid.layer(), hid.ring(), 0);
+      if (typm.first >= 0) {
+        hid.setType(typm.first);
+        hid.setSiPM(typm.second);
+        idc = static_cast<DetId>(hid);
+      }
+      m_validIds.emplace_back(idc);
+#ifdef EDM_ML_DEBUG
+      edm::LogVerbatim("HGCalGeom") << "Valid Id [0] " << HGCScintillatorDetId(idc);
+#endif
+    } else {
+      edm::LogWarning("HGCalGeom") << "Check " << HGCScintillatorDetId(idc) << " from " << HGCScintillatorDetId(detId)
+                                   << " ERROR ???";
+    }
   } else {
-    std::cout << HGCHEDetId(detId);
+#ifdef EDM_ML_DEBUG
+    unsigned int cellAll(0), cellSelect(0);
+#endif
+    for (int u = 0; u < 2 * cells; ++u) {
+      for (int v = 0; v < 2 * cells; ++v) {
+        if (((v - u) < cells) && (u - v) <= cells) {
+          id.iCell1 = u;
+          id.iCell2 = v;
+          DetId idc = m_topology.encode(id);
+#ifdef EDM_ML_DEBUG
+          ++cellAll;
+#endif
+          if (m_topology.dddConstants().cellInLayer(id.iSec1, id.iSec2, u, v, id.iLay, id.zSide, true)) {
+            m_validIds.emplace_back(idc);
+#ifdef EDM_ML_DEBUG
+            ++cellSelect;
+            if (idc.det() == DetId::Forward)
+              edm::LogVerbatim("HGCalGeom") << "Valid Id [" << u << ", " << v << "] " << HFNoseDetId(idc);
+            else
+              edm::LogVerbatim("HGCalGeom") << "Valid Id [" << u << ", " << v << "] " << HGCSiliconDetId(idc);
+#endif
+          }
+        }
+      }
+    }
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "HGCalGeometry keeps " << cellSelect << " out of " << cellAll << " for wafer "
+                                  << id.iSec1 << ":" << id.iSec2 << " in "
+                                  << " layer " << id.iLay;
+#endif
+  }
+#ifdef EDM_ML_DEBUG
+  if (m_det == DetId::HGCalHSc) {
+    edm::LogVerbatim("HGCalGeom") << "HGCalGeometry::newCell-> [" << cellIndex << "]"
+                                  << " front:" << f1.x() << '/' << f1.y() << '/' << f1.z() << " back:" << f2.x() << '/'
+                                  << f2.y() << '/' << f2.z() << " eta|phi " << m_cellVec2[cellIndex].etaPos() << ":"
+                                  << m_cellVec2[cellIndex].phiPos();
+  } else {
+    edm::LogVerbatim("HGCalGeom") << "HGCalGeometry::newCell-> [" << cellIndex << "]"
+                                  << " front:" << f1.x() << '/' << f1.y() << '/' << f1.z() << " back:" << f2.x() << '/'
+                                  << f2.y() << '/' << f2.z() << " eta|phi " << m_cellVec[cellIndex].etaPos() << ":"
+                                  << m_cellVec[cellIndex].phiPos();
   }
   unsigned int nNew = m_validIds.size();
-  std::cout << " with valid DetId from " << nOld << " to " << nNew
- 	    << std::endl; 
-  std::cout << "Cell[" << cellIndex << "] " << std::hex << geomId.rawId() 
-	    << ":"  << m_validGeomIds[cellIndex].rawId() << std::dec
-	    << std::endl;
-#endif
-}
-
-const CaloCellGeometry* HGCalGeometry::getGeometry(const DetId& id) const {
-  if (id == DetId()) return 0; // nothing to get
-  DetId geoId;
-  if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-    geoId = (id.subdetId() == HGCEE ? 
-	     (DetId)(HGCEEDetId(id).geometryCell()) : 
-	     (DetId)(HGCHEDetId(id).geometryCell()));
+  if (m_topology.waferHexagon6()) {
+    edm::LogVerbatim("HGCalGeom") << "ID: " << HGCalDetId(detId) << " with valid DetId from " << nOld << " to " << nNew;
+  } else if (m_topology.tileTrapezoid()) {
+    edm::LogVerbatim("HGCalGeom") << "ID: " << HGCScintillatorDetId(detId) << " with valid DetId from " << nOld
+                                  << " to " << nNew;
+  } else if (m_topology.isHFNose()) {
+    edm::LogVerbatim("HGCalGeom") << "ID: " << HFNoseDetId(detId) << " with valid DetId from " << nOld << " to "
+                                  << nNew;
   } else {
-    geoId = (DetId)(HGCalDetId(id).geometryCell());
+    edm::LogVerbatim("HGCalGeom") << "ID: " << HGCSiliconDetId(detId) << " with valid DetId from " << nOld << " to "
+                                  << nNew;
   }
-  const uint32_t cellIndex (topology().detId2denseGeomId(geoId));
-  /*
-  if (cellIndex <  m_cellVec.size()) {
-    HGCalTopology::DecodedDetId id_ = topology().decode(id);
-    std::pair<float,float> xy = topology().dddConstants().locateCell(id_iCell,id_iLay,id_.iSubSec,true);
-    const HepGeom::Point3D<float> lcoord(xy.first,xy.second,0);
-    std::auto_ptr<FlatTrd> cellGeom(new FlatTrd(m_cellVec[cellIndex],lcoord));
-    return cellGeom.release();
-  }
-  */
-  return cellGeomPtr (cellIndex);
-
+  edm::LogVerbatim("HGCalGeom") << "Cell[" << cellIndex << "] " << std::hex << geomId.rawId() << ":"
+                                << m_validGeomIds[cellIndex].rawId() << std::dec;
+#endif
 }
 
-GlobalPoint HGCalGeometry::getPosition(const DetId& id) const {
+std::shared_ptr<const CaloCellGeometry> HGCalGeometry::getGeometry(const DetId& detId) const {
+  if (detId == DetId())
+    return nullptr;  // nothing to get
+  DetId geomId = getGeometryDetId(detId);
+  const uint32_t cellIndex(m_topology.detId2denseGeomId(geomId));
+  const GlobalPoint pos = (detId != geomId) ? getPosition(detId, false) : GlobalPoint();
+  return cellGeomPtr(cellIndex, pos);
+}
 
-  unsigned int cellIndex =  indexFor(id);
+bool HGCalGeometry::present(const DetId& detId) const {
+  if (detId == DetId())
+    return false;
+  DetId geomId = getGeometryDetId(detId);
+  const uint32_t index(m_topology.detId2denseGeomId(geomId));
+  return (nullptr != getGeometryRawPtr(index));
+}
+
+GlobalPoint HGCalGeometry::getPosition(const DetId& detid, bool debug) const {
+  unsigned int cellIndex = indexFor(detid);
   GlobalPoint glob;
-  if (cellIndex <  m_cellVec.size()) {
-    HGCalTopology::DecodedDetId id_ = topology().decode(id);
-    std::pair<float,float> xy;
-    if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-      xy = topology().dddConstants().locateCell(id_.iCell,id_.iLay,id_.iSubSec,true);
+  unsigned int maxSize = (m_topology.tileTrapezoid() ? m_cellVec2.size() : m_cellVec.size());
+  if (cellIndex < maxSize) {
+    HGCalTopology::DecodedDetId id = m_topology.decode(detid);
+    std::pair<float, float> xy;
+    if (m_topology.waferHexagon6()) {
+      xy = m_topology.dddConstants().locateCellHex(id.iCell1, id.iSec1, true);
+      const HepGeom::Point3D<float> lcoord(xy.first, xy.second, 0);
+      glob = m_cellVec[cellIndex].getPosition(lcoord);
+      if (debug)
+        edm::LogVerbatim("HGCalGeom") << "getPosition:: index " << cellIndex << " Local " << lcoord.x() << ":"
+                                      << lcoord.y() << " ID " << id.iCell1 << ":" << id.iSec1 << " Global " << glob;
+    } else if (m_topology.tileTrapezoid()) {
+      const HepGeom::Point3D<float> lcoord(0, 0, 0);
+      glob = m_cellVec2[cellIndex].getPosition(lcoord);
+      if (debug)
+        edm::LogVerbatim("HGCalGeom") << "getPositionTrap:: index " << cellIndex << " Local " << lcoord.x() << ":"
+                                      << lcoord.y() << " ID " << id.iLay << ":" << id.iSec1 << ":" << id.iCell1
+                                      << " Global " << glob;
     } else {
-      xy = topology().dddConstants().locateCellHex(id_.iCell,id_.iSec,true);
+      if (debug) {
+        if (detid.det() == DetId::Forward)
+          edm::LogVerbatim("HGCalGeom") << "getPosition for " << HFNoseDetId(detid) << " Layer " << id.iLay << " Wafer "
+                                        << id.iSec1 << ":" << id.iSec2 << " Cell " << id.iCell1 << ":" << id.iCell2;
+        else
+          edm::LogVerbatim("HGCalGeom") << "getPosition for " << HGCSiliconDetId(detid) << " Layer " << id.iLay
+                                        << " Wafer " << id.iSec1 << ":" << id.iSec2 << " Cell " << id.iCell1 << ":"
+                                        << id.iCell2;
+      }
+      xy = m_topology.dddConstants().locateCell(
+          id.zSide, id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2, true, true, false, debug);
+      double xx = id.zSide * xy.first;
+      double zz = id.zSide * m_topology.dddConstants().waferZ(id.iLay, true);
+      glob = GlobalPoint(xx, xy.second, zz);
+      if (debug)
+        edm::LogVerbatim("HGCalGeom") << "getPositionWafer:: index " << cellIndex << " Local " << xy.first << ":"
+                                      << xy.second << " ID " << id.iLay << ":" << id.iSec1 << ":" << id.iSec2 << ":"
+                                      << id.iCell1 << ":" << id.iCell2 << " Global " << glob;
     }
-    const HepGeom::Point3D<float> lcoord(xy.first,xy.second,0);
-    glob = m_cellVec[cellIndex].getPosition(lcoord);
-#ifdef DebugLog
-    std::cout << "getPosition:: index " << cellIndex << " Local " << lcoord.x()
-	      << ":" << lcoord.y() << " ID " << id_.iCell << ":" << id_.iLay 
-	      << " Global " << glob << std::endl;
-#endif
-  } 
+  } else {
+    edm::LogVerbatim("HGCalGeom") << "Cannot recognize " << std::hex << detid.rawId() << " cellIndex " << cellIndex
+                                  << ":" << maxSize << " Type " << m_topology.tileTrapezoid();
+  }
   return glob;
 }
 
-HGCalGeometry::CornersVec HGCalGeometry::getCorners(const DetId& id) const {
-
-  HGCalGeometry::CornersVec co (8, GlobalPoint(0,0,0));
-  unsigned int cellIndex =  indexFor(id);
-  if (cellIndex <  m_cellVec.size()) {
-    HGCalTopology::DecodedDetId id_ = topology().decode(id);
-    std::pair<float,float> xy;
-    if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-      xy = topology().dddConstants().locateCell(id_.iCell,id_.iLay,id_.iSubSec,true);
+GlobalPoint HGCalGeometry::getWaferPosition(const DetId& detid) const {
+  unsigned int cellIndex = indexFor(detid);
+  GlobalPoint glob;
+  unsigned int maxSize = (m_topology.tileTrapezoid() ? m_cellVec2.size() : m_cellVec.size());
+  if (cellIndex < maxSize) {
+    const HepGeom::Point3D<float> lcoord(0, 0, 0);
+    if (m_topology.tileTrapezoid()) {
+      glob = m_cellVec2[cellIndex].getPosition(lcoord);
     } else {
-      xy = topology().dddConstants().locateCellHex(id_.iCell,id_.iSec,true);
+      glob = m_cellVec[cellIndex].getPosition(lcoord);
     }
-    float dz = m_cellVec[cellIndex].param()[0];
-    float dx = 0.5*m_cellVec[cellIndex].param()[11];
-    static const int signx[] = {-1,-1,1,1,-1,-1,1,1};
-    static const int signy[] = {-1,1,1,-1,-1,1,1,-1};
-    static const int signz[] = {-1,-1,-1,-1,1,1,1,1};
-    for (unsigned int i = 0; i != 8; ++i) {
-      const HepGeom::Point3D<float> lcoord(xy.first+signx[i]*dx,xy.second+signy[i]*dx,signz[i]*dz);
-      co[i] = m_cellVec[cellIndex].getPosition(lcoord);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "getPositionTrap:: ID " << std::hex << detid.rawId() << std::dec << " index "
+                                  << cellIndex << " Global " << glob;
+#endif
+  }
+  return glob;
+}
+
+double HGCalGeometry::getArea(const DetId& detid) const {
+  HGCalGeometry::CornersVec corners = getNewCorners(detid);
+  double area(0);
+  if (corners.size() > 1) {
+    int n = corners.size() - 1;
+    int j = n - 1;
+    for (int i = 0; i < n; ++i) {
+      area += ((corners[j].x() + corners[i].x()) * (corners[i].y() - corners[j].y()));
+      j = i;
+    }
+  }
+  return std::abs(0.5 * area);
+}
+
+HGCalGeometry::CornersVec HGCalGeometry::getCorners(const DetId& detid) const {
+  unsigned int ncorner = ((m_det == DetId::HGCalHSc) ? FlatTrd::ncorner_ : FlatHexagon::ncorner_);
+  HGCalGeometry::CornersVec co(ncorner, GlobalPoint(0, 0, 0));
+  unsigned int cellIndex = indexFor(detid);
+  HGCalTopology::DecodedDetId id = m_topology.decode(detid);
+  if (cellIndex < m_cellVec2.size() && m_det == DetId::HGCalHSc) {
+    GlobalPoint v = getPosition(detid, false);
+    int type = std::min(id.iType, 1);
+    std::pair<double, double> rr = m_topology.dddConstants().cellSizeTrap(type, id.iSec1);
+    float dr = k_half * (rr.second - rr.first);
+    float dfi = m_cellVec2[cellIndex].param()[FlatTrd::k_Cell];
+    float dz = id.zSide * m_cellVec2[cellIndex].param()[FlatTrd::k_dZ];
+    float r = v.perp();
+    float fi = v.phi();
+    static const int signr[] = {1, 1, -1, -1, 1, 1, -1, -1};
+    static const int signf[] = {-1, 1, 1, -1, -1, 1, 1, -1};
+    static const int signz[] = {-1, -1, -1, -1, 1, 1, 1, 1};
+    for (unsigned int i = 0; i < ncorner; ++i) {
+      co[i] = GlobalPoint((r + signr[i] * dr) * cos(fi + signf[i] * dfi),
+                          (r + signr[i] * dr) * sin(fi + signf[i] * dfi),
+                          (v.z() + signz[i] * dz));
+    }
+  } else if (cellIndex < m_cellVec.size() && m_det != DetId::HGCalHSc) {
+    std::pair<float, float> xy;
+    if (m_topology.waferHexagon6()) {
+      xy = m_topology.dddConstants().locateCellHex(id.iCell1, id.iSec1, true);
+      float dx = m_cellVec[cellIndex].param()[FlatHexagon::k_r];
+      float dy = k_half * m_cellVec[cellIndex].param()[FlatHexagon::k_R];
+      float dz = m_cellVec[cellIndex].param()[FlatHexagon::k_dZ];
+      static const int signx[] = {0, -1, -1, 0, 1, 1, 0, -1, -1, 0, 1, 1};
+      static const int signy[] = {-2, -1, 1, 2, 1, -1, -2, -1, 1, 2, 1, -1};
+      static const int signz[] = {-1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1};
+      for (unsigned int i = 0; i < ncorner; ++i) {
+        const HepGeom::Point3D<float> lcoord(xy.first + signx[i] * dx, xy.second + signy[i] * dy, signz[i] * dz);
+        co[i] = m_cellVec[cellIndex].getPosition(lcoord);
+      }
+    } else {
+      xy = m_topology.dddConstants().locateCell(
+          id.zSide, id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2, true, false, true, debugLocate);
+      float zz = m_topology.dddConstants().waferZ(id.iLay, true);
+      float dx = k_fac2 * m_cellVec[cellIndex].param()[FlatHexagon::k_r];
+      float dy = k_fac1 * m_cellVec[cellIndex].param()[FlatHexagon::k_R];
+      float dz = -id.zSide * m_cellVec[cellIndex].param()[FlatHexagon::k_dZ];
+      static const int signx[] = {1, -1, -2, -1, 1, 2, 1, -1, -2, -1, 1, 2};
+      static const int signy[] = {1, 1, 0, -1, -1, 0, 1, 1, 0, -1, -1, 0};
+      static const int signz[] = {-1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1};
+      for (unsigned int i = 0; i < ncorner; ++i) {
+        auto xyglob = m_topology.dddConstants().localToGlobal8(
+            id.zSide, id.iLay, id.iSec1, id.iSec2, (xy.first + signx[i] * dx), (xy.second + signy[i] * dy), true, false);
+        double xx = id.zSide * xyglob.first;
+        co[i] = GlobalPoint(xx, xyglob.second, id.zSide * (zz + signz[i] * dz));
+      }
     }
   }
   return co;
 }
 
+HGCalGeometry::CornersVec HGCalGeometry::get8Corners(const DetId& detid) const {
+  unsigned int ncorner = FlatTrd::ncorner_;
+  HGCalGeometry::CornersVec co(ncorner, GlobalPoint(0, 0, 0));
+  unsigned int cellIndex = indexFor(detid);
+  HGCalTopology::DecodedDetId id = m_topology.decode(detid);
+  if (cellIndex < m_cellVec2.size() && m_det == DetId::HGCalHSc) {
+    GlobalPoint v = getPosition(detid, false);
+    int type = std::min(id.iType, 1);
+    std::pair<double, double> rr = m_topology.dddConstants().cellSizeTrap(type, id.iSec1);
+    float dr = k_half * (rr.second - rr.first);
+    float dfi = m_cellVec2[cellIndex].param()[FlatTrd::k_Cell];
+    float dz = id.zSide * m_cellVec2[cellIndex].param()[FlatTrd::k_dZ];
+    float r = v.perp();
+    float fi = v.phi();
+    static const int signr[] = {1, 1, -1, -1, 1, 1, -1, -1};
+    static const int signf[] = {-1, 1, 1, -1, -1, 1, 1, -1};
+    static const int signz[] = {-1, -1, -1, -1, 1, 1, 1, 1};
+    for (unsigned int i = 0; i < ncorner; ++i) {
+      co[i] = GlobalPoint((r + signr[i] * dr) * cos(fi + signf[i] * dfi),
+                          (r + signr[i] * dr) * sin(fi + signf[i] * dfi),
+                          (v.z() + signz[i] * dz));
+    }
+  } else if (cellIndex < m_cellVec.size() && m_det != DetId::HGCalHSc) {
+    std::pair<float, float> xy;
+    float dx(0);
+    static const int signx[] = {-1, -1, 1, 1, -1, -1, 1, 1};
+    static const int signy[] = {-1, 1, 1, -1, -1, 1, 1, -1};
+    static const int signz[] = {-1, -1, -1, -1, 1, 1, 1, 1};
+    if (m_topology.waferHexagon6()) {
+      xy = m_topology.dddConstants().locateCellHex(id.iCell1, id.iSec1, true);
+      dx = m_cellVec[cellIndex].param()[FlatHexagon::k_r];
+      float dz = m_cellVec[cellIndex].param()[FlatHexagon::k_dZ];
+      for (unsigned int i = 0; i < ncorner; ++i) {
+        const HepGeom::Point3D<float> lcoord(xy.first + signx[i] * dx, xy.second + signy[i] * dx, signz[i] * dz);
+        co[i] = m_cellVec[cellIndex].getPosition(lcoord);
+      }
+    } else {
+      xy = m_topology.dddConstants().locateCell(
+          id.zSide, id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2, true, false, true, debugLocate);
+      dx = k_fac2 * m_cellVec[cellIndex].param()[FlatHexagon::k_r];
+      float dy = k_fac1 * m_cellVec[cellIndex].param()[FlatHexagon::k_R];
+      float dz = -id.zSide * m_cellVec[cellIndex].param()[FlatHexagon::k_dZ];
+      float zz = m_topology.dddConstants().waferZ(id.iLay, true);
+      for (unsigned int i = 0; i < ncorner; ++i) {
+        auto xyglob = m_topology.dddConstants().localToGlobal8(
+            id.zSide, id.iLay, id.iSec1, id.iSec2, (xy.first + signx[i] * dx), (xy.second + signy[i] * dy), true, false);
+        double xx = id.zSide * xyglob.first;
+        co[i] = GlobalPoint(xx, xyglob.second, id.zSide * (zz + signz[i] * dz));
+      }
+    }
+  }
+  return co;
+}
+
+HGCalGeometry::CornersVec HGCalGeometry::getNewCorners(const DetId& detid, bool debug) const {
+  unsigned int ncorner = (m_det == DetId::HGCalHSc) ? 5 : 7;
+  HGCalGeometry::CornersVec co(ncorner, GlobalPoint(0, 0, 0));
+  unsigned int cellIndex = indexFor(detid);
+  HGCalTopology::DecodedDetId id = m_topology.decode(detid);
+  if (debug)
+    edm::LogVerbatim("HGCalGeom") << "NewCorners for Layer " << id.iLay << " Wafer " << id.iSec1 << ":" << id.iSec2
+                                  << " Cell " << id.iCell1 << ":" << id.iCell2;
+  if (cellIndex < m_cellVec2.size() && m_det == DetId::HGCalHSc) {
+    GlobalPoint v = getPosition(detid, false);
+    int type = std::min(id.iType, 1);
+    std::pair<double, double> rr = m_topology.dddConstants().cellSizeTrap(type, id.iSec1);
+    float dr = k_half * (rr.second - rr.first);
+    float dfi = m_cellVec2[cellIndex].param()[FlatTrd::k_Cell];
+    float dz = -id.zSide * m_cellVec2[cellIndex].param()[FlatTrd::k_dZ];
+    float r = v.perp();
+    float fi = v.phi();
+    static const int signr[] = {1, 1, -1, -1};
+    static const int signf[] = {-1, 1, 1, -1};
+    for (unsigned int i = 0; i < ncorner - 1; ++i) {
+      co[i] = GlobalPoint(
+          (r + signr[i] * dr) * cos(fi + signf[i] * dfi), (r + signr[i] * dr) * sin(fi + signf[i] * dfi), (v.z() + dz));
+    }
+    // Used to pass downstream the thickness of this cell
+    co[ncorner - 1] = GlobalPoint(0, 0, -2 * dz);
+  } else if (cellIndex < m_cellVec.size() && m_det != DetId::HGCalHSc) {
+    std::pair<float, float> xy;
+    float dx = k_fac2 * m_cellVec[cellIndex].param()[FlatHexagon::k_r];
+    float dy = k_fac1 * m_cellVec[cellIndex].param()[FlatHexagon::k_R];
+    float dz = -id.zSide * m_cellVec[cellIndex].param()[FlatHexagon::k_dZ];
+    static const int signx[] = {1, -1, -2, -1, 1, 2};
+    static const int signy[] = {1, 1, 0, -1, -1, 0};
+#ifdef EDM_ML_DEBUG
+    if (debug)
+      edm::LogVerbatim("HGCalGeom") << "kfac " << k_fac1 << ":" << k_fac2 << " dx:dy:dz " << dx << ":" << dy << ":"
+                                    << dz;
+#endif
+    if (m_topology.waferHexagon6()) {
+      xy = m_topology.dddConstants().locateCellHex(id.iCell1, id.iSec1, true);
+      for (unsigned int i = 0; i < ncorner - 1; ++i) {
+        const HepGeom::Point3D<float> lcoord(xy.first + signx[i] * dx, xy.second + signy[i] * dy, dz);
+        co[i] = m_cellVec[cellIndex].getPosition(lcoord);
+      }
+    } else {
+      xy = m_topology.dddConstants().locateCell(
+          id.zSide, id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2, true, false, true, debug);
+      float zz = m_topology.dddConstants().waferZ(id.iLay, true);
+      for (unsigned int i = 0; i < ncorner; ++i) {
+        double xloc = xy.first + signx[i] * dx;
+        double yloc = xy.second + signy[i] * dy;
+#ifdef EDM_ML_DEBUG
+        if (debug)
+          edm::LogVerbatim("HGCalGeom") << "Corner " << i << " x " << xy.first << ":" << xloc << " y " << xy.second
+                                        << ":" << yloc << " z " << zz << ":" << id.zSide * (zz + dz);
+#endif
+        auto xyglob =
+            m_topology.dddConstants().localToGlobal8(id.zSide, id.iLay, id.iSec1, id.iSec2, xloc, yloc, true, debug);
+        double xx = id.zSide * xyglob.first;
+        co[i] = GlobalPoint(xx, xyglob.second, id.zSide * (zz + dz));
+      }
+    }
+    // Used to pass downstream the thickness of this cell
+    co[ncorner - 1] = GlobalPoint(0, 0, -2 * dz);
+  }
+  return co;
+}
+
+DetId HGCalGeometry::neighborZ(const DetId& idin, const GlobalVector& momentum) const {
+  DetId idnew;
+  HGCalTopology::DecodedDetId id = m_topology.decode(idin);
+  int lay = ((momentum.z() * id.zSide > 0) ? (id.iLay + 1) : (id.iLay - 1));
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HGCalGeom") << "neighborz1:: ID " << id.iLay << ":" << id.iSec1 << ":" << id.iSec2 << ":"
+                                << id.iCell1 << ":" << id.iCell2 << " New Layer " << lay << " Range "
+                                << m_topology.dddConstants().firstLayer() << ":"
+                                << m_topology.dddConstants().lastLayer(true) << " pz " << momentum.z();
+#endif
+  if ((lay >= m_topology.dddConstants().firstLayer()) && (lay <= m_topology.dddConstants().lastLayer(true)) &&
+      (momentum.z() != 0.0)) {
+    GlobalPoint v = getPosition(idin, false);
+    double z = id.zSide * m_topology.dddConstants().waferZ(lay, true);
+    double grad = (z - v.z()) / momentum.z();
+    GlobalPoint p(v.x() + grad * momentum.x(), v.y() + grad * momentum.y(), z);
+    double r = p.perp();
+    auto rlimit = topology().dddConstants().rangeR(z, true);
+    if (r >= rlimit.first && r <= rlimit.second)
+      idnew = getClosestCell(p);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "neighborz1:: Position " << v << " New Z " << z << ":" << grad << " new position "
+                                  << p << " r-limit " << rlimit.first << ":" << rlimit.second;
+#endif
+  }
+  return idnew;
+}
+
+DetId HGCalGeometry::neighborZ(const DetId& idin,
+                               const MagneticField* bField,
+                               int charge,
+                               const GlobalVector& momentum) const {
+  DetId idnew;
+  HGCalTopology::DecodedDetId id = m_topology.decode(idin);
+  int lay = ((momentum.z() * id.zSide > 0) ? (id.iLay + 1) : (id.iLay - 1));
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HGCalGeom") << "neighborz2:: ID " << id.iLay << ":" << id.iSec1 << ":" << id.iSec2 << ":"
+                                << id.iCell1 << ":" << id.iCell2 << " New Layer " << lay << " Range "
+                                << m_topology.dddConstants().firstLayer() << ":"
+                                << m_topology.dddConstants().lastLayer(true) << " pz " << momentum.z();
+#endif
+  if ((lay >= m_topology.dddConstants().firstLayer()) && (lay <= m_topology.dddConstants().lastLayer(true)) &&
+      (momentum.z() != 0.0)) {
+    GlobalPoint v = getPosition(idin, false);
+    double z = id.zSide * m_topology.dddConstants().waferZ(lay, true);
+    FreeTrajectoryState fts(v, momentum, charge, bField);
+    Plane::PlanePointer nPlane = Plane::build(Plane::PositionType(0, 0, z), Plane::RotationType());
+    AnalyticalPropagator myAP(bField, alongMomentum, 2 * M_PI);
+    TrajectoryStateOnSurface tsos = myAP.propagate(fts, *nPlane);
+    GlobalPoint p;
+    auto rlimit = topology().dddConstants().rangeR(z, true);
+    if (tsos.isValid()) {
+      p = tsos.globalPosition();
+      double r = p.perp();
+      if (r >= rlimit.first && r <= rlimit.second)
+        idnew = getClosestCell(p);
+    }
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "neighborz2:: Position " << v << " New Z " << z << ":" << charge << ":"
+                                  << tsos.isValid() << " new position " << p << " r limits " << rlimit.first << ":"
+                                  << rlimit.second;
+#endif
+  }
+  return idnew;
+}
+
 DetId HGCalGeometry::getClosestCell(const GlobalPoint& r) const {
   unsigned int cellIndex = getClosestCellIndex(r);
-  if (cellIndex < m_cellVec.size()) {
-    HGCalTopology::DecodedDetId id_ = topology().decode(m_validGeomIds[cellIndex]);
+  if ((cellIndex < m_cellVec.size() && m_det != DetId::HGCalHSc) ||
+      (cellIndex < m_cellVec2.size() && m_det == DetId::HGCalHSc)) {
+    HGCalTopology::DecodedDetId id = m_topology.decode(m_validGeomIds[cellIndex]);
+    if (id.det == 0)
+      id.det = static_cast<int>(m_topology.detector());
     HepGeom::Point3D<float> local;
-    if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-      local = m_cellVec[cellIndex].getLocal(r);
+    if (r.z() > 0) {
+      local = HepGeom::Point3D<float>(r.x(), r.y(), 0);
+      id.zSide = 1;
     } else {
-      if (r.z() > 0) local = HepGeom::Point3D<float>(r.x(),r.y(),0);
-      else           local = HepGeom::Point3D<float>(-r.x(),r.y(),0);
+      local = HepGeom::Point3D<float>(-r.x(), r.y(), 0);
+      id.zSide = -1;
     }
-    std::pair<int,int> kxy = 
-      topology().dddConstants().assignCell(local.x(),local.y(),id_.iLay,
-					   id_.iSubSec,true);
-    id_.iCell   = kxy.second;
-    if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-      id_.iSubSec = kxy.first;
+    if (m_topology.waferHexagon6()) {
+      const auto& kxy = m_topology.dddConstants().assignCell(local.x(), local.y(), id.iLay, id.iType, true);
+      id.iCell1 = kxy.second;
+      id.iSec1 = kxy.first;
+      id.iType = m_topology.dddConstants().waferTypeT(kxy.first);
+      if (id.iType != 1)
+        id.iType = -1;
+    } else if (m_topology.tileTrapezoid()) {
+      id.iLay = m_topology.dddConstants().getLayer(r.z(), true);
+      const auto& kxy = m_topology.dddConstants().assignCellTrap(r.x(), r.y(), r.z(), id.iLay, true);
+      id.iSec1 = kxy[0];
+      id.iCell1 = kxy[1];
+      id.iType = kxy[2];
     } else {
-      id_.iSec    = kxy.first;
-      id_.iSubSec = topology().dddConstants().waferTypeT(kxy.first);
-      if (id_.iSubSec != 1) id_.iSubSec = -1;
+      id.iLay = m_topology.dddConstants().getLayer(r.z(), true);
+      int zside = (r.z() > 0) ? 1 : -1;
+#ifdef EDM_ML_DEBUG
+      edm::LogVerbatim("HGCalGeom") << "ZZ " << r.z() << ":" << zside << " Layer " << id.iLay << " Global " << r
+                                    << "  Local " << local;
+#endif
+      const auto& kxy =
+          m_topology.dddConstants().assignCellHex(local.x(), local.y(), zside, id.iLay, true, false, true);
+      id.iSec1 = kxy[0];
+      id.iSec2 = kxy[1];
+      id.iType = kxy[2];
+      id.iCell1 = kxy[3];
+      id.iCell2 = kxy[4];
     }
-#ifdef DebugLog
-    std::cout << "getClosestCell: local " << local << " Id " << id_.zside 
-	      << ":" << id_.iLay << ":" << id_.iSec << ":" << id_.iSubSec
-	      << ":" << id_.iCell << std::endl;
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "getClosestCell: local " << local << " Id " << id.det << ":" << id.zSide << ":"
+                                  << id.iLay << ":" << id.iSec1 << ":" << id.iSec2 << ":" << id.iType << ":"
+                                  << id.iCell1 << ":" << id.iCell2;
 #endif
 
     //check if returned cell is valid
-    if (id_.iCell>=0) return topology().encode(id_);
+    if (id.iCell1 >= 0)
+      return m_topology.encode(id);
   }
 
   //if not valid or out of bounds return a null DetId
   return DetId();
 }
 
-HGCalGeometry::DetIdSet HGCalGeometry::getCells( const GlobalPoint& r, double dR ) const {
-   HGCalGeometry::DetIdSet dss;
-   return dss;
-}
-std::string HGCalGeometry::cellElement() const {
-  if      (m_subdet == HGCEE)  return "HGCalEE";
-  else if (m_subdet == HGCHEF) return "HGCalHEFront";
-  else if (m_subdet == HGCHEB) return "HGCalHEBack";
-  else                         return "Unknown";
+DetId HGCalGeometry::getClosestCellHex(const GlobalPoint& r, bool extend) const {
+  unsigned int cellIndex = getClosestCellIndex(r);
+  if (cellIndex < m_cellVec.size() && m_det != DetId::HGCalHSc) {
+    HGCalTopology::DecodedDetId id = m_topology.decode(m_validGeomIds[cellIndex]);
+    if (id.det == 0)
+      id.det = static_cast<int>(m_topology.detector());
+    HepGeom::Point3D<float> local;
+    if (r.z() > 0) {
+      local = HepGeom::Point3D<float>(r.x(), r.y(), 0);
+      id.zSide = 1;
+    } else {
+      local = HepGeom::Point3D<float>(-r.x(), r.y(), 0);
+      id.zSide = -1;
+    }
+    if (m_topology.waferHexagon8()) {
+      id.iLay = m_topology.dddConstants().getLayer(r.z(), true);
+      int zside = (r.z() > 0) ? 1 : -1;
+#ifdef EDM_ML_DEBUG
+      edm::LogVerbatim("HGCalGeom") << "ZZ " << r.z() << ":" << zside << " Layer " << id.iLay << " Global " << r
+                                    << "  Local " << local;
+#endif
+      const auto& kxy =
+          m_topology.dddConstants().assignCellHex(local.x(), local.y(), zside, id.iLay, true, extend, true);
+      id.iSec1 = kxy[0];
+      id.iSec2 = kxy[1];
+      id.iType = kxy[2];
+      id.iCell1 = kxy[3];
+      id.iCell2 = kxy[4];
+    }
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "getClosestCell: local " << local << " Id " << id.det << ":" << id.zSide << ":"
+                                  << id.iLay << ":" << id.iSec1 << ":" << id.iSec2 << ":" << id.iType << ":"
+                                  << id.iCell1 << ":" << id.iCell2;
+#endif
+
+    //check if returned cell is valid
+    if (id.iCell1 >= 0)
+      return m_topology.encode(id);
+  }
+
+  //if not valid or out of bounds return a null DetId
+  return DetId();
 }
 
-unsigned int HGCalGeometry::indexFor(const DetId& id) const {
-  unsigned int cellIndex =  m_cellVec.size();
-  if (id != DetId()) {
-    DetId geoId;
-    if (topology().dddConstants().geomMode() == HGCalGeometryMode::Square) {
-      geoId = (id.subdetId() == HGCEE ? 
-	       (DetId)(HGCEEDetId(id).geometryCell()) : 
-	       (DetId)(HGCHEDetId(id).geometryCell()));
-    } else {
-      geoId = (DetId)(HGCalDetId(id).geometryCell());
-    }
-    cellIndex = topology().detId2denseGeomId(geoId);
-#ifdef DebugLog
-    std::cout << "indexFor " << std::hex << id.rawId() << ":" << geoId.rawId()
-	      << std::dec << " index " << cellIndex << std::endl;
+HGCalGeometry::DetIdSet HGCalGeometry::getCells(const GlobalPoint& r, double dR) const {
+  HGCalGeometry::DetIdSet dss;
+  return dss;
+}
+
+std::string HGCalGeometry::cellElement() const {
+  if (m_subdet == HGCEE || m_det == DetId::HGCalEE)
+    return "HGCalEE";
+  else if (m_subdet == HGCHEF || m_det == DetId::HGCalHSi)
+    return "HGCalHEFront";
+  else if (m_subdet == HGCHEB || m_det == DetId::HGCalHSc)
+    return "HGCalHEBack";
+  else
+    return "Unknown";
+}
+
+unsigned int HGCalGeometry::indexFor(const DetId& detId) const {
+  unsigned int cellIndex = ((m_det == DetId::HGCalHSc) ? m_cellVec2.size() : m_cellVec.size());
+  if (detId != DetId()) {
+    DetId geomId = getGeometryDetId(detId);
+    cellIndex = m_topology.detId2denseGeomId(geomId);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "indexFor " << std::hex << detId.rawId() << ":" << geomId.rawId() << std::dec
+                                  << " index " << cellIndex;
 #endif
   }
   return cellIndex;
 }
 
-unsigned int HGCalGeometry::sizeForDenseIndex() const {
-  return topology().totalGeomModules();
+unsigned int HGCalGeometry::sizeForDenseIndex() const { return m_topology.totalGeomModules(); }
+
+const CaloCellGeometry* HGCalGeometry::getGeometryRawPtr(uint32_t index) const {
+  // Modify the RawPtr class
+  if (m_det == DetId::HGCalHSc) {
+    if (m_cellVec2.size() < index)
+      return nullptr;
+    const CaloCellGeometry* cell(&m_cellVec2[index]);
+    return (nullptr == cell->param() ? nullptr : cell);
+  } else {
+    if (m_cellVec.size() < index)
+      return nullptr;
+    const CaloCellGeometry* cell(&m_cellVec[index]);
+    return (nullptr == cell->param() ? nullptr : cell);
+  }
 }
 
-const CaloCellGeometry* HGCalGeometry::cellGeomPtr(uint32_t index) const {
-  if ((index >= m_cellVec.size()) || (m_validGeomIds[index].rawId() == 0)) 
-    return 0;
-  const CaloCellGeometry* cell ( &m_cellVec[ index ] ) ;
-#ifdef DebugLog
-  //  std::cout << "cellGeomPtr " << m_cellVec[index];
+std::shared_ptr<const CaloCellGeometry> HGCalGeometry::cellGeomPtr(uint32_t index) const {
+  if ((index >= m_cellVec.size() && m_det != DetId::HGCalHSc) ||
+      (index >= m_cellVec2.size() && m_det == DetId::HGCalHSc) || (m_validGeomIds[index].rawId() == 0))
+    return nullptr;
+  static const auto do_not_delete = [](const void*) {};
+  if (m_det == DetId::HGCalHSc) {
+    auto cell = std::shared_ptr<const CaloCellGeometry>(&m_cellVec2[index], do_not_delete);
+    if (nullptr == cell->param())
+      return nullptr;
+    return cell;
+  } else {
+    auto cell = std::shared_ptr<const CaloCellGeometry>(&m_cellVec[index], do_not_delete);
+    if (nullptr == cell->param())
+      return nullptr;
+    return cell;
+  }
+}
+
+std::shared_ptr<const CaloCellGeometry> HGCalGeometry::cellGeomPtr(uint32_t index, const GlobalPoint& pos) const {
+  if ((index >= m_cellVec.size() && m_det != DetId::HGCalHSc) ||
+      (index >= m_cellVec2.size() && m_det == DetId::HGCalHSc) || (m_validGeomIds[index].rawId() == 0))
+    return nullptr;
+  if (pos == GlobalPoint())
+    return cellGeomPtr(index);
+  if (m_det == DetId::HGCalHSc) {
+    auto cell = std::make_shared<FlatTrd>(m_cellVec2[index]);
+    cell->setPosition(pos);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "cellGeomPtr " << index << ":" << cell;
 #endif
-  if (0 == cell->param()) return 0;
-  return cell;
+    if (nullptr == cell->param())
+      return nullptr;
+    return cell;
+  } else {
+    auto cell = std::make_shared<FlatHexagon>(m_cellVec[index]);
+    cell->setPosition(pos);
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("HGCalGeom") << "cellGeomPtr " << index << ":" << cell;
+#endif
+    if (nullptr == cell->param())
+      return nullptr;
+    return cell;
+  }
 }
 
 void HGCalGeometry::addValidID(const DetId& id) {
   edm::LogError("HGCalGeom") << "HGCalGeometry::addValidID is not implemented";
 }
 
+unsigned int HGCalGeometry::getClosestCellIndex(const GlobalPoint& r) const {
+  return ((m_det == DetId::HGCalHSc) ? getClosestCellIndex(r, m_cellVec2) : getClosestCellIndex(r, m_cellVec));
+}
 
-unsigned int HGCalGeometry::getClosestCellIndex (const GlobalPoint& r) const {
-
+template <class T>
+unsigned int HGCalGeometry::getClosestCellIndex(const GlobalPoint& r, const std::vector<T>& vec) const {
   float phip = r.phi();
-  float zp   = r.z();
-  unsigned int cellIndex =  m_cellVec.size();
+  float zp = r.z();
   float dzmin(9999), dphimin(9999), dphi10(0.175);
-  for (unsigned int k=0; k<m_cellVec.size(); ++k) {
-    float dphi = phip-m_cellVec[k].phiPos();
-    while (dphi >   M_PI) dphi -= 2*M_PI;
-    while (dphi <= -M_PI) dphi += 2*M_PI;
-    if (fabs(dphi) < dphi10) {
-      float dz = fabs(zp - m_cellVec[k].getPosition().z());
-      if (dz < (dzmin+0.001)) {
-	dzmin     = dz;
-	if (fabs(dphi) < (dphimin+0.01)) {
-	  cellIndex = k;
-	  dphimin   = fabs(dphi);
-	} else {
-	  if (cellIndex >= m_cellVec.size()) cellIndex = k;
-	}
+  unsigned int cellIndex = vec.size();
+  for (unsigned int k = 0; k < vec.size(); ++k) {
+    float dphi = phip - vec[k].phiPos();
+    while (dphi > M_PI)
+      dphi -= 2 * M_PI;
+    while (dphi <= -M_PI)
+      dphi += 2 * M_PI;
+    if (std::abs(dphi) < dphi10) {
+      float dz = std::abs(zp - vec[k].getPosition().z());
+      if (dz < (dzmin + 0.001)) {
+        dzmin = dz;
+        if (std::abs(dphi) < (dphimin + 0.01)) {
+          cellIndex = k;
+          dphimin = std::abs(dphi);
+        } else {
+          if (cellIndex >= vec.size())
+            cellIndex = k;
+        }
       }
     }
   }
-#ifdef DebugLog
-  std::cout << "getClosestCellIndex::Input " << zp << ":" << phip << " Index "
-	    << cellIndex;
-  if (cellIndex < m_cellVec.size()) 
-    std::cout << " Cell z " << m_cellVec[cellIndex].getPosition().z() << ":"
-	      << dzmin << " phi " << m_cellVec[cellIndex].phiPos() << ":"
-	      << dphimin;
-  std::cout << std::endl;
-
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HGCalGeom") << "getClosestCellIndex::Input " << zp << ":" << phip << " Index " << cellIndex;
+  if (cellIndex < vec.size())
+    edm::LogVerbatim("HGCalGeom") << " Cell z " << vec[cellIndex].getPosition().z() << ":" << dzmin << " phi "
+                                  << vec[cellIndex].phiPos() << ":" << dphimin;
 #endif
   return cellIndex;
 }
 
 // FIXME: Change sorting algorithm if needed
-namespace
-{
-  struct rawIdSort
-  {
-    bool operator()( const DetId& a, const DetId& b )
-    {
-      return( a.rawId() < b.rawId());
-    }
+namespace {
+  struct rawIdSort {
+    bool operator()(const DetId& a, const DetId& b) { return (a.rawId() < b.rawId()); }
   };
-}
+}  // namespace
 
-void HGCalGeometry::sortDetIds( void ) {
+void HGCalGeometry::sortDetIds(void) {
   m_validIds.shrink_to_fit();
-  std::sort( m_validIds.begin(), m_validIds.end(), rawIdSort());
+  std::sort(m_validIds.begin(), m_validIds.end(), rawIdSort());
 }
 
-void
-HGCalGeometry::getSummary( CaloSubdetectorGeometry::TrVec&  trVector,
-			   CaloSubdetectorGeometry::IVec&   iVector,
-			   CaloSubdetectorGeometry::DimVec& dimVector,
-			   CaloSubdetectorGeometry::IVec& dinsVector ) const {
+void HGCalGeometry::getSummary(CaloSubdetectorGeometry::TrVec& trVector,
+                               CaloSubdetectorGeometry::IVec& iVector,
+                               CaloSubdetectorGeometry::DimVec& dimVector,
+                               CaloSubdetectorGeometry::IVec& dinsVector) const {
+  unsigned int numberOfCells = m_topology.totalGeomModules();  // total Geom Modules both sides
+  unsigned int numberOfShapes = k_NumberOfShapes;
+  unsigned int numberOfParametersPerShape = ((m_det == DetId::HGCalHSc) ? (unsigned int)(k_NumberOfParametersPerTrd)
+                                                                        : (unsigned int)(k_NumberOfParametersPerHex));
 
-  unsigned int numberOfCells = topology().totalGeomModules(); // total Geom Modules both sides
-  unsigned int numberOfShapes = HGCalGeometry::k_NumberOfShapes;
-  unsigned int numberOfParametersPerShape = HGCalGeometry::k_NumberOfParametersPerShape;
+  trVector.reserve(numberOfCells * numberOfTransformParms());
+  iVector.reserve(numberOfCells);
+  dimVector.reserve(numberOfShapes * numberOfParametersPerShape);
+  dinsVector.reserve(numberOfCells);
 
-  trVector.reserve( numberOfCells * numberOfTransformParms());
-  iVector.reserve( numberOfCells );
-  dimVector.reserve( numberOfShapes * numberOfParametersPerShape );
-  dinsVector.reserve( numberOfCells );
-  
-  if (topology().geomMode() == HGCalGeometryMode::Square) {
-    for (unsigned int k=0; k <topology().dddConstants().volumes(); ++k) {
-      HGCalParameters::hgtrap vol = topology().dddConstants().getModule(k,false,true);
-      ParmVec params( HGCalGeometry::k_NumberOfParametersPerShape, 0 );
-      params[0] = vol.dz;
-      params[1] = params[2] = 0;
-      params[3] = params[7] = vol.h;
-      params[4] = params[8] = vol.bl;
-      params[5] = params[9] = vol.tl;
-      params[6] = params[10]= vol.alpha;
-      params[11]= vol.cellSize;
-      dimVector.insert( dimVector.end(), params.begin(), params.end());
-    }
-  } else {
-    for (unsigned itr=0; itr<topology().dddConstants().getTrFormN(); ++itr) {
-      HGCalParameters::hgtrform mytr = topology().dddConstants().getTrForm(itr);
-      int layer  = mytr.lay;
-      for (int wafer=0; wafer<topology().dddConstants().sectors(); ++wafer) {
-        if (topology().dddConstants().waferInLayer(wafer,layer,true)) {
-	  HGCalParameters::hgtrap vol = topology().dddConstants().getModule(wafer, true, true);
-	  ParmVec params( HGCalGeometry::k_NumberOfParametersPerShape, 0 );
-	  params[0] = vol.dz;
-	  params[1] = params[2] = 0;
-	  params[3] = params[7] = vol.h;
-	  params[4] = params[8] = vol.bl;
-	  params[5] = params[9] = vol.tl;
-	  params[6] = params[10]= vol.alpha;
-	  params[11]= vol.cellSize;
-	  dimVector.insert( dimVector.end(), params.begin(), params.end());
-	}
+  for (unsigned itr = 0; itr < m_topology.dddConstants().getTrFormN(); ++itr) {
+    HGCalParameters::hgtrform mytr = m_topology.dddConstants().getTrForm(itr);
+    int layer = mytr.lay;
+
+    if (m_topology.waferHexagon6()) {
+      for (int wafer = 0; wafer < m_topology.dddConstants().sectors(); ++wafer) {
+        if (m_topology.dddConstants().waferInLayer(wafer, layer, true)) {
+          HGCalParameters::hgtrap vol = m_topology.dddConstants().getModule(wafer, true, true);
+          ParmVec params(numberOfParametersPerShape, 0);
+          params[FlatHexagon::k_dZ] = vol.dz;
+          params[FlatHexagon::k_r] = vol.cellSize;
+          params[FlatHexagon::k_R] = twoBysqrt3_ * params[FlatHexagon::k_r];
+          dimVector.insert(dimVector.end(), params.begin(), params.end());
+        }
+      }
+    } else if (m_topology.tileTrapezoid()) {
+      int indx = m_topology.dddConstants().layerIndex(layer, true);
+      for (int md = m_topology.dddConstants().getParameter()->firstModule_[indx];
+           md <= m_topology.dddConstants().getParameter()->lastModule_[indx];
+           ++md) {
+        HGCalParameters::hgtrap vol = m_topology.dddConstants().getModule(md, true, true);
+        ParmVec params(numberOfParametersPerShape, 0);
+        params[FlatTrd::k_dZ] = vol.dz;
+        params[FlatTrd::k_Theta] = params[FlatTrd::k_Phi] = 0;
+        params[FlatTrd::k_dY1] = params[FlatTrd::k_dY2] = vol.h;
+        params[FlatTrd::k_dX1] = params[FlatTrd::k_dX3] = vol.bl;
+        params[FlatTrd::k_dX2] = params[FlatTrd::k_dX4] = vol.tl;
+        params[FlatTrd::k_Alp1] = params[FlatTrd::k_Alp2] = vol.alpha;
+        params[FlatTrd::k_Cell] = vol.cellSize;
+        dimVector.insert(dimVector.end(), params.begin(), params.end());
+      }
+    } else {
+      for (int wafer = 0; wafer < m_topology.dddConstants().sectors(); ++wafer) {
+        if (m_topology.dddConstants().waferInLayer(wafer, layer, true)) {
+          HGCalParameters::hgtrap vol = m_topology.dddConstants().getModule(wafer, true, true);
+          ParmVec params(numberOfParametersPerShape, 0);
+          params[FlatHexagon::k_dZ] = vol.dz;
+          params[FlatHexagon::k_r] = vol.cellSize;
+          params[FlatHexagon::k_R] = twoBysqrt3_ * params[FlatHexagon::k_r];
+          dimVector.insert(dimVector.end(), params.begin(), params.end());
+        }
       }
     }
   }
-  
-  for( unsigned int i( 0 ); i < numberOfCells; ++i )
-  {
+
+  for (unsigned int i(0); i < numberOfCells; ++i) {
     DetId detId = m_validGeomIds[i];
-    int layer = ((detId.subdetId() ==  ForwardSubdetector::HGCEE) ?
-		 (HGCEEDetId(detId).layer()) :
-		 (HGCHEDetId(detId).layer()));
-    dinsVector.push_back( topology().detId2denseGeomId( detId ));
-    iVector.push_back( layer );
-    
-    Tr3D tr;
-    const CaloCellGeometry* ptr( cellGeomPtr( i ));
-    if( 0 != ptr )
-    {
-      ptr->getTransform( tr, ( Pt3DVec* ) 0 );
+    int layer(0);
+    if (m_topology.waferHexagon6()) {
+      layer = HGCalDetId(detId).layer();
+    } else if (m_topology.tileTrapezoid()) {
+      layer = HGCScintillatorDetId(detId).layer();
+    } else if (m_topology.isHFNose()) {
+      layer = HFNoseDetId(detId).layer();
+    } else {
+      layer = HGCSiliconDetId(detId).layer();
+    }
+    dinsVector.emplace_back(m_topology.detId2denseGeomId(detId));
+    iVector.emplace_back(layer);
 
-      if( Tr3D() == tr ) // there is no rotation
-      {
-	const GlobalPoint& gp( ptr->getPosition()); 
-	tr = HepGeom::Translate3D( gp.x(), gp.y(), gp.z());
+    Tr3D tr;
+    auto ptr = cellGeomPtr(i);
+    if (nullptr != ptr) {
+      ptr->getTransform(tr, (Pt3DVec*)nullptr);
+
+      if (Tr3D() == tr) {  // there is no rotation
+        const GlobalPoint& gp(ptr->getPosition());
+        tr = HepGeom::Translate3D(gp.x(), gp.y(), gp.z());
       }
 
-      const CLHEP::Hep3Vector tt( tr.getTranslation());
-      trVector.push_back( tt.x());
-      trVector.push_back( tt.y());
-      trVector.push_back( tt.z());
-      if( 6 == numberOfTransformParms())
-      {
-	const CLHEP::HepRotation rr( tr.getRotation());
-	const ROOT::Math::Transform3D rtr( rr.xx(), rr.xy(), rr.xz(), tt.x(),
-					   rr.yx(), rr.yy(), rr.yz(), tt.y(),
-					   rr.zx(), rr.zy(), rr.zz(), tt.z());
-	ROOT::Math::EulerAngles ea;
-	rtr.GetRotation( ea );
-	trVector.push_back( ea.Phi());
-	trVector.push_back( ea.Theta());
-	trVector.push_back( ea.Psi());
+      const CLHEP::Hep3Vector tt(tr.getTranslation());
+      trVector.emplace_back(tt.x());
+      trVector.emplace_back(tt.y());
+      trVector.emplace_back(tt.z());
+      if (6 == numberOfTransformParms()) {
+        const CLHEP::HepRotation rr(tr.getRotation());
+        const ROOT::Math::Transform3D rtr(
+            rr.xx(), rr.xy(), rr.xz(), tt.x(), rr.yx(), rr.yy(), rr.yz(), tt.y(), rr.zx(), rr.zy(), rr.zz(), tt.z());
+        ROOT::Math::EulerAngles ea;
+        rtr.GetRotation(ea);
+        trVector.emplace_back(ea.Phi());
+        trVector.emplace_back(ea.Theta());
+        trVector.emplace_back(ea.Psi());
       }
     }
   }
+}
+
+DetId HGCalGeometry::getGeometryDetId(DetId detId) const {
+  DetId geomId;
+  if (m_topology.waferHexagon6()) {
+    geomId = static_cast<DetId>(HGCalDetId(detId).geometryCell());
+  } else if (m_topology.tileTrapezoid()) {
+    geomId = static_cast<DetId>(HGCScintillatorDetId(detId).geometryCell());
+  } else if (m_topology.isHFNose()) {
+    geomId = static_cast<DetId>(HFNoseDetId(detId).geometryCell());
+  } else {
+    geomId = static_cast<DetId>(HGCSiliconDetId(detId).geometryCell());
+  }
+  return geomId;
 }
 
 #include "FWCore/Utilities/interface/typelookup.h"

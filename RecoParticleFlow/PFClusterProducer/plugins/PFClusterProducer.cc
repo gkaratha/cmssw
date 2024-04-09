@@ -1,4 +1,49 @@
-#include "PFClusterProducer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/InitialClusteringStepBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFCPositionCalculatorBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFClusterBuilderBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/PFClusterEnergyCorrectorBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/RecHitTopologicalCleanerBase.h"
+#include "RecoParticleFlow/PFClusterProducer/interface/SeedFinderBase.h"
+#include "CondFormats/DataRecord/interface/HcalPFCutsRcd.h"
+#include "CondTools/Hcal/interface/HcalPFCutsHandler.h"
+#include <memory>
+
+class PFClusterProducer : public edm::stream::EDProducer<> {
+  typedef RecHitTopologicalCleanerBase RHCB;
+  typedef InitialClusteringStepBase ICSB;
+  typedef PFClusterBuilderBase PFCBB;
+  typedef PFCPositionCalculatorBase PosCalc;
+
+public:
+  PFClusterProducer(const edm::ParameterSet&);
+  ~PFClusterProducer() override = default;
+
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
+
+private:
+  // inputs
+  edm::EDGetTokenT<reco::PFRecHitCollection> _rechitsLabel;
+  edm::ESGetToken<HcalPFCuts, HcalPFCutsRcd> hcalCutsToken_;
+  bool cutsFromDB;
+  HcalPFCuts const* paramPF = nullptr;
+
+  // options
+  const bool _prodInitClusters;
+  // the actual algorithm
+  std::vector<std::unique_ptr<RecHitTopologicalCleanerBase> > _cleaners;
+  std::vector<std::unique_ptr<RecHitTopologicalCleanerBase> > _seedcleaners;
+  std::unique_ptr<SeedFinderBase> _seedFinder;
+  std::unique_ptr<InitialClusteringStepBase> _initialClustering;
+  std::unique_ptr<PFClusterBuilderBase> _pfClusterBuilder;
+  std::unique_ptr<PFCPositionCalculatorBase> _positionReCalc;
+  std::unique_ptr<PFClusterEnergyCorrectorBase> _energyCorrector;
+};
+
+#include "FWCore/Framework/interface/MakerMacros.h"
+DEFINE_FWK_MODULE(PFClusterProducer);
 
 #ifdef PFLOW_DEBUG
 #define LOGVERB(x) edm::LogVerbatim(x)
@@ -12,120 +57,126 @@
 #define LOGDRESSED(x) LogDebug(x)
 #endif
 
-PFClusterProducer::PFClusterProducer(const edm::ParameterSet& conf) :
-  _prodInitClusters(conf.getUntrackedParameter<bool>("prodInitialClusters",false))
-{
-  _rechitsLabel = consumes<reco::PFRecHitCollection>(conf.getParameter<edm::InputTag>("recHitsSource")); 
-  //setup rechit cleaners
-  const edm::VParameterSet& cleanerConfs = 
-    conf.getParameterSetVector("recHitCleaners");
-  for( const auto& conf : cleanerConfs ) {
-    const std::string& cleanerName = 
-      conf.getParameter<std::string>("algoName");
-    RHCB* cleaner = 
-      RecHitTopologicalCleanerFactory::get()->create(cleanerName,conf);
-    _cleaners.push_back(std::unique_ptr<RHCB>(cleaner));
+PFClusterProducer::PFClusterProducer(const edm::ParameterSet& conf)
+    : _prodInitClusters(conf.getUntrackedParameter<bool>("prodInitialClusters", false)) {
+  _rechitsLabel = consumes<reco::PFRecHitCollection>(conf.getParameter<edm::InputTag>("recHitsSource"));
+  cutsFromDB = conf.getParameter<bool>("usePFThresholdsFromDB");
+  edm::ConsumesCollector cc = consumesCollector();
+
+  if (cutsFromDB) {
+    hcalCutsToken_ = esConsumes<HcalPFCuts, HcalPFCutsRcd, edm::Transition::BeginRun>(edm::ESInputTag("", "withTopo"));
   }
+
+  //setup rechit cleaners
+  const edm::VParameterSet& cleanerConfs = conf.getParameterSetVector("recHitCleaners");
+  for (const auto& conf : cleanerConfs) {
+    const std::string& cleanerName = conf.getParameter<std::string>("algoName");
+    _cleaners.emplace_back(RecHitTopologicalCleanerFactory::get()->create(cleanerName, conf, cc));
+  }
+
+  if (conf.exists("seedCleaners")) {
+    const edm::VParameterSet& seedcleanerConfs = conf.getParameterSetVector("seedCleaners");
+
+    for (const auto& conf : seedcleanerConfs) {
+      const std::string& seedcleanerName = conf.getParameter<std::string>("algoName");
+      _seedcleaners.emplace_back(RecHitTopologicalCleanerFactory::get()->create(seedcleanerName, conf, cc));
+    }
+  }
+
   // setup seed finding
-  const edm::ParameterSet& sfConf = 
-    conf.getParameterSet("seedFinder");
+  const edm::ParameterSet& sfConf = conf.getParameterSet("seedFinder");
   const std::string& sfName = sfConf.getParameter<std::string>("algoName");
-  SeedFinderBase* sfb = SeedFinderFactory::get()->create(sfName,sfConf);
-  _seedFinder.reset(sfb);
+  _seedFinder = SeedFinderFactory::get()->create(sfName, sfConf);
   //setup topo cluster builder
-  const edm::ParameterSet& initConf = 
-    conf.getParameterSet("initialClusteringStep");
+  const edm::ParameterSet& initConf = conf.getParameterSet("initialClusteringStep");
   const std::string& initName = initConf.getParameter<std::string>("algoName");
-  ICSB* initb = InitialClusteringStepFactory::get()->create(initName,initConf);
-  _initialClustering.reset(initb);
+  _initialClustering = InitialClusteringStepFactory::get()->create(initName, initConf, cc);
   //setup pf cluster builder if requested
-  _pfClusterBuilder.reset(NULL);
   const edm::ParameterSet& pfcConf = conf.getParameterSet("pfClusterBuilder");
-  if( !pfcConf.empty() ) {
+  if (!pfcConf.empty()) {
     const std::string& pfcName = pfcConf.getParameter<std::string>("algoName");
-    PFCBB* pfcb = PFClusterBuilderFactory::get()->create(pfcName,pfcConf);
-    _pfClusterBuilder.reset(pfcb);
+    _pfClusterBuilder = PFClusterBuilderFactory::get()->create(pfcName, pfcConf, cc);
   }
   //setup (possible) recalcuation of positions
-  _positionReCalc.reset(NULL);
   const edm::ParameterSet& pConf = conf.getParameterSet("positionReCalc");
-  if( !pConf.empty() ) {
+  if (!pConf.empty()) {
     const std::string& pName = pConf.getParameter<std::string>("algoName");
-    PosCalc* pcalc = PFCPositionCalculatorFactory::get()->create(pName,pConf);
-    _positionReCalc.reset(pcalc);
+    _positionReCalc = PFCPositionCalculatorFactory::get()->create(pName, pConf, cc);
   }
   // see if new need to apply corrections, setup if there.
-  const edm::ParameterSet& cConf =  conf.getParameterSet("energyCorrector");
-  if( !cConf.empty() ) {
+  const edm::ParameterSet& cConf = conf.getParameterSet("energyCorrector");
+  if (!cConf.empty()) {
     const std::string& cName = cConf.getParameter<std::string>("algoName");
-    PFClusterEnergyCorrectorBase* eCorr =
-      PFClusterEnergyCorrectorFactory::get()->create(cName,cConf);
-    _energyCorrector.reset(eCorr);
+    _energyCorrector = PFClusterEnergyCorrectorFactory::get()->create(cName, cConf);
   }
-  
 
-  if( _prodInitClusters ) {
+  if (_prodInitClusters) {
     produces<reco::PFClusterCollection>("initialClusters");
   }
   produces<reco::PFClusterCollection>();
 }
 
-void PFClusterProducer::beginLuminosityBlock(const edm::LuminosityBlock& lumi, 
-					     const edm::EventSetup& es) {
+void PFClusterProducer::beginRun(const edm::Run& run, const edm::EventSetup& es) {
+  if (cutsFromDB) {
+    paramPF = &es.getData(hcalCutsToken_);
+  }
   _initialClustering->update(es);
-  _pfClusterBuilder->update(es);
-  if( _positionReCalc ) _positionReCalc->update(es);
-  
+  if (_pfClusterBuilder)
+    _pfClusterBuilder->update(es);
+  if (_positionReCalc)
+    _positionReCalc->update(es);
+  for (const auto& cleaner : _cleaners)
+    cleaner->update(es);
+  for (const auto& cleaner : _seedcleaners)
+    cleaner->update(es);
 }
 
 void PFClusterProducer::produce(edm::Event& e, const edm::EventSetup& es) {
   _initialClustering->reset();
-  _pfClusterBuilder->reset();
+  if (_pfClusterBuilder)
+    _pfClusterBuilder->reset();
 
   edm::Handle<reco::PFRecHitCollection> rechits;
-  e.getByToken(_rechitsLabel,rechits);  
-  
-  std::vector<bool> mask(rechits->size(),true);
-  for( const auto& cleaner : _cleaners ) {
+  e.getByToken(_rechitsLabel, rechits);
+
+  _initialClustering->updateEvent(e);
+
+  std::vector<bool> mask(rechits->size(), true);
+  for (const auto& cleaner : _cleaners) {
     cleaner->clean(rechits, mask);
   }
 
+  // no seeding on these hits
+  std::vector<bool> seedmask = mask;
+  for (const auto& cleaner : _seedcleaners) {
+    cleaner->clean(rechits, seedmask);
+  }
 
+  std::vector<bool> seedable(rechits->size(), false);
+  _seedFinder->findSeeds(rechits, seedmask, seedable, paramPF);
 
-  std::vector<bool> seedable(rechits->size(),false);
-  _seedFinder->findSeeds(rechits,mask,seedable);
-
-
-
-  std::auto_ptr<reco::PFClusterCollection> initialClusters;
-  initialClusters.reset(new reco::PFClusterCollection);
-  _initialClustering->buildClusters(rechits, mask, seedable, *initialClusters);
+  auto initialClusters = std::make_unique<reco::PFClusterCollection>();
+  _initialClustering->buildClusters(rechits, mask, seedable, *initialClusters, paramPF);
   LOGVERB("PFClusterProducer::produce()") << *_initialClustering;
 
-
-
-
-  std::auto_ptr<reco::PFClusterCollection> pfClusters;
-  pfClusters.reset(new reco::PFClusterCollection);
-  if( _pfClusterBuilder ) { // if we've defined a re-clustering step execute it
-    _pfClusterBuilder->buildClusters(*initialClusters, seedable, *pfClusters);
+  auto pfClusters = std::make_unique<reco::PFClusterCollection>();
+  pfClusters = std::make_unique<reco::PFClusterCollection>();
+  if (_pfClusterBuilder) {  // if we've defined a re-clustering step execute it
+    _pfClusterBuilder->buildClusters(*initialClusters, seedable, *pfClusters, paramPF);
     LOGVERB("PFClusterProducer::produce()") << *_pfClusterBuilder;
   } else {
-    pfClusters->insert(pfClusters->end(),
-		       initialClusters->begin(),initialClusters->end());
+    pfClusters->insert(pfClusters->end(), initialClusters->begin(), initialClusters->end());
   }
 
-
-
-  
-  if( _positionReCalc ) {
-    _positionReCalc->calculateAndSetPositions(*pfClusters);
+  if (_positionReCalc) {
+    _positionReCalc->calculateAndSetPositions(*pfClusters, paramPF);
   }
 
-  if( _energyCorrector ) {
+  if (_energyCorrector) {
     _energyCorrector->correctEnergies(*pfClusters);
   }
 
-  if( _prodInitClusters ) e.put(initialClusters,"initialClusters");
-  e.put(pfClusters);
+  if (_prodInitClusters)
+    e.put(std::move(initialClusters), "initialClusters");
+  e.put(std::move(pfClusters));
 }

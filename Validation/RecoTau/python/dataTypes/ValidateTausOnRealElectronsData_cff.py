@@ -43,7 +43,7 @@ trackElectrons = cms.EDFilter(
     "TauValElectronSelector",
     src = cms.InputTag('idElectrons'),
     cut = cms.string('gsfTrack.isNonnull  && 0.7 < eSuperClusterOverP < 1.5'),
-#    cut = cms.string('gsfTrack.isNonnull && gsfTrack.hitPattern().numberOfHits(\'MISSING_INNER_HITS\') = 0 && 0.7 < eSuperClusterOverP < 1.5'),
+#    cut = cms.string('gsfTrack.isNonnull && gsfTrack.hitPattern().numberOfLostHits(\'MISSING_INNER_HITS\') = 0 && 0.7 < eSuperClusterOverP < 1.5'),
     filter = cms.bool(False)
 )
 
@@ -120,19 +120,34 @@ zttModifier = ApplyFunctionToSequence(lambda m: setBinning(m,binning))
 proc.TauValNumeratorAndDenominatorRealElectronsData.visit(zttModifier)
 #-----------------------------------------
 
+#Set discriminators
+discs_to_retain = ['ByDecayModeFinding', 'ElectronRejection']
+proc.RunHPSValidationRealElectronsData.discriminators = cms.VPSet([p for p in proc.RunHPSValidationRealElectronsData.discriminators if any(disc in p.discriminator.value() for disc in discs_to_retain) ])
+
 #Sets the correct naming to efficiency histograms
 proc.efficienciesRealElectronsData.plots = Utils.SetPlotSequence(proc.TauValNumeratorAndDenominatorRealElectronsData)
+proc.efficienciesRealElectronsDataSummary = cms.EDProducer("TauDQMHistEffProducer",
+    plots = cms.PSet(
+        Summary = cms.PSet(
+            denominator = cms.string('RecoTauV/standardValidation/hpsPFTauProducerRealElectronsData_Summary/#PAR#PlotDen'),
+            efficiency = cms.string('RecoTauV/standardValidation/hpsPFTauProducerRealElectronsData_Summary/#PAR#Plot'),
+            numerator = cms.string('RecoTauV/standardValidation/hpsPFTauProducerRealElectronsData_Summary/#PAR#PlotNum'),
+            parameter = cms.vstring('summary'),
+            stepByStep = cms.bool(True)
+        ),
+    )
+)
 
 #checks what's new in the process (the cloned sequences and modules in them)
-newProcAttributes = filter( lambda x: (x not in procAttributes) and (x.find('RealElectronsData') != -1), dir(proc) )
+newProcAttributes = [x for x in dir(proc) if (x not in procAttributes) and (x.find('RealElectronsData') != -1)]
 
 #spawns a local variable with the same name as the proc attribute, needed for future process.load
 for newAttr in newProcAttributes:
     locals()[newAttr] = getattr(proc,newAttr)
 
-produceDenominatorRealElectronsData = cms.Sequence( ElPrimaryVertexFilter * ElBestPV *
-                                                    ( (selectedElectrons * ElectronsFromPV * idElectrons * trackElectrons * isolatedElectrons) +
-                                                      (ElGoodTracks * ElIsoTracks * ElTrackFromPV * ElTrackCands) ) *
+produceDenominatorRealElectronsData = cms.Sequence( cms.ignore(ElPrimaryVertexFilter) * ElBestPV *
+                                                    ( (cms.ignore(selectedElectrons) * ElectronsFromPV * cms.ignore(idElectrons) * cms.ignore(trackElectrons) * cms.ignore(isolatedElectrons)) +
+                                                      (cms.ignore(ElGoodTracks) * ElIsoTracks * ElTrackFromPV * ElTrackCands) ) *
                                                     ZeeCandElectronTrack *
                                                     BestZee *
                                                     ElZLegs 

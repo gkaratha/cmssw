@@ -1,7 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-# -*-SH-*-
-#
 # Default Parameters
 #
 #   Purpose: extraction of energy deposition and muon matching information
@@ -13,6 +11,10 @@ TrackAssociatorParameterBlock = cms.PSet(
         muonMaxDistanceSigmaX = cms.double(0.0),
         muonMaxDistanceSigmaY = cms.double(0.0),
         CSCSegmentCollectionLabel = cms.InputTag("cscSegments"),
+        useGEM = cms.bool(False),
+        GEMSegmentCollectionLabel = cms.InputTag("gemSegments"),
+        useME0 = cms.bool(False),
+        ME0SegmentCollectionLabel = cms.InputTag("me0Segments"),
         dRHcal = cms.double(9999.0),
         dREcal = cms.double(9999.0),
         CaloTowerCollectionLabel = cms.InputTag("towerMaker"),
@@ -30,6 +32,7 @@ TrackAssociatorParameterBlock = cms.PSet(
         EERecHitCollectionLabel = cms.InputTag("ecalRecHit","EcalRecHitsEE"),
         dRHcalPreselection = cms.double(0.2),
         useMuon = cms.bool(True),
+        preselectMuonTracks = cms.bool(False),
         useCalo = cms.bool(False),
         EBRecHitCollectionLabel = cms.InputTag("ecalRecHit","EcalRecHitsEB"),
         dRMuonPreselection = cms.double(0.2),
@@ -37,6 +40,9 @@ TrackAssociatorParameterBlock = cms.PSet(
 	dRPreshowerPreselection = cms.double(0.2),
         truthMatch = cms.bool(False),
         HBHERecHitCollectionLabel = cms.InputTag("hbhereco"),
+        RPCHitCollectionLabel = cms.InputTag("rpcRecHits"),
+        GEMHitCollectionLabel = cms.InputTag("gemRecHits"),
+        ME0HitCollectionLabel = cms.InputTag("me0RecHits"),
         useHcal = cms.bool(True)
     )
 )
@@ -44,6 +50,10 @@ TrackAssociatorParameters = cms.PSet(
     muonMaxDistanceSigmaX = cms.double(0.0),
     muonMaxDistanceSigmaY = cms.double(0.0),
     CSCSegmentCollectionLabel = cms.InputTag("cscSegments"),
+    useGEM = cms.bool(False),
+    GEMSegmentCollectionLabel = cms.InputTag("gemSegments"),
+    useME0 = cms.bool(False),
+    ME0SegmentCollectionLabel = cms.InputTag("me0Segments"),
     dRHcal = cms.double(9999.0),
     dREcal = cms.double(9999.0),
     CaloTowerCollectionLabel = cms.InputTag("towerMaker"),
@@ -63,10 +73,13 @@ TrackAssociatorParameters = cms.PSet(
     usePreshower = cms.bool(False),
     dRHcalPreselection = cms.double(0.2),
     useMuon = cms.bool(True),
+    preselectMuonTracks = cms.bool(False),
     useCalo = cms.bool(False),
     EBRecHitCollectionLabel = cms.InputTag("ecalRecHit","EcalRecHitsEB"),
     truthMatch = cms.bool(False),
     HBHERecHitCollectionLabel = cms.InputTag("hbhereco"),
+    RPCHitCollectionLabel = cms.InputTag("rpcRecHits"),
+    GEMHitCollectionLabel = cms.InputTag("gemRecHits"),
+    ME0HitCollectionLabel = cms.InputTag("me0RecHits"),
     useHcal = cms.bool(True)
 )
-

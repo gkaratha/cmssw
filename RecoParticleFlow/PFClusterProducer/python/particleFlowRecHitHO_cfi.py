@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
+
 particleFlowRecHitHO = cms.EDProducer("PFRecHitProducer",
     navigator = cms.PSet(
-        name = cms.string("PFRecHitHCALNavigator")
+        name = cms.string("PFRecHitHCALDenseIdNavigator"),
+        hcalEnums = cms.vint32(3)
     ),
     producers = cms.VPSet(
            cms.PSet(
@@ -32,7 +34,6 @@ particleFlowRecHitHO = cms.EDProducer("PFRecHitProducer",
 #
 # Need to change the quality tests for Run 2
 #
-from Configuration.StandardSequences.Eras import eras
 
 def _modifyParticleFlowRecHitHOForRun2( object ) :
     """
@@ -53,4 +54,5 @@ def _modifyParticleFlowRecHitHOForRun2( object ) :
             )
         )
 
-eras.run2_common.toModify( particleFlowRecHitHO, func=_modifyParticleFlowRecHitHOForRun2 )
+from Configuration.Eras.Modifier_run2_common_cff import run2_common
+run2_common.toModify( particleFlowRecHitHO, func=_modifyParticleFlowRecHitHOForRun2 )

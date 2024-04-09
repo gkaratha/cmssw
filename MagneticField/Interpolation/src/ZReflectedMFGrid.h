@@ -6,34 +6,29 @@
 
 class dso_internal ZReflectedMFGrid : public MFGrid {
 public:
+  ZReflectedMFGrid(const GloballyPositioned<float>& vol, MFGrid* sectorGrid);
 
-  ZReflectedMFGrid( const GloballyPositioned<float>& vol,
-		    MFGrid* sectorGrid);
+  ~ZReflectedMFGrid() override;
 
-  ~ZReflectedMFGrid();
+  LocalVector valueInTesla(const LocalPoint& p) const override;
 
-  virtual LocalVector valueInTesla( const LocalPoint& p) const;
+  void toGridFrame(const LocalPoint& p, double& a, double& b, double& c) const override;
 
-  virtual void toGridFrame( const LocalPoint& p, double& a, double& b, double& c) const ;
+  LocalPoint fromGridFrame(double a, double b, double c) const override;
 
-  virtual LocalPoint fromGridFrame( double a, double b, double c) const ;
+  Dimensions dimensions() const override;
 
-  virtual Dimensions dimensions() const ;
+  LocalPoint nodePosition(int i, int j, int k) const override;
 
-  virtual LocalPoint  nodePosition( int i, int j, int k) const ;
-
-  virtual LocalVector nodeValue( int i, int j, int k) const ;
-
+  LocalVector nodeValue(int i, int j, int k) const override;
 
 private:
-
-  double  thePhiMin;
-  double  thePhiMax;
+  double thePhiMin;
+  double thePhiMax;
   MFGrid* theSectorGrid;
-  double  theDelta;
+  double theDelta;
 
-  void throwUp( const char *message) const;
-
+  void throwUp(const char* message) const;
 };
 
 #endif

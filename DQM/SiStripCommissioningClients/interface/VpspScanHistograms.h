@@ -2,22 +2,16 @@
 #define DQM_SiStripCommissioningClients_VpspScanHistograms_H
 
 #include "DQM/SiStripCommissioningClients/interface/CommissioningHistograms.h"
-
-class DQMStore;
+#include "DQMServices/Core/interface/DQMStore.h"
 
 class VpspScanHistograms : public virtual CommissioningHistograms {
+public:
+  VpspScanHistograms(const edm::ParameterSet& pset, DQMStore*);
+  ~VpspScanHistograms() override;
 
- public:
-  
-  VpspScanHistograms( const edm::ParameterSet& pset, DQMStore* );
-  virtual ~VpspScanHistograms();
-  
-  void histoAnalysis( bool debug );
+  void histoAnalysis(bool debug) override;
 
-  void printAnalyses(); // override
-
+  void printAnalyses() override;  // override
 };
 
-#endif // DQM_SiStripCommissioningClients_VpspScanHistograms_H
-
-
+#endif  // DQM_SiStripCommissioningClients_VpspScanHistograms_H

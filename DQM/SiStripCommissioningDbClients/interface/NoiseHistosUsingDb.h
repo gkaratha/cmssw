@@ -6,24 +6,20 @@
 #include "DQM/SiStripCommissioningClients/interface/NoiseHistograms.h"
 
 class NoiseHistosUsingDb : public CommissioningHistosUsingDb, public NoiseHistograms {
-  
- public:
+public:
+  NoiseHistosUsingDb(const edm::ParameterSet& pset,
+                     DQMStore*,
+                     SiStripConfigDb* const,
+                     edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoToken);
 
-  NoiseHistosUsingDb( const edm::ParameterSet & pset,
-                      DQMStore*,
-                      SiStripConfigDb* const );
-  
-  virtual ~NoiseHistosUsingDb();
- 
-  virtual void uploadConfigurations();
-  
- private:
+  ~NoiseHistosUsingDb() override;
 
-  void update( SiStripConfigDb::FedDescriptionsRange );
+  void uploadConfigurations() override;
 
-  void create( SiStripConfigDb::AnalysisDescriptionsV&, Analysis );
+private:
+  void update(SiStripConfigDb::FedDescriptionsRange);
 
+  void create(SiStripConfigDb::AnalysisDescriptionsV&, Analysis) override;
 };
 
-#endif // DQM_SiStripCommissioningClients_NoiseHistosUsingDb_H
-
+#endif  // DQM_SiStripCommissioningClients_NoiseHistosUsingDb_H

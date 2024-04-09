@@ -7,40 +7,40 @@ process.load('Configuration.StandardSequences.Generator_cff')
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 process.load("Geometry.CMSCommonData.cmsSimIdealGeometryXML_cfi")
 process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Geometry.HcalCommonData.hcalParameters_cfi")
-process.load("Geometry.HcalCommonData.hcalDDDSimConstants_cfi")
+process.load("Geometry.EcalCommonData.ecalSimulationParameters_cff")
+process.load("Geometry.HcalCommonData.hcalDDDSimConstants_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
-
 process.load("Configuration.EventContent.EventContent_cff")
+process.load('Configuration.StandardSequences.Generator_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run1_mc']
 
-process.load("SimG4Core.Application.g4SimHits_cfi")
-
 process.MessageLogger = cms.Service("MessageLogger",
-    destinations = cms.untracked.vstring('cout'),
-    categories = cms.untracked.vstring('G4cout','G4cerr','SimG4CoreWatcher'),
-    debugModules = cms.untracked.vstring('*'),
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     cout = cms.untracked.PSet(
-#        threshold = cms.untracked.string('DEBUG'),
-        INFO = cms.untracked.PSet(
-            limit = cms.untracked.int32(-1)
-        ),
         DEBUG = cms.untracked.PSet(
             limit = cms.untracked.int32(0)
-        ),
-        SimG4CoreWatcher = cms.untracked.PSet(
-            limit = cms.untracked.int32(-1)
         ),
         G4cerr = cms.untracked.PSet(
             limit = cms.untracked.int32(-1)
         ),
         G4cout = cms.untracked.PSet(
             limit = cms.untracked.int32(-1)
-        )
-    )
+        ),
+        INFO = cms.untracked.PSet(
+            limit = cms.untracked.int32(-1)
+        ),
+        SimG4CoreWatcher = cms.untracked.PSet(
+            limit = cms.untracked.int32(-1)
+        ),
+        enable = cms.untracked.bool(True)
+    ),
+    debugModules = cms.untracked.vstring('*')
 )
 
 process.load("IOMC.RandomEngine.IOMC_cff")
@@ -95,7 +95,7 @@ process.generator = cms.EDFilter("Pythia6HadronizerFilter",
     )
 )
 
-process.o1 = cms.OutputModule("PoolOutputModule",
+process.output = cms.OutputModule("PoolOutputModule",
     process.FEVTSIMEventContent,
     fileName = cms.untracked.string('simevent.root')
 )
@@ -104,9 +104,11 @@ process.Timing = cms.Service("Timing")
 
 process.Tracer = cms.Service("Tracer")
 
-process.p1 = cms.Path(process.generator*process.VtxSmeared*process.g4SimHits)
-process.outpath = cms.EndPath(process.o1)
-process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP_BERT_EML'
+process.generation_step = cms.Path(process.pgen)
+process.simulation_step = cms.Path(process.psim)
+process.out_step = cms.EndPath(process.output)
+
+process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP_FTFP_BERT_EML'
 process.g4SimHits.Physics.MonopoleCharge = 1
 process.g4SimHits.Physics.MonopoleDeltaRay = False
 process.g4SimHits.Physics.Verbosity = 1
@@ -179,3 +181,12 @@ process.g4SimHits.Watchers = cms.VPSet(
    )
 )
 
+# Schedule definition                                                          
+process.schedule = cms.Schedule(process.generation_step,
+                                process.simulation_step,
+                                process.out_step
+                                )
+
+# filter all path with the production filter sequence                          
+for path in process.paths:
+        getattr(process,path)._seq = process.generator * getattr(process,path)._seq

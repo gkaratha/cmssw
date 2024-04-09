@@ -4,11 +4,11 @@
 #include <xercesc/dom/DOMNode.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
-#include "FWCore/Concurrency/interface/Xerces.h"
+#include "Utilities/Xerces/interface/Xerces.h"
+#include "Utilities/Xerces/interface/XercesStrUtils.h"
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/sax/SAXException.hpp>
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
-
 
 #include "CondFormats/EcalObjects/interface/EcalTimeOffsetConstant.h"
 #include "CondTools/Ecal/interface/EcalTimeOffsetXMLTranslator.h"
@@ -18,20 +18,16 @@ using namespace XERCES_CPP_NAMESPACE;
 using namespace xuti;
 using namespace std;
 
- 
-
-int  EcalTimeOffsetXMLTranslator::readXML(const std::string& filename, 
-					EcalCondHeader& header,
-					EcalTimeOffsetConstant& record){
-
- 
+int EcalTimeOffsetXMLTranslator::readXML(const std::string& filename,
+                                         EcalCondHeader& header,
+                                         EcalTimeOffsetConstant& record) {
   cms::concurrency::xercesInitialize();
 
   XercesDOMParser* parser = new XercesDOMParser;
-  parser->setValidationScheme( XercesDOMParser::Val_Never );
-  parser->setDoNamespaces( false );
-  parser->setDoSchema( false );
-  
+  parser->setValidationScheme(XercesDOMParser::Val_Never);
+  parser->setDoNamespaces(false);
+  parser->setDoSchema(false);
+
   parser->parse(filename.c_str());
 
   DOMDocument* xmlDoc = parser->getDocument();
@@ -39,77 +35,62 @@ int  EcalTimeOffsetXMLTranslator::readXML(const std::string& filename,
     std::cout << "EcalTimeOffsetXMLTranslator::Error parsing document" << std::endl;
     return -1;
   }
-  
+
   // Get the top-level element
   DOMElement* elementRoot = xmlDoc->getDocumentElement();
 
   xuti::readHeader(elementRoot, header);
 
-  
-  DOMNode * barrelnode = xuti::getChildNode(elementRoot,Barrel_tag);
-  DOMNode * endcapnode = xuti::getChildNode(elementRoot,Endcap_tag);
-  
-  double barrelvalue=0;
-  double endcapvalue=0;
+  DOMNode* barrelnode = xuti::getChildNode(elementRoot, Barrel_tag);
+  DOMNode* endcapnode = xuti::getChildNode(elementRoot, Endcap_tag);
 
-  xuti::GetNodeData(barrelnode,barrelvalue);
-  xuti::GetNodeData(endcapnode,endcapvalue);
+  double barrelvalue = 0;
+  double endcapvalue = 0;
 
-  record.setEBValue(barrelvalue); 
+  xuti::GetNodeData(barrelnode, barrelvalue);
+  xuti::GetNodeData(endcapnode, endcapvalue);
+
+  record.setEBValue(barrelvalue);
   record.setEEValue(endcapvalue);
-
 
   delete parser;
   cms::concurrency::xercesTerminate();
   return 0;
-
 }
 
-
-
-
-
-int EcalTimeOffsetXMLTranslator::writeXML(const std::string& filename, 
-					const EcalCondHeader& header,
-					const EcalTimeOffsetConstant& record){
-  std::fstream fs(filename.c_str(),ios::out);
-  fs<< dumpXML(header,record);
-  return 0;  
- 
-}
-
-std::string EcalTimeOffsetXMLTranslator::dumpXML(const EcalCondHeader& header,
-					  const EcalTimeOffsetConstant& record){
-
+int EcalTimeOffsetXMLTranslator::writeXML(const std::string& filename,
+                                          const EcalCondHeader& header,
+                                          const EcalTimeOffsetConstant& record) {
   cms::concurrency::xercesInitialize();
-  
-  DOMImplementation*  impl =
-    DOMImplementationRegistry::getDOMImplementation(fromNative("LS").c_str());
-  
-  DOMWriter* writer =static_cast<DOMImplementationLS*>(impl)->createDOMWriter( );
-  writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true);
-  
-  DOMDocumentType* doctype = impl->createDocumentType(fromNative("XML").c_str(), 0, 0 );
-  DOMDocument *    doc = 
-    impl->createDocument( 0, fromNative(TimeOffsetConstant_tag).c_str(), doctype );
 
+  std::fstream fs(filename.c_str(), ios::out);
+  fs << dumpXML(header, record);
 
-  doc->setEncoding(fromNative("UTF-8").c_str() );
-  doc->setStandalone(true);
-  doc->setVersion(fromNative("1.0").c_str() );
-    
+  cms::concurrency::xercesTerminate();
+
+  return 0;
+}
+
+std::string EcalTimeOffsetXMLTranslator::dumpXML(const EcalCondHeader& header, const EcalTimeOffsetConstant& record) {
+  unique_ptr<DOMImplementation> impl(DOMImplementationRegistry::getDOMImplementation(cms::xerces::uStr("LS").ptr()));
+
+  DOMLSSerializer* writer = impl->createLSSerializer();
+  if (writer->getDomConfig()->canSetParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true))
+    writer->getDomConfig()->setParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true);
+
+  DOMDocumentType* doctype = impl->createDocumentType(cms::xerces::uStr("XML").ptr(), nullptr, nullptr);
+  DOMDocument* doc = impl->createDocument(nullptr, cms::xerces::uStr(TimeOffsetConstant_tag.c_str()).ptr(), doctype);
   DOMElement* root = doc->getDocumentElement();
- 
-  xuti::writeHeader(root,header);
-   
-  xuti::WriteNodeWithValue(root,Barrel_tag,record.getEBValue());
-  xuti::WriteNodeWithValue(root,Endcap_tag,record.getEEValue());
 
-  std::string dump= toNative(writer->writeToString(*root)); 
+  xuti::writeHeader(root, header);
+
+  xuti::WriteNodeWithValue(root, Barrel_tag, record.getEBValue());
+  xuti::WriteNodeWithValue(root, Endcap_tag, record.getEEValue());
+
+  std::string dump = cms::xerces::toString(writer->writeToString(root));
   doc->release();
-
-  //   cms::concurrency::xercesTerminate();
+  doctype->release();
+  writer->release();
 
   return dump;
 }
-

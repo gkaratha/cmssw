@@ -7,7 +7,7 @@ process = cms.Process("TEST")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 ##____________________________________________________________________________||
-process.load("RecoMET/METProducers.PFMET_cfi")
+process.load("RecoMET/METProducers.pfMet_cfi")
 process.load("RecoMET/METProducers.METSignificanceParams_cfi")
 process.load("RecoMET/METProducers.METSignificanceObjects_cfi")
 
@@ -37,9 +37,22 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 50
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 ##____________________________________________________________________________||
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.load("JetMETCorrections.Modules.JetResolutionESProducer_cfi")
+from CondCore.CondDB.CondDB_cfi import *
+
+##____________________________________________________________________________||
 process.pfMetWithSignificance = process.pfMet.clone(
     calculateSignificance = cms.bool(True),
-    srcJets = cms.InputTag("ak4PFJets"),
+    srcJets = cms.InputTag("ak4PFJetsCHS"),
+    srcJetSF = cms.string('AK4PFchs'),
+    srcJetResPt = cms.string('AK4PFchs_pt'),
+    srcJetResPhi = cms.string('AK4PFchs_phi'),
+    srcRho = cms.InputTag('fixedGridRhoAll'),
     srcLeptons = cms.VInputTag("selectedElectrons", "selectedMuons", "selectedPhotons"),
     parameters = process.METSignificanceParams
     )

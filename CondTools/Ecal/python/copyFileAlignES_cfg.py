@@ -1,17 +1,29 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TEST")
+process.load("CalibCalorimetry.EcalTrivialCondModules.EcalTrivialCondRetriever_cfi")
+process.EcalTrivialConditionRetriever.getEBAlignmentFromFile = cms.untracked.bool(True)
+process.EcalTrivialConditionRetriever.EBAlignmentFile = cms.untracked.string('CalibCalorimetry/EcalTrivialCondModules/data_test/EBAlignment_2018.txt')
+process.EcalTrivialConditionRetriever.getEEAlignmentFromFile = cms.untracked.bool(True)
+process.EcalTrivialConditionRetriever.EEAlignmentFile = cms.untracked.string('CalibCalorimetry/EcalTrivialCondModules/data_test/EEAlignment_2018.txt')
+process.EcalTrivialConditionRetriever.getESAlignmentFromFile = cms.untracked.bool(True)
+process.EcalTrivialConditionRetriever.ESAlignmentFile = cms.untracked.string('CalibCalorimetry/EcalTrivialCondModules/data_test/ESAlignment_2018.txt')
 
-process.load("EcalTrivialAlignment_cfi")
+#process.load("EcalTrivialAlignment_cfi")
 
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
+process.load("CondCore.CondDB.CondDB_cfi")
 #process.CondDBCommon.connect = 'oracle://cms_orcoff_prep/CMS_COND_ECAL'
 #process.CondDBCommon.DBParameters.authenticationPath = '/afs/cern.ch/cms/DB/conddb/'
-process.CondDBCommon.connect = 'sqlite_file:ESAlign_2010.db'
+process.CondDB.connect = 'sqlite_file:ESAlignment_test.db'
 
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('*'),
-    destinations = cms.untracked.vstring('cout')
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
+    cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True)
+    ),
+    debugModules = cms.untracked.vstring('*')
 )
 
 process.source = cms.Source("EmptyIOVSource",
@@ -22,12 +34,12 @@ process.source = cms.Source("EmptyIOVSource",
 )
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
-    process.CondDBCommon,
+    process.CondDB,
     timetype = cms.untracked.string('runnumber'),
     toPut = cms.VPSet(
        cms.PSet(
           record = cms.string('ESAlignmentRcd'),
-          tag = cms.string('ESAlignment_measured_v01_offline')
+          tag = cms.string('ESAlignment_test')
        )
     )
 )

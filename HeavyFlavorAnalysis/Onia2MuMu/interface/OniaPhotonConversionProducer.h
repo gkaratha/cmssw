@@ -9,8 +9,8 @@
 #ifndef __OniaPhotonConversionProducer_h_
 #define __OniaPhotonConversionProducer_h_
 
+#include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Utilities/interface/InputTag.h"
@@ -25,6 +25,7 @@
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
+#include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 #include <vector>
 
@@ -33,60 +34,46 @@
 
  */
 
-class OniaPhotonConversionProducer : public edm::EDProducer {
-
- public:
+class OniaPhotonConversionProducer : public edm::stream::EDProducer<> {
+public:
   explicit OniaPhotonConversionProducer(const edm::ParameterSet& ps);
- 
- private:
 
-  virtual void produce(edm::Event& event, const edm::EventSetup& esetup);
-  virtual void endJob() ;
-  void removeDuplicates(reco::ConversionCollection&, std::vector<int> &);
+private:
+  void produce(edm::Event& event, const edm::EventSetup& esetup) override;
+  void endStream() override;
+  void removeDuplicates(reco::ConversionCollection&);
   bool checkTkVtxCompatibility(const reco::Conversion&, const reco::VertexCollection&);
-  bool foundCompatibleInnerHits(const reco::HitPattern& hitPatA, const reco::HitPattern& hitPatB); 
+  bool foundCompatibleInnerHits(const reco::HitPattern& hitPatA, const reco::HitPattern& hitPatB);
   bool HighpuritySubset(const reco::Conversion&, const reco::VertexCollection&);
   pat::CompositeCandidate* makePhotonCandidate(const reco::Conversion&);
   reco::Candidate::LorentzVector convertVector(const math::XYZTLorentzVectorF&);
-  int PackFlags(const reco::Conversion&, bool, bool , bool, bool, bool);
+  int PackFlags(const reco::Conversion&, bool, bool, bool, bool, bool);
   const reco::PFCandidateCollection selectPFPhotons(const reco::PFCandidateCollection&);
-  bool CheckPi0( const reco::Conversion&, const reco::PFCandidateCollection&, bool &);
+  bool CheckPi0(const reco::Conversion&, const reco::PFCandidateCollection&, bool&);
 
   edm::EDGetTokenT<reco::ConversionCollection> convCollectionToken_;
   edm::EDGetTokenT<reco::VertexCollection> thePVsToken_;
   edm::EDGetTokenT<reco::PFCandidateCollection> pfCandidateCollectionToken_;
 
-  bool        wantTkVtxCompatibility_;
-  uint32_t    sigmaTkVtxComp_;
-  bool        wantCompatibleInnerHits_;
-  uint32_t    TkMinNumOfDOF_;
-  bool        wantHighpurity_;
+  bool wantTkVtxCompatibility_;
+  uint32_t sigmaTkVtxComp_;
+  bool wantCompatibleInnerHits_;
+  uint32_t TkMinNumOfDOF_;
+  bool wantHighpurity_;
   double _vertexChi2ProbCut;
   double _trackchi2Cut;
   double _minDistanceOfApproachMinCut;
   double _minDistanceOfApproachMaxCut;
   bool pi0OnlineSwitch_;
-// low and high window limits
+  // low and high window limits
   std::vector<double> pi0SmallWindow_;
   std::vector<double> pi0LargeWindow_;
 
   int convAlgo_;
-  std::vector<int>   convQuality_;
-  
-  int total_conversions;
-  int selection_fail;
-  int algo_fail;
-  int flag_fail;
-  int pizero_fail;
-  int duplicates;
-  int TkVtxC;
-  int CInnerHits;
-  int highpurity_count;
-  int final_conversion;
-  int store_conversion;
+  std::vector<int> convQuality_;
 
   std::string convSelectionCuts_;
-
+  std::unique_ptr<StringCutObjectSelector<reco::Conversion>> convSelection_;
 };
 
 #endif

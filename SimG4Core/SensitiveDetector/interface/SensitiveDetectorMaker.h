@@ -1,70 +1,51 @@
-#ifndef SensitiveDetector_SensitiveDetectorMaker_h
-#define SensitiveDetector_SensitiveDetectorMaker_h
+#ifndef SimG4Core_SensitiveDetector_SensitiveDetectorMaker_h
+#define SimG4Core_SensitiveDetector_SensitiveDetectorMaker_h
 // -*- C++ -*-
 //
 // Package:     SensitiveDetector
 // Class  :     SensitiveDetectorMaker
-// 
-/**\class SensitiveDetectorMaker SensitiveDetectorMaker.h SimG4Core/SensitiveDetector/interface/SensitiveDetectorMaker.h
-
- Description: <one line class summary>
-
- Usage:
-    <usage>
-
-*/
 //
-// Original Author:  
+//
+// Original Author:
 //         Created:  Mon Nov 14 11:56:05 EST 2005
 //
 
-// system include files
-#include <memory>
-
 // user include files
 #include "SimG4Core/SensitiveDetector/interface/SensitiveDetectorMakerBase.h"
+#include "SimG4Core/SensitiveDetector/interface/SensitiveDetector.h"
 #include "SimG4Core/Notification/interface/SimActivityRegistryEnroller.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 // forward declarations
+class SimTrackManager;
+class SimActivityRegistry;
+class SensitiveDetectorCatalog;
 
-template<class T>
-class SensitiveDetectorMaker : public SensitiveDetectorMakerBase
-{
+namespace edm {
+  class EventSetup;
+  class ParameterSet;
+}  // namespace edm
 
-   public:
-     SensitiveDetectorMaker(){}
-     //virtual ~SensitiveDetectorMaker();
+template <class T>
+class SensitiveDetectorMaker : public SensitiveDetectorMakerBase {
+public:
+  explicit SensitiveDetectorMaker(edm::ParameterSet const&, edm::ConsumesCollector){};
+  SensitiveDetectorMaker(const SensitiveDetectorMaker&) = delete;
+  const SensitiveDetectorMaker& operator=(const SensitiveDetectorMaker&) = delete;
 
-      // ---------- const member functions ---------------------
-      virtual void make(const std::string& iname,
-			const DDCompactView& cpv,
-			const SensitiveDetectorCatalog& clg,
-			const edm::ParameterSet& p,
-			const SimTrackManager* m,
-			SimActivityRegistry& reg,
-			std::auto_ptr<SensitiveTkDetector>& oTK,
-			std::auto_ptr<SensitiveCaloDetector>& oCalo) const
-      {
-	std::auto_ptr<T> returnValue(new T(iname, cpv, clg, p, m));
-	SimActivityRegistryEnroller::enroll(reg, returnValue.get());
-
-	this->convertTo(returnValue.get(), oTK,oCalo);
-	//ownership was passed in the previous function
-	returnValue.release();
-      }
-
-      // ---------- static member functions --------------------
-
-      // ---------- member functions ---------------------------
-
-   private:
-      SensitiveDetectorMaker(const SensitiveDetectorMaker&); // stop default
-
-      const SensitiveDetectorMaker& operator=(const SensitiveDetectorMaker&); // stop default
-
-      // ---------- member data --------------------------------
-
+  // ---------- const member functions ---------------------
+  std::unique_ptr<SensitiveDetector> make(const std::string& iname,
+                                          const edm::EventSetup& es,
+                                          const SensitiveDetectorCatalog& clg,
+                                          const edm::ParameterSet& p,
+                                          const SimTrackManager* man,
+                                          SimActivityRegistry& reg) const override {
+    auto sd = std::make_unique<T>(iname, es, clg, p, man);
+    SimActivityRegistryEnroller::enroll(reg, sd.get());
+    return sd;
+  };
 };
-
 
 #endif

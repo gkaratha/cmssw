@@ -2,18 +2,16 @@
 
 #include "Alignment/SurveyAnalysis/interface/SurveyInputBase.h"
 
-Alignable* SurveyInputBase::theDetector(0);
+Alignable* SurveyInputBase::theDetector(nullptr);
 
-SurveyInputBase::~SurveyInputBase()
-{
+SurveyInputBase::~SurveyInputBase() {
   delete theDetector;
 
-  theDetector = 0;
+  theDetector = nullptr;
 }
 
-void SurveyInputBase::addComponent(Alignable* comp)
-{
-  if (0 == theDetector)
+void SurveyInputBase::addComponent(Alignable* comp) {
+  if (nullptr == theDetector)
     theDetector = comp;
   else
     theDetector->addComponent(comp);

@@ -1,5 +1,5 @@
-#ifndef Alignment_ReferenceTrajectories_BzeroReferenceTrajectory_h 
-#define Alignment_ReferenceTrajectories_BzeroReferenceTrajectory_h 
+#ifndef Alignment_ReferenceTrajectories_BzeroReferenceTrajectory_h
+#define Alignment_ReferenceTrajectories_BzeroReferenceTrajectory_h
 
 /**
  *  Class implementing the reference trajectory of a single particle in
@@ -32,9 +32,7 @@
 
 #include "Alignment/ReferenceTrajectories/interface/ReferenceTrajectory.h"
 
-class BzeroReferenceTrajectory : public ReferenceTrajectory
-{
-
+class BzeroReferenceTrajectory : public ReferenceTrajectory {
 public:
   /**Constructor with Tsos at first hit (in physical order) and list of hits 
      [if (hitsAreReverse) ==> order of hits is in opposite direction compared
@@ -43,24 +41,17 @@ public:
      the material effects to be considered and a particle mass and a momentum extimate,
      the magnetic field of the event is needed for propagations etc.
    */
-  BzeroReferenceTrajectory(const TrajectoryStateOnSurface &referenceTsos,
-			   const TransientTrackingRecHit::ConstRecHitContainer &recHits,
-			   bool hitsAreReverse,
-			   const MagneticField *magField,
-			   MaterialEffects materialEffects,
-			   PropagationDirection propDir,
-			   double mass,
-			   double momentumEstimate,
-			   bool useBeamSpot,
-			   const reco::BeamSpot &beamSpot);
+  BzeroReferenceTrajectory(const TrajectoryStateOnSurface& tsos,
+                           const TransientTrackingRecHit::ConstRecHitContainer& recHits,
+                           const MagneticField* magField,
+                           const reco::BeamSpot& beamSpot,
+                           const ReferenceTrajectoryBase::Config& config);
 
-  virtual ~BzeroReferenceTrajectory() {}
+  ~BzeroReferenceTrajectory() override {}
 
-  virtual BzeroReferenceTrajectory* clone() const
-    { return new BzeroReferenceTrajectory(*this); }
+  BzeroReferenceTrajectory* clone() const override { return new BzeroReferenceTrajectory(*this); }
 
 private:
-
   double theMomentumEstimate;
 };
 

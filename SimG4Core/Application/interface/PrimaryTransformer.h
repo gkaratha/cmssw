@@ -3,13 +3,13 @@
 
 #include "G4PrimaryTransformer.hh"
 
-class PrimaryTransformer : public G4PrimaryTransformer
-{
+class PrimaryTransformer : public G4PrimaryTransformer {
 public:
-    PrimaryTransformer();
-    virtual ~PrimaryTransformer();
-protected: 
-    virtual G4ParticleDefinition * GetDefinition(G4PrimaryParticle * pp);
+  PrimaryTransformer();
+  ~PrimaryTransformer() override;
+
+protected:
+  G4ParticleDefinition* GetDefinition(G4PrimaryParticle* pp) override;
 };
 
-#endif 
+#endif

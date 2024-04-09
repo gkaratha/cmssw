@@ -88,6 +88,7 @@
  */
 
 #include "DataFormats/GeometrySurface/interface/ReferenceCounted.h"
+#include "DataFormats/TrajectorySeed/interface/PropagationDirection.h"
 
 // for AlgebraicVector, -Matrix and -SymMatrix:
 #include "DataFormats/CLHEP/interface/AlgebraicObjects.h"
@@ -97,20 +98,46 @@
 
 #include <vector>
 
-#include "Alignment/ReferenceTrajectories/interface/GblTrajectory.h"
+#include <Eigen/Dense>
 
+#include "GblTrajectory.h"
 
-class ReferenceTrajectoryBase : public ReferenceCounted
-{
-
+class ReferenceTrajectoryBase : public ReferenceCounted {
 public:
-
   typedef ReferenceCountingPointer<ReferenceTrajectoryBase> ReferenceTrajectoryPtr;
 
-  enum MaterialEffects { none, multipleScattering, energyLoss, combined, 
-			 breakPoints, brokenLinesCoarse, brokenLinesFine, localGBL, curvlinGBL };
+  enum MaterialEffects {
+    none,
+    multipleScattering,
+    energyLoss,
+    combined,
+    breakPoints,
+    brokenLinesCoarse,
+    brokenLinesFine,
+    localGBL,
+    curvlinGBL
+  };
 
-  virtual ~ReferenceTrajectoryBase() {}
+  struct Config {
+    Config(MaterialEffects matEff,
+           PropagationDirection direction,
+           double m = -std::numeric_limits<double>::infinity(),
+           double est = -std::numeric_limits<double>::infinity())
+        : materialEffects(matEff), propDir(direction), mass(m), momentumEstimate(est) {}
+
+    MaterialEffects materialEffects;
+    PropagationDirection propDir;
+    double mass;
+    double momentumEstimate;
+    bool useBeamSpot{false};
+    bool hitsAreReverse{false};
+    bool useRefittedState{false};
+    bool constructTsosWithErrors{false};
+    bool includeAPEs{false};
+    bool allowZeroMaterial{false};
+  };
+
+  ~ReferenceTrajectoryBase() override {}
 
   bool isValid() { return theValidityFlag; }
 
@@ -121,7 +148,7 @@ public:
   /** Returns the full covariance matrix of the measurements. ORCA-equivalent: covariance()
    */
   const AlgebraicSymMatrix& measurementErrors() const { return theMeasurementsCov; }
-  
+
   /** Returns the local coordinates of the reference trajectory.
       ORCA-equivalent: referenceTrack()
    */
@@ -141,27 +168,26 @@ public:
   const AlgebraicMatrix& trajectoryToCurv() const { return theInnerTrajectoryToCurvilinear; }
   /** Returns the transformation of local to tracjectory parameters
    */
-  const AlgebraicMatrix& localToTrajectory() const { return theInnerLocalToTrajectory; }  
-  
+  const AlgebraicMatrix& localToTrajectory() const { return theInnerLocalToTrajectory; }
+
   /** Returns the GBL input
    */
-  std::vector<std::pair<std::vector<gbl::GblPoint>, TMatrixD> >& gblInput() { return theGblInput; }
+  std::vector<std::pair<std::vector<gbl::GblPoint>, Eigen::MatrixXd> >& gblInput() { return theGblInput; }
 
   /** Returns the GBL external derivatives.
    */
-  const TMatrixD& gblExtDerivatives() const { return theGblExtDerivatives; }
+  const Eigen::MatrixXd& gblExtDerivatives() const { return theGblExtDerivatives; }
 
   /** Returns the GBL external derivatives.
    */
-  const TVectorD& gblExtMeasurements() const { return theGblExtMeasurements; }
+  const Eigen::VectorXd& gblExtMeasurements() const { return theGblExtMeasurements; }
 
   /** Returns the GBL external derivatives.
    */
-  const TVectorD& gblExtPrecisions() const { return theGblExtPrecisions; }
-  
+  const Eigen::VectorXd& gblExtPrecisions() const { return theGblExtPrecisions; }
 
   /** Returns the set of 'track'-parameters.
-   */  
+   */
   const AlgebraicVector& parameters() const { return theParameters; }
 
   /** Returns true if the covariance matrix of the 'track'-parameters is set.
@@ -170,8 +196,11 @@ public:
 
   /** Set the covariance matrix of the 'track'-parameters.
    */
-  inline void setParameterErrors( const AlgebraicSymMatrix& error ) { theParameterCov = error; theParamCovFlag = true; }
-  
+  inline void setParameterErrors(const AlgebraicSymMatrix& error) {
+    theParameterCov = error;
+    theParamCovFlag = true;
+  }
+
   /** Returns the covariance matrix of the 'track'-parameters.
    */
   inline const AlgebraicSymMatrix& parameterErrors() const { return theParameterCov; }
@@ -187,57 +216,57 @@ public:
 
   inline unsigned int numberOfHits() const { return theNumberOfHits; }
   inline unsigned int numberOfPar() const { return theNumberOfPars; }
-  inline unsigned int numberOfVirtualMeas() const { return theNumberOfVirtualMeas; }  
-  inline unsigned int numberOfVirtualPar() const { return theNumberOfVirtualPars; }  
-  inline unsigned int numberOfHitMeas() const { return theNumberOfHits * nMeasPerHit; } 
+  inline unsigned int numberOfVirtualMeas() const { return theNumberOfVirtualMeas; }
+  inline unsigned int numberOfVirtualPar() const { return theNumberOfVirtualPars; }
+  inline unsigned int numberOfHitMeas() const { return theNumberOfHits * nMeasPerHit; }
   inline int nominalField() const { return theNomField; }
-       
+
   virtual ReferenceTrajectoryBase* clone() const = 0;
 
 protected:
+  explicit ReferenceTrajectoryBase(unsigned int nPar,
+                                   unsigned int nHits,
+                                   unsigned int nVirtualPar,
+                                   unsigned int nVirtualMeas);
 
-  explicit ReferenceTrajectoryBase(unsigned int nPar, unsigned int nHits,
-				   unsigned int nVirtualPar, unsigned int nVirtualMeas);
-
-  unsigned int numberOfUsedRecHits(const TransientTrackingRecHit::ConstRecHitContainer &recHits) const;
+  unsigned int numberOfUsedRecHits(const TransientTrackingRecHit::ConstRecHitContainer& recHits) const;
   bool useRecHit(const TransientTrackingRecHit::ConstRecHitPointer& hitPtr) const;
 
   bool theValidityFlag;
   bool theParamCovFlag;
 
-  unsigned int theNumberOfHits;   // number of (measurements from) hits
-  unsigned int theNumberOfPars;   // number of (track) parameters
-  unsigned int theNumberOfVirtualMeas; // number of virtual measurements
-  unsigned int theNumberOfVirtualPars; // number of parameters for virtual measurements
-      
+  unsigned int theNumberOfHits;         // number of (measurements from) hits
+  unsigned int theNumberOfPars;         // number of (track) parameters
+  unsigned int theNumberOfVirtualMeas;  // number of virtual measurements
+  unsigned int theNumberOfVirtualPars;  // number of parameters for virtual measurements
+
   std::vector<TrajectoryStateOnSurface> theTsosVec;
   TransientTrackingRecHit::ConstRecHitContainer theRecHits;
 
-  AlgebraicVector     theMeasurements;
-  AlgebraicSymMatrix  theMeasurementsCov;
+  AlgebraicVector theMeasurements;
+  AlgebraicSymMatrix theMeasurementsCov;
 
-  AlgebraicVector     theTrajectoryPositions;
-  AlgebraicSymMatrix  theTrajectoryPositionCov;
+  AlgebraicVector theTrajectoryPositions;
+  AlgebraicSymMatrix theTrajectoryPositionCov;
 
-  AlgebraicVector     theParameters;
-  AlgebraicSymMatrix  theParameterCov;
+  AlgebraicVector theParameters;
+  AlgebraicSymMatrix theParameterCov;
 
-  AlgebraicMatrix     theDerivatives;
+  AlgebraicMatrix theDerivatives;
 
-// CHK for beamspot   transformation trajectory parameter to curvilinear at refTSos
-  AlgebraicMatrix     theInnerTrajectoryToCurvilinear;  
-// CHK for TwoBodyD.  transformation local to trajectory parameter at refTsos
-  AlgebraicMatrix     theInnerLocalToTrajectory;
-// CHK GBL input:     list of (list of points on trajectory and transformation at inner (first) point)
-  std::vector<std::pair<std::vector<gbl::GblPoint>, TMatrixD> > theGblInput;
-  int                           theNomField;
-// CHK GBL TBD:       virtual (mass) measurement
-  TMatrixD            theGblExtDerivatives;
-  TVectorD            theGblExtMeasurements;
-  TVectorD            theGblExtPrecisions;    
-    
-  static const unsigned int nMeasPerHit = 2;
+  // CHK for beamspot   transformation trajectory parameter to curvilinear at refTSos
+  AlgebraicMatrix theInnerTrajectoryToCurvilinear;
+  // CHK for TwoBodyD.  transformation local to trajectory parameter at refTsos
+  AlgebraicMatrix theInnerLocalToTrajectory;
+  // CHK GBL input:     list of (list of points on trajectory and transformation at inner (first) point)
+  std::vector<std::pair<std::vector<gbl::GblPoint>, Eigen::MatrixXd> > theGblInput;
+  int theNomField;
+  // CHK GBL TBD:       virtual (mass) measurement
+  Eigen::MatrixXd theGblExtDerivatives;
+  Eigen::VectorXd theGblExtMeasurements;
+  Eigen::VectorXd theGblExtPrecisions;
+
+  static constexpr unsigned int nMeasPerHit{2};
 };
 
-#endif // REFERENCE_TRAJECTORY_BASE_H
-
+#endif  // REFERENCE_TRAJECTORY_BASE_H

@@ -6,45 +6,31 @@ process = cms.Process("TEST")
 # message logger
 ######################### 
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
-    info = cms.untracked.PSet(
-        threshold = cms.untracked.string('INFO'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
-    #suppressInfo = cms.untracked.vstring(),
-    # allows to suppress output from specific modules 
-    #suppressDebug = cms.untracked.vstring(),
-    debug = cms.untracked.PSet(
-        threshold = cms.untracked.string('DEBUG'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
-    warning = cms.untracked.PSet(
-        threshold = cms.untracked.string('WARNING'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
+process.MessageLogger = cms.Service("MessageLogger",
     cerr = cms.untracked.PSet(
-        threshold = cms.untracked.string('ERROR'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
+        noLineBreaks = cms.untracked.bool(False),
+        threshold = cms.untracked.string('ERROR')
+    ),
+    debugModules = cms.untracked.vstring('*'),
+    files = cms.untracked.PSet(
+        debug = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('DEBUG')
         ),
-    error = cms.untracked.PSet(
-        threshold = cms.untracked.string('ERROR'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
+        error = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('ERROR')
         ),
-    #suppressWarning = cms.untracked.vstring(),
-    debugModules = cms.untracked.vstring('*'),#'siStripFEDMonitor'),
-    destinations = cms.untracked.vstring('cerr', 
-                                         'debug', 
-                                         'info', 
-                                         'warning', 
-                                         'error')
-
+        info = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('INFO')
+        ),
+        warning = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('WARNING')
+        )
     )
+)
 
 #process.MessageLogger = cms.Service("MessageLogger"
 #destinations = cms.untracked.vstring('cout', 'readFromFile'),
@@ -129,12 +115,12 @@ logconnect = cms.untracked.string("sqlite_file:log.db")
 # SiStripFEDErrorsDQM (POPCON Application) #
 ############################################
 
-process.siStripFEDErrorsDQM = cms.EDAnalyzer("SiStripFEDErrorsDQM",
+process.siStripFEDErrorsDQM = cms.EDAnalyzer("SiStripPopConFEDErrorsDQM",
                                              RunNb = cms.uint32(123815),
-                                             accessDQMFile = cms.bool(True),
-                                             FILE_NAME = cms.untracked.string("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/data/Online/123/815/DQM_V0001_SiStrip_R000123815.root"),
-                                             ME_DIR = cms.untracked.string("Run 123815"),
-                                             histoList = cms.VPSet(),
+                                             ##accessDQMFile = cms.bool(True),
+                                             ##FILE_NAME = cms.untracked.string("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/data/Online/123/815/DQM_V0001_SiStrip_R000123815.root"),
+                                             ##ME_DIR = cms.untracked.string("Run 123815"),
+                                             ##histoList = cms.VPSet(),
                                              Threshold = cms.untracked.double(0.0),
                                              Debug = cms.untracked.uint32(1)
                                              )

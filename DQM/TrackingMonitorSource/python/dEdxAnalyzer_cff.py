@@ -2,40 +2,43 @@ import FWCore.ParameterSet.Config as cms
 
 # dEdx monitor ####
 #from DQM.TrackingMonitor.dEdxAnalyzer_cff import *
-import DQM.TrackingMonitor.dEdxAnalyzer_cfi
-# Clone for all PDs but MinBias ####
-dEdxMonCommon = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxAnalyzer.clone()
+from DQM.TrackingMonitor.dEdxAnalyzer_cfi import *
+# Clone for all PDs but ZeroBias ####
+dEdxMonCommon = dEdxAnalyzer.clone()
 
-dEdxHitMonCommon = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxHitAnalyzer.clone()
+dEdxHitMonCommon = dEdxHitAnalyzer.clone()
 
-# Clone for MinBias ####
-dEdxMonMB = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxAnalyzer.clone()
-dEdxMonMB.dEdxParameters.andOr         = cms.bool( False )
-dEdxMonMB.dEdxParameters.hltInputTag   = cms.InputTag( "TriggerResults::HLT" )
-dEdxMonMB.dEdxParameters.hltPaths      = cms.vstring("HLT_ZeroBias_*")
-dEdxMonMB.dEdxParameters.hltDBKey      = cms.string("Tracker_MB")
-dEdxMonMB.dEdxParameters.errorReplyHlt = cms.bool( False )
-dEdxMonMB.dEdxParameters.andOrHlt      = cms.bool(True) 
+from DQM.TrackingMonitorSource.pset4GenericTriggerEventFlag_cfi import *
+# Clone for ZeroBias ####
+dEdxMonMB = dEdxAnalyzer.clone(
+    dEdxParameters = dEdxAnalyzer.dEdxParameters.clone(
+        genericTriggerEventPSet = genericTriggerEventFlag4fullTrackerAndHLTdb
+    )
+)
 
-dEdxHitMonMB = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxHitAnalyzer.clone()
-dEdxHitMonMB.dEdxParameters.andOr         = cms.bool( False )
-dEdxHitMonMB.dEdxParameters.hltInputTag   = cms.InputTag( "TriggerResults::HLT" )
-dEdxHitMonMB.dEdxParameters.hltPaths      = cms.vstring("HLT_ZeroBias_*")
-dEdxHitMonMB.dEdxParameters.hltDBKey      = cms.string("Tracker_MB")
-dEdxHitMonMB.dEdxParameters.errorReplyHlt = cms.bool( False )
-dEdxHitMonMB.dEdxParameters.andOrHlt      = cms.bool(True) 
+dEdxHitMonMB = dEdxHitAnalyzer.clone(
+    dEdxParameters = dEdxHitAnalyzer.dEdxParameters.clone(
+        genericTriggerEventPSet = genericTriggerEventFlag4fullTrackerAndHLTdb
+    )
+)
 
 # Clone for SingleMu ####
-dEdxMonMU = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxAnalyzer.clone()
-dEdxMonMU.dEdxParameters.andOr         = cms.bool( False )
-dEdxMonMU.dEdxParameters.hltInputTag   = cms.InputTag( "TriggerResults::HLT" )
-dEdxMonMU.dEdxParameters.hltPaths      = cms.vstring("HLT_SingleMu40_Eta2p1_*")
-dEdxMonMU.dEdxParameters.errorReplyHlt = cms.bool( False )
-dEdxMonMU.dEdxParameters.andOrHlt      = cms.bool(True) 
+dEdxMonMU = dEdxAnalyzer.clone(
+    dEdxParameters = cms.PSet(
+        andOr = cms.bool(False),
+        hltInputTag = cms.InputTag("TriggerResults::HLT"),
+        hltPaths = cms.vstring("HLT_SingleMu40_Eta2p1_*"),
+        errorReplyHlt = cms.bool(False),
+        andOrHlt = cms.bool(True)
+    )
+)
 
-dEdxHitMonMU = DQM.TrackingMonitor.dEdxAnalyzer_cfi.dEdxHitAnalyzer.clone()
-dEdxHitMonMU.dEdxParameters.andOr         = cms.bool( False )
-dEdxHitMonMU.dEdxParameters.hltInputTag   = cms.InputTag( "TriggerResults::HLT" )
-dEdxHitMonMU.dEdxParameters.hltPaths      = cms.vstring("HLT_SingleMu40_Eta2p1_*")
-dEdxHitMonMU.dEdxParameters.errorReplyHlt = cms.bool( False )
-dEdxHitMonMU.dEdxParameters.andOrHlt      = cms.bool(True) 
+dEdxHitMonMU = dEdxHitAnalyzer.clone(
+    dEdxParameters = cms.PSet(
+        andOr = cms.bool(False),
+        hltInputTag = cms.InputTag("TriggerResults::HLT"),
+        hltPaths = cms.vstring("HLT_SingleMu40_Eta2p1_*"),
+        errorReplyHlt = cms.bool(False),
+        andOrHlt = cms.bool(True)
+    )
+)

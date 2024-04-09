@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FW3DView
-// 
+//
 /**\class FW3DView FW3DView.h Fireworks/Core/interface/FW3DView.h
 
  Description: [one line class summary]
@@ -26,32 +26,28 @@
 // forward declarations
 class TEveCalo3D;
 
-class FW3DView: public FW3DViewBase
-{
+class FW3DView : public FW3DViewBase {
 public:
-   FW3DView(TEveWindowSlot*, FWViewType::EType);
-   virtual ~FW3DView();
+  FW3DView(TEveWindowSlot*, FWViewType::EType);
+  ~FW3DView() override;
 
-   virtual void setContext(const fireworks::Context&);
-   virtual TEveCaloViz* getEveCalo() const;
-   
-   
-   // ---------- const member functions ---------------------
+  void setContext(const fireworks::Context&) override;
+  TEveCaloViz* getEveCalo() const override;
 
-   //   virtual void populateController(ViewerParameterGUI&) const;
-   // ---------- static member functions --------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- member functions ---------------------------
+  //   virtual void populateController(ViewerParameterGUI&) const;
+  // ---------- static member functions --------------------
+
+  // ---------- member functions ---------------------------
+
+  FW3DView(const FW3DView&) = delete;  // stop default
+
+  const FW3DView& operator=(const FW3DView&) = delete;  // stop default
 
 private:
-   FW3DView(const FW3DView&); // stop default
-
-   const FW3DView& operator=(const FW3DView&); // stop default
-   
-   // ---------- member data --------------------------------
-   TEveCalo3D*        m_calo;
-
+  // ---------- member data --------------------------------
+  TEveCalo3D* m_calo;
 };
-
 
 #endif

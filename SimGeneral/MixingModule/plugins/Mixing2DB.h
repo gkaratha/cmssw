@@ -4,7 +4,7 @@
 //
 // Package:    Mixing2DB
 // Class:      Mixing2DB
-// 
+//
 /**\class Mixing2DB Mixing2DB.cc SimGeneral/Mixing2DB/src/Mixing2DB.cc
 
  Description: [one line class summary]
@@ -18,13 +18,12 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -34,22 +33,20 @@
 // class declaration
 //
 
-class Mixing2DB : public edm::EDAnalyzer {
-   public:
-      explicit Mixing2DB(const edm::ParameterSet&);
-      ~Mixing2DB();
+class Mixing2DB : public edm::one::EDAnalyzer<> {
+public:
+  explicit Mixing2DB(const edm::ParameterSet&);
+  ~Mixing2DB() override;
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
+private:
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
 
-   private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() ;
-
-
-      // ----------member data ---------------------------
-      edm::ParameterSet cfi_;
+  // ----------member data ---------------------------
+  edm::ParameterSet cfi_;
 };
 
 #endif

@@ -12,27 +12,24 @@
 
 typedef int run_t;
 
-class DCSPTMTempList  : public IDBObject {
- public:
+class DCSPTMTempList : public IDBObject {
+public:
   friend class EcalCondDBInterface;
 
   DCSPTMTempList();
-  ~DCSPTMTempList();
+  ~DCSPTMTempList() override;
 
   // Methods for user data
-  
-  std::vector<DCSPTMTemp> getList() ;
-  
-  // this fills the vector 
-  void fetchValuesForECIDAndTime(const EcalLogicID& ecid, const Tm& start, const Tm& end) throw(std::runtime_error);
-  void fetchValuesForECID(const EcalLogicID& ecid) throw(std::runtime_error);
 
+  std::vector<DCSPTMTemp> getList();
 
- private:
+  // this fills the vector
+  void fetchValuesForECIDAndTime(const EcalLogicID& ecid, const Tm& start, const Tm& end) noexcept(false);
+  void fetchValuesForECID(const EcalLogicID& ecid) noexcept(false);
+
+private:
   // User data for this IOV
   std::vector<DCSPTMTemp> m_vec_temp;
-
-
 };
 
 #endif

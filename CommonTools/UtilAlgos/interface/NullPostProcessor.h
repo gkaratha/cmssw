@@ -5,18 +5,24 @@
  * \author Luca Lista, INFN
  */
 #include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "DataFormats/Common/interface/OrphanHandle.h"
+
+namespace edm {
+  class Event;
+  class ParameterSet;
+}  // namespace edm
+
 namespace helper {
 
-  template<typename OutputCollection, typename EdmFilter=edm::EDFilter>
+  template <typename OutputCollection>
   struct NullPostProcessor {
-    NullPostProcessor( const edm::ParameterSet & iConfig, edm::ConsumesCollector && iC ) :
-      NullPostProcessor( iConfig ) { }
-    NullPostProcessor( const edm::ParameterSet & iConfig ) { }
-    void init( EdmFilter & ) { }
-    void process( edm::OrphanHandle<OutputCollection>, edm::Event & ) { }
+    NullPostProcessor(const edm::ParameterSet& iConfig, edm::ConsumesCollector&& iC) : NullPostProcessor(iConfig) {}
+    NullPostProcessor(const edm::ParameterSet& iConfig) {}
+    template <typename F>
+    void init(F&) {}
+    void process(edm::OrphanHandle<OutputCollection>, edm::Event&) {}
   };
 
-}
+}  // namespace helper
 
 #endif
-

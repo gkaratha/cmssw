@@ -17,7 +17,6 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 #include <vector>
 
@@ -33,50 +32,34 @@
 // forward declarations
 
 // constructor(s)
-L1GtPrescaleFactorsTechTrigTrivialProducer::L1GtPrescaleFactorsTechTrigTrivialProducer(
-        const edm::ParameterSet& parSet)
-{
-    // tell the framework what data is being produced
-    setWhatProduced(this,
-            &L1GtPrescaleFactorsTechTrigTrivialProducer::producePrescaleFactors);
+L1GtPrescaleFactorsTechTrigTrivialProducer::L1GtPrescaleFactorsTechTrigTrivialProducer(const edm::ParameterSet& parSet) {
+  // tell the framework what data is being produced
+  setWhatProduced(this, &L1GtPrescaleFactorsTechTrigTrivialProducer::producePrescaleFactors);
 
-    // now do what ever other initialization is needed
+  // now do what ever other initialization is needed
 
+  // prescale factors
 
+  std::vector<edm::ParameterSet> prescaleFactorsSet =
+      parSet.getParameter<std::vector<edm::ParameterSet> >("PrescaleFactorsSet");
+
+  for (std::vector<edm::ParameterSet>::const_iterator itPfSet = prescaleFactorsSet.begin();
+       itPfSet != prescaleFactorsSet.end();
+       ++itPfSet) {
     // prescale factors
-
-    std::vector<edm::ParameterSet> prescaleFactorsSet =
-        parSet.getParameter<std::vector<edm::ParameterSet> >("PrescaleFactorsSet");
-
-    for (std::vector<edm::ParameterSet>::const_iterator itPfSet =
-            prescaleFactorsSet.begin(); itPfSet != prescaleFactorsSet.end(); ++itPfSet) {
-
-        // prescale factors
-        m_prescaleFactors.push_back(itPfSet->getParameter<std::vector<int> >("PrescaleFactors"));
-
-    }
-
+    m_prescaleFactors.push_back(itPfSet->getParameter<std::vector<int> >("PrescaleFactors"));
+  }
 }
 
 // destructor
-L1GtPrescaleFactorsTechTrigTrivialProducer::~L1GtPrescaleFactorsTechTrigTrivialProducer()
-{
-
-    // empty
-
+L1GtPrescaleFactorsTechTrigTrivialProducer::~L1GtPrescaleFactorsTechTrigTrivialProducer() {
+  // empty
 }
 
 // member functions
 
 // method called to produce the data
-boost::shared_ptr<L1GtPrescaleFactors> 
-    L1GtPrescaleFactorsTechTrigTrivialProducer::producePrescaleFactors(
-        const L1GtPrescaleFactorsTechTrigRcd& iRecord)
-{
-
-    boost::shared_ptr<L1GtPrescaleFactors> pL1GtPrescaleFactors =
-            boost::shared_ptr<L1GtPrescaleFactors>(
-                    new L1GtPrescaleFactors(m_prescaleFactors) );
-
-    return pL1GtPrescaleFactors;
+std::unique_ptr<L1GtPrescaleFactors> L1GtPrescaleFactorsTechTrigTrivialProducer::producePrescaleFactors(
+    const L1GtPrescaleFactorsTechTrigRcd& iRecord) {
+  return std::make_unique<L1GtPrescaleFactors>(m_prescaleFactors);
 }

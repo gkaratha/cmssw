@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 _RunAlcaHarvesting_
 
@@ -6,9 +6,11 @@ Test wrapper to generate a harvesting config and push it into cmsRun for
 testing with a few input files etc from the command line
 
 """
+from __future__ import print_function
 
 import sys
 import getopt
+import pickle
 
 from Configuration.DataProcessing.GetScenario import getScenario
 
@@ -54,9 +56,9 @@ class RunAlcaHarvesting:
             msg += str(ex)
             raise RuntimeError(msg)
 
-        print "Retrieved Scenario: %s" % self.scenario
-        print "Using Global Tag: %s" % self.globalTag
-        print "Dataset: %s" % self.dataset
+        print("Retrieved Scenario: %s" % self.scenario)
+        print("Using Global Tag: %s" % self.globalTag)
+        print("Dataset: %s" % self.dataset)
 #         print "Run: %s" % self.run
         
         
@@ -76,23 +78,53 @@ class RunAlcaHarvesting:
         process.source.fileNames.append(self.inputLFN)
 
 
+        pklFile = open("RunAlcaHarvestingCfg.pkl", "wb")
         psetFile = open("RunAlcaHarvestingCfg.py", "w")
-        psetFile.write(process.dumpPython())
-        psetFile.close()
+        try:
+            pickle.dump(process, pklFile, protocol=0)
+            psetFile.write("import FWCore.ParameterSet.Config as cms\n")
+            psetFile.write("import pickle\n")
+            psetFile.write("handle = open('RunAlcaHarvestingCfg.pkl','rb')\n")
+            psetFile.write("process = pickle.load(handle)\n")
+            psetFile.write("handle.close()\n")
+            psetFile.close()
+        except Exception as ex:
+            print("Error writing out PSet:")
+            print(traceback.format_exc())
+            raise ex
+        finally:
+            psetFile.close()
+            pklFile.close()
+
         cmsRun = "cmsRun -j FrameworkJobReport.xml RunAlcaHarvestingCfg.py"
-        print "Now do:\n%s" % cmsRun
+        print("Now do:\n%s" % cmsRun)
         
 
 
 
 if __name__ == '__main__':
     valid = ["scenario=", "global-tag=", "lfn=", "dataset=","workflows=","alcapromptdataset="]
-    usage = """RunAlcaHarvesting.py <options>"""
+    usage = \
+    usage = """
+    RunAlcaHarvesting.py <options>
+
+
+    Where options are:
+    --scenario=ScenarioName
+    --global-tag=GlobalTag
+    --lfn=/store/input/lfn
+    --dataset=/A/B/C
+    --workflows=theWFs
+    --alcapromptdataset=theAPdataset
+
+    """
+
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "", valid)
     except getopt.GetoptError as ex:
-        print usage
-        print str(ex)
+        print(usage)
+        print(str(ex))
         sys.exit(1)
 
 

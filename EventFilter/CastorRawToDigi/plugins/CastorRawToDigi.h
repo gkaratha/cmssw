@@ -21,22 +21,31 @@
 
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
 
 #include "EventFilter/CastorRawToDigi/interface/CastorUnpacker.h"
 #include "EventFilter/CastorRawToDigi/interface/CastorCtdcUnpacker.h"
 #include "EventFilter/CastorRawToDigi/interface/CastorDataFrameFilter.h"
+#include "DataFormats/HcalDigi/interface/ZDCDataFrame.h"
+#include "EventFilter/CastorRawToDigi/interface/ZdcUnpacker.h"
+#include "CondFormats/DataRecord/interface/HcalAllRcds.h"
+#include "CalibFormats/CastorObjects/interface/CastorDbService.h"
+#include "CalibFormats/CastorObjects/interface/CastorDbRecord.h"
 
-class CastorRawToDigi : public edm::stream::EDProducer<>
-{
+#include <map>
+//#include "Geometry/Records/interface/HcalRecNumberingRecord.h"
+
+class CastorRawToDigi : public edm::stream::EDProducer<> {
 public:
   explicit CastorRawToDigi(const edm::ParameterSet& ps);
-  virtual ~CastorRawToDigi();
-  virtual void produce(edm::Event& e, const edm::EventSetup& c) override;
-  virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+  ~CastorRawToDigi() override;
+  void produce(edm::Event& e, const edm::EventSetup& c) override;
+  void beginRun(edm::Run const&, edm::EventSetup const&) override;
 
 private:
   edm::InputTag dataTag_;
   CastorUnpacker unpacker_;
+  ZdcUnpacker zdcunpacker_;
   CastorCtdcUnpacker ctdcunpacker_;
   CastorDataFrameFilter filter_;
   std::vector<int> fedUnpackList_;
@@ -44,11 +53,14 @@ private:
   bool complainEmptyData_;
   bool usingctdc_;
   bool unpackTTP_;
+  bool unpackZDC_;
   bool silent_;
   bool usenominalOrbitMessageTime_;
   int expectedOrbitMessageTime_;
+  std::unique_ptr<HcalElectronicsMap> myEMap;
   edm::EDGetTokenT<FEDRawDataCollection> tok_input_;
-
+  edm::ParameterSet zdcemap;
+  edm::ESGetToken<CastorDbService, CastorDbRecord> tok_pSetup_;
 };
 
 #endif

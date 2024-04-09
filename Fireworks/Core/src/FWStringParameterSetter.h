@@ -16,31 +16,28 @@
 // forward declarations
 class TGTextEntry;
 
-class FWStringParameterSetter : public FWParameterSetterBase
-{
-
+class FWStringParameterSetter : public FWParameterSetterBase {
 public:
-   FWStringParameterSetter();
-   virtual ~FWStringParameterSetter();
+  FWStringParameterSetter();
+  ~FWStringParameterSetter() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   virtual void attach(FWParameterBase*) ;
-   virtual TGFrame* build(TGFrame* iParent, bool labelBack = true) ;
-   void doUpdate();
+  // ---------- member functions ---------------------------
+  void attach(FWParameterBase*) override;
+  TGFrame* build(TGFrame* iParent, bool labelBack = true) override;
+  void doUpdate();
+
+  FWStringParameterSetter(const FWStringParameterSetter&) = delete;  // stop default
+
+  const FWStringParameterSetter& operator=(const FWStringParameterSetter&) = delete;  // stop default
 
 private:
-   FWStringParameterSetter(const FWStringParameterSetter&);    // stop default
-
-   const FWStringParameterSetter& operator=(const FWStringParameterSetter&);    // stop default
-
-   // ---------- member data --------------------------------
-   FWStringParameter* m_param;
-   TGTextEntry* m_widget;
+  // ---------- member data --------------------------------
+  FWStringParameter* m_param;
+  TGTextEntry* m_widget;
 };
-
 
 #endif

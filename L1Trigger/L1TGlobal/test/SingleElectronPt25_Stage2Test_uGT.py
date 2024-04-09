@@ -20,8 +20,6 @@ dump = False #dump python
 # vvv
 
 
-if len(sys.argv) > 1 and sys.argv[1].endswith('.py'):
-    sys.argv.pop(0)
 if len(sys.argv) == 2 and ':' in sys.argv[1]:
     argv = sys.argv[1].split(':')
 else:
@@ -31,9 +29,9 @@ for arg in argv:
     (k, v) = map(str.strip, arg.split('='))
     if k not in globals():
         raise "Unknown argument '%s'!" % (k,)
-    if type(globals()[k]) == bool:
+    if isinstance(globals()[k], bool):
         globals()[k] = v.lower() in ('y', 'yes', 'true', 't', '1')
-    elif type(globals()[k]) == int:
+    elif isinstance(globals()[k], int):
         globals()[k] = int(v)
     else:
         globals()[k] = v
@@ -169,7 +167,7 @@ process.load('L1Trigger.L1TGlobal.TriggerMenuConfig_cff')
 process.es_prefer_l1GtParameters = cms.ESPrefer('l1t::TriggerMenuXmlProducer','TriggerMenuXml')
 
 
-process.simL1uGtDigis = cms.EDProducer("l1t::GtProducer",
+process.simL1uGtDigis = cms.EDProducer("L1TGlobalProducer",
     #TechnicalTriggersUnprescaled = cms.bool(False),
     ProduceL1GtObjectMapRecord = cms.bool(True),
     AlgorithmTriggersUnmasked = cms.bool(False),

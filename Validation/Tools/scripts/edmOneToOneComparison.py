@@ -1,5 +1,6 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
+from __future__ import print_function
 if __name__ == "__main__":
     import optparse
     parser = optparse.OptionParser("usage: %prog [options] config.txt file1.root [file2.root]\nVisit https://twiki.cern.ch/twiki/bin/view/CMS/SWGuidePhysicsToolsEdmOneToOneComparison\nfor full documentation.")
@@ -105,26 +106,26 @@ if __name__ == "__main__":
     if lenArgs == 3:
         options.file2  = args[2]
     if lenArgs > 3:
-        raise RuntimeError, "Too many arguments"
+        raise RuntimeError("Too many arguments")
     
     # Here we go
     random.seed( os.getpid() )
     GenObject.loadConfigFile (options.config)
     ROOT.gSystem.Load("libFWCoreFWLite.so")
-    ROOT.FWLiteEnabler::enable()
+    ROOT.FWLiteEnabler.enable()
     # Let's parse any args
     doubleColonRE = re.compile (r'(.+):(.+):(.+)')
     if options.alias:
         for arg in options.alias:
             aliasMatch = doubleColonRE.match (arg)
             if aliasMatch:
-                print "aM", aliasMatch
+                print("aM", aliasMatch)
                 GenObject.changeAlias (aliasMatch.group (1),
                                        aliasMatch.group (2),
                                        aliasMatch.group (3))
                 continue
             # if we're here, then we have an argument that we don't understand
-            raise RuntimeError, "Unknown alias format '%s'" % arg
+            raise RuntimeError("Unknown alias format '%s'" % arg)
     tripleColonRE = re.compile (r'(.+):(.+):(.+):(.+)')
     if options.changeVar:
         for arg in options.changeVar:
@@ -136,13 +137,13 @@ if __name__ == "__main__":
                                           changeMatch.group (4))
                 continue
             # if we're here, then we have an argument that we don't understand
-            raise RuntimeError, "Unknown changeVar format '%s'" % arg
+            raise RuntimeError("Unknown changeVar format '%s'" % arg)
     if options.label:
         for label in options.label:            
             pieces = label.split('^')
             if len (pieces) != 3:
-                raise RuntimeError, "Can't process label command '%s'" \
-                      % options.label
+                raise RuntimeError("Can't process label command '%s'" \
+                      % options.label)
             GenObject.changeLabel (*pieces)
     # We don't want to use options beyond the main code, so let the
     # kitchen sink know what we want
@@ -169,14 +170,14 @@ if __name__ == "__main__":
         problems = \
                  GenObject.compareTwoTrees (chain1, chain2,
                                             diffOutputName = options.compRoot)
-        print "Summary"
+        print("Summary")
         pprint.pprint (problems)
     if options.saveAs:
         chain1 = GenObject.prepareTuple (options.tuple1, options.file1,
                                          options.numEvents1)
         GenObject.saveTupleAs (chain1, options.saveAs)
     if options.printTuple:
-        print "printing tuple"
+        print("printing tuple")
         GenObject.setGlobalFlag ('printEvent', True)
         chain1 = GenObject.prepareTuple (options.tuple1, options.file1,
                                          options.numEvents1)

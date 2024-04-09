@@ -9,7 +9,7 @@ TrackProducer = cms.EDProducer("TrackProducer",
     Fitter = cms.string('KFFittingSmootherWithOutliersRejectionAndRK'),
     useHitsSplitting = cms.bool(False),
     alias = cms.untracked.string('ctfWithMaterialTracks'),
-    TrajectoryInEvent = cms.bool(True),
+    TrajectoryInEvent = cms.bool(False),
     TTRHBuilder = cms.string('WithAngleAndTemplate'),
     AlgorithmName = cms.string('undefAlgorithm'),
     Propagator = cms.string('RungeKuttaTrackerPropagator'),
@@ -26,6 +26,3 @@ TrackProducer = cms.EDProducer("TrackProducer",
     MeasurementTracker = cms.string(''),
     MeasurementTrackerEvent = cms.InputTag('MeasurementTrackerEvent'),                   
 )
-
-
-

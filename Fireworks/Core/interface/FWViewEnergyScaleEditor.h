@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FWViewEnergyScaleEditor
-// 
+//
 /**\class FWViewEnergyScaleEditor FWViewEnergyScaleEditor.h Fireworks/Core/interface/FWViewEnergyScaleEditor.h
 
  Description: [one line class summary]
@@ -22,7 +22,7 @@
 
 // user include files
 #ifndef __CINT__
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #endif
 #include "TGFrame.h"
 #include "Fireworks/Core/interface/FWParameterSetterEditorBase.h"
@@ -34,36 +34,34 @@ class TGCheckButton;
 
 // forward declarations
 
-class FWViewEnergyScaleEditor : public TGVerticalFrame, public FWParameterSetterEditorBase
-{
+class FWViewEnergyScaleEditor : public TGVerticalFrame, public FWParameterSetterEditorBase {
 public:
-   FWViewEnergyScaleEditor( FWViewEnergyScale* s, TGCompositeFrame* w, bool addAutoScaleControll = true);
-   virtual ~FWViewEnergyScaleEditor();
+  FWViewEnergyScaleEditor(FWViewEnergyScale* s, TGCompositeFrame* w, bool addAutoScaleControll = true);
+  ~FWViewEnergyScaleEditor() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   void setEnabled(bool);
+  // ---------- member functions ---------------------------
+  void setEnabled(bool);
 
-   ClassDef(FWViewEnergyScaleEditor, 0);
+  ClassDefOverride(FWViewEnergyScaleEditor, 0);
 
 private:
-   FWViewEnergyScaleEditor(const FWViewEnergyScaleEditor&); // stop default
-   const FWViewEnergyScaleEditor& operator=(const FWViewEnergyScaleEditor&); // stop default
-   
-   void addParam(FWParameterBase*, const char* title = 0);   
-   
-   // ---------- member data --------------------------------
+  FWViewEnergyScaleEditor(const FWViewEnergyScaleEditor&);                   // stop default
+  const FWViewEnergyScaleEditor& operator=(const FWViewEnergyScaleEditor&);  // stop default
 
-   FWViewEnergyScale* m_scale;
-   bool               m_enabled;
+  void addParam(FWParameterBase*, const char* title = nullptr);
+
+  // ---------- member data --------------------------------
+
+  FWViewEnergyScale* m_scale;
+  bool m_enabled;
 
 #ifndef __CINT__
-   std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
+  std::vector<std::shared_ptr<FWParameterSetterBase> > m_setters;
 #endif
 };
-
 
 #endif

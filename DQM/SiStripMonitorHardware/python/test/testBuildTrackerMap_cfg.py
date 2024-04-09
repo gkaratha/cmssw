@@ -8,45 +8,33 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("EmptySource")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger = cms.Service(
-    "MessageLogger",
-    info = cms.untracked.PSet(
-        threshold = cms.untracked.string('INFO'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
-    suppressInfo = cms.untracked.vstring(),
-    # allows to suppress output from specific modules 
-    suppressDebug = cms.untracked.vstring(),
-    debug = cms.untracked.PSet(
-        threshold = cms.untracked.string('DEBUG'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
-    warning = cms.untracked.PSet(
-        threshold = cms.untracked.string('WARNING'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
-        ),
+process.MessageLogger = cms.Service("MessageLogger",
     cerr = cms.untracked.PSet(
-        threshold = cms.untracked.string('ERROR'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
+        noLineBreaks = cms.untracked.bool(False),
+        threshold = cms.untracked.string('ERROR')
+    ),
+    files = cms.untracked.PSet(
+        debug = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('DEBUG')
         ),
-    error = cms.untracked.PSet(
-        threshold = cms.untracked.string('ERROR'),
-        #limit = cms.untracked.int32(100000),
-        noLineBreaks = cms.untracked.bool(False)
+        error = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('ERROR')
         ),
-    suppressWarning = cms.untracked.vstring(),
-    #debugModules = cms.untracked.vstring('*'),#'siStripFEDMonitor'),
-    destinations = cms.untracked.vstring('cerr', 
-                                         'debug', 
-                                         'info', 
-                                         'warning', 
-                                         'error')
-
-    )
+        info = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('INFO')
+        ),
+        warning = cms.untracked.PSet(
+            noLineBreaks = cms.untracked.bool(False),
+            threshold = cms.untracked.string('WARNING')
+        )
+    ),
+    suppressDebug = cms.untracked.vstring(),
+    suppressInfo = cms.untracked.vstring(),
+    suppressWarning = cms.untracked.vstring()
+)
 
 
 #process.load("CondCore.DBCommon.CondDBSetup_cfi")
@@ -55,11 +43,10 @@ process.GlobalTag.globaltag = "CRAFT0831X_V1::All"
 #process.GlobalTag.globaltag = "GR09_31X_V1P::All"
 process.es_prefer_GlobalTag = cms.ESPrefer('PoolDBESSource','GlobalTag')
 
-process.DQMStore = cms.Service("DQMStore")
-
 #needed to produce tkHistoMap
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
+# load TrackerTopology (needed for TkDetMap and TkHistoMap)
+process.trackerTopology = cms.ESProducer("TrackerTopologyEP")
 
 process.load('DQM.SiStripMonitorHardware.siStripBuildTrackerMap_cfi')
 process.siStripBuildTrackerMap.InputFileName = '/home/magnan/SOFTWARE/CMS/data/FED/CMAnalysis/69797/CM_69797.root'

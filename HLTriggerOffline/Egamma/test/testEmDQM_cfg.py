@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 process = cms.Process("emdqm")
 
@@ -7,7 +8,6 @@ process.GlobalTag.globaltag = 'START72_V1::All'
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 # suppress printout of error messages on every event when a collection is missing in the event
-process.MessageLogger.categories.append("EmDQMInvalidRefs")
 process.MessageLogger.cerr.EmDQMInvalidRefs = cms.untracked.PSet(limit = cms.untracked.int32(5))
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -42,7 +42,7 @@ process.p = cms.Path(
                     )
 
 #----------------------------------------
-process.post=cms.EDAnalyzer("EmDQMPostProcessor",
+process.post=DQMEDHarvester("EmDQMPostProcessor",
                             subDir = cms.untracked.string("HLT/HLTEgammaValidation"),
                             dataSet = cms.untracked.string("unknown"),
                             noPhiPlots = cms.untracked.bool(False),

@@ -4,26 +4,25 @@
 #include "MicroGMTLUT.h"
 #include "MicroGMTConfiguration.h"
 
-
 namespace l1t {
-  class MicroGMTAbsoluteIsolationCheckLUT : MicroGMTLUT {
-    public: 
-      MicroGMTAbsoluteIsolationCheckLUT (const edm::ParameterSet& iConfig, const std::string& setName);
-      MicroGMTAbsoluteIsolationCheckLUT (const edm::ParameterSet& iConfig, const char* setName);
-      virtual ~MicroGMTAbsoluteIsolationCheckLUT ();
+  class MicroGMTAbsoluteIsolationCheckLUT : public MicroGMTLUT {
+  public:
+    MicroGMTAbsoluteIsolationCheckLUT(){};
+    explicit MicroGMTAbsoluteIsolationCheckLUT(const std::string& fname);
+    explicit MicroGMTAbsoluteIsolationCheckLUT(l1t::LUT* lut);
+    ~MicroGMTAbsoluteIsolationCheckLUT() override{};
 
+    // returns the index corresponding to the calo tower sum
+    int lookup(int energySum) const;
 
+    int hashInput(int energySum) const { return energySum; };
+    void unHashInput(int input, int& energySum) const { energySum = input; };
 
-      // returns the index corresponding to the calo tower sum 
-      int lookup(int energySum) const;
-      
-      int hashInput(int energySum) const { return energySum; }; 
-      void unHashInput(int input, int& energySum) const { energySum = input; };
-    private:
-      void getParameters(const edm::ParameterSet& iConfig, const char* setName);
+  private:
+    void getParameters(const edm::ParameterSet& iConfig, const char* setName);
 
-      int m_energySumInWidth;
+    int m_energySumInWidth;
   };
-}
+}  // namespace l1t
 
 #endif /* defined(__l1microgmtabsoluteisolationlut_h) */

@@ -9,13 +9,18 @@ process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 process.load("Geometry.CMSCommonData.cmsHFPMTAverageXML_cfi")
 #process.load("SimG4CMS.Calo.cmsHFPMTXML_cfi")
 process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Geometry.HcalCommonData.hcalParameters_cfi")
-process.load("Geometry.HcalCommonData.hcalDDDSimConstants_cfi")
-process.load("Configuration.StandardSequences.MagneticField_38T_cff")
+process.load("Geometry.EcalCommonData.ecalSimulationParameters_cff")
+process.load("Geometry.HcalCommonData.hcalDDConstants_cff")
+process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
+process.load("Geometry.MuonNumbering.muonOffsetESProducer_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("SimG4Core.Application.g4SimHits_cfi")
-
+process.load('Configuration.StandardSequences.Generator_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load("SimG4CMS.Calo.HFPMTHitAnalyzer_cfi")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond['run1_mc']
 
 process.MessageLogger = cms.Service("MessageLogger",
     destinations = cms.untracked.vstring('cout'),
@@ -57,10 +62,6 @@ process.RandomNumberGeneratorService.generator.initialSeed = 456789
 process.RandomNumberGeneratorService.g4SimHits.initialSeed = 9876
 process.RandomNumberGeneratorService.VtxSmeared.initialSeed = 123456789
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
-
 process.Timing = cms.Service("Timing")
 
 process.maxEvents = cms.untracked.PSet(
@@ -86,7 +87,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     AddAntiParticle = cms.bool(False)
 )
 
-process.o1 = cms.OutputModule("PoolOutputModule",
+process.output = cms.OutputModule("PoolOutputModule",
     process.FEVTSIMEventContent,
     fileName = cms.untracked.string('simevent.root')
 )
@@ -95,9 +96,12 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string('HFPMT2.root')
 )
 
-process.p1 = cms.Path(process.generator*process.VtxSmeared*process.g4SimHits*process.hfPMTHitAnalyzer)
-process.outpath = cms.EndPath(process.o1)
-process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP_BERT_EML'
+process.generation_step = cms.Path(process.pgen)
+process.simulation_step = cms.Path(process.psim)
+process.analysis_step   = cms.Path(process.HFPMTHitAnalyzer)
+process.out_step = cms.EndPath(process.output)
+
+process.g4SimHits.Physics.type = 'SimG4Core/Physics/QGSP_FTFP_BERT_EML'
 process.g4SimHits.Physics.DefaultCutValue   = 0.1
 process.g4SimHits.HCalSD.UseShowerLibrary   = False
 process.g4SimHits.HCalSD.UseParametrize     = True
@@ -105,13 +109,15 @@ process.g4SimHits.HCalSD.UsePMTHits         = True
 process.g4SimHits.HFShower.UseShowerLibrary = False
 process.g4SimHits.HFShower.UseHFGflash      = True
 process.g4SimHits.HFShower.TrackEM          = False
-process.g4SimHits.HFShower.OnlyLong         = True
+process.g4SimHits.HFShower.HFShowerBlock.OnlyLong = cms.bool(True)
 process.g4SimHits.HFShower.EminLibrary      = 0.0
-process.g4SimHits.HCalSD.HEDarkening        = True
+process.g4SimHits.HCalSD.HEDarkening        = False
 process.common_maximum_timex = cms.PSet(
     MaxTrackTime  = cms.double(1000.0),
+    MaxTrackTimeForward = cms.double(2000.0), # ns
     MaxTimeNames  = cms.vstring(),
     MaxTrackTimes = cms.vdouble(),
+    MaxZCentralCMS = cms.double(50.0), # m
     DeadRegions   = cms.vstring(),
     CriticalEnergyForVacuum = cms.double(2.0),
     CriticalDensity         = cms.double(1e-15)
@@ -128,30 +134,31 @@ process.g4SimHits.StackingAction = cms.PSet(
     SavePrimaryDecayProductsAndConversionsInTracker = cms.untracked.bool(True),
     SavePrimaryDecayProductsAndConversionsInCalo    = cms.untracked.bool(True),
     SavePrimaryDecayProductsAndConversionsInMuon    = cms.untracked.bool(True),
-        RusRoGammaEnergyLimit  = cms.double(5.0), ## (MeV)
-        RusRoEcalGamma         = cms.double(0.3),
-        RusRoHcalGamma         = cms.double(0.3),
-        RusRoMuonIronGamma     = cms.double(0.3),
-        RusRoPreShowerGamma    = cms.double(0.3),
-        RusRoCastorGamma       = cms.double(0.3),
-        RusRoWorldGamma        = cms.double(0.3),
-        RusRoNeutronEnergyLimit= cms.double(10.0), ## (MeV)
-        RusRoEcalNeutron       = cms.double(0.1),
-        RusRoHcalNeutron       = cms.double(0.1),
-        RusRoMuonIronNeutron   = cms.double(0.1),
-        RusRoPreShowerNeutron  = cms.double(0.1),
-        RusRoCastorNeutron     = cms.double(0.1),
-        RusRoWorldNeutron      = cms.double(0.1),
-        RusRoProtonEnergyLimit = cms.double(0.0),
-        RusRoEcalProton        = cms.double(1.0),
-        RusRoHcalProton        = cms.double(1.0),
-        RusRoMuonIronProton    = cms.double(1.0),
-        RusRoPreShowerProton   = cms.double(1.0),
-        RusRoCastorProton      = cms.double(1.0),
-        RusRoWorldProton       = cms.double(1.0)
+    RusRoGammaEnergyLimit  = cms.double(5.0), ## (MeV)
+    RusRoEcalGamma         = cms.double(0.3),
+    RusRoHcalGamma         = cms.double(0.3),
+    RusRoMuonIronGamma     = cms.double(0.3),
+    RusRoPreShowerGamma    = cms.double(0.3),
+    RusRoCastorGamma       = cms.double(0.3),
+    RusRoWorldGamma        = cms.double(0.3),
+    RusRoNeutronEnergyLimit= cms.double(10.0), ## (MeV)
+    RusRoEcalNeutron       = cms.double(0.1),
+    RusRoHcalNeutron       = cms.double(0.1),
+    RusRoMuonIronNeutron   = cms.double(0.1),
+    RusRoPreShowerNeutron  = cms.double(0.1),
+    RusRoCastorNeutron     = cms.double(0.1),
+    RusRoWorldNeutron      = cms.double(0.1),
+    RusRoProtonEnergyLimit = cms.double(0.0),
+    RusRoEcalProton        = cms.double(1.0),
+    RusRoHcalProton        = cms.double(1.0),
+    RusRoMuonIronProton    = cms.double(1.0),
+    RusRoPreShowerProton   = cms.double(1.0),
+    RusRoCastorProton      = cms.double(1.0),
+    RusRoWorldProton       = cms.double(1.0)
 )
 process.g4SimHits.SteppingAction = cms.PSet(
     process.common_maximum_timex,
+    MaxNumberOfSteps        = cms.int32(50000),
     EkinNames               = cms.vstring(),
     EkinThresholds          = cms.vdouble(),
     EkinParticles           = cms.vstring(),
@@ -172,3 +179,13 @@ process.g4SimHits.Watchers = cms.VPSet(cms.PSet(
     type         = cms.string('TrackingVerboseAction')
 ))
 
+# Schedule definition
+process.schedule = cms.Schedule(process.generation_step,
+                                process.simulation_step,
+                                process.analysis_step,
+                                process.out_step
+                                )
+
+# filter all path with the production filter sequence
+for path in process.paths:
+        getattr(process,path)._seq = process.generator * getattr(process,path)._seq

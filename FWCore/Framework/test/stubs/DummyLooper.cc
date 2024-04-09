@@ -2,7 +2,7 @@
 //
 // Package:    DummyLooper
 // Class:      DummyLooper
-// 
+//
 /**\class DummyLooper DummyLooper.h FWCore/DummyLooper/interface/DummyLooper.h
 
  Description: <one line class summary>
@@ -16,10 +16,8 @@
 //
 //
 
-
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/LooperFactory.h"
@@ -27,9 +25,7 @@
 
 #include "FWCore/Framework/test/DummyData.h"
 #include "FWCore/Framework/test/DummyRecord.h"
-
-
-
+#include "FWCore/Utilities/interface/get_underlying_safe.h"
 
 //
 // class decleration
@@ -37,30 +33,31 @@
 using namespace edm::eventsetup::test;
 
 class DummyLooper : public edm::ESProducerLooper {
-   public:
-      DummyLooper(const edm::ParameterSet&);
-      ~DummyLooper();
+public:
+  DummyLooper(const edm::ParameterSet&);
+  ~DummyLooper();
 
-      typedef boost::shared_ptr<DummyData> ReturnType;
+  typedef std::shared_ptr<DummyData> ReturnType;
+  typedef std::shared_ptr<DummyData const> ConstReturnType;
 
-      ReturnType produce(const DummyRecord&);
-      
-      void startingNewLoop(unsigned int ) {
-      
-      }
-      Status duringLoop(const edm::Event&, const edm::EventSetup&) {
-        return issueStop_? kStop : kContinue;
-      }
-      Status endOfLoop(const edm::EventSetup&, unsigned int) {
-         (data_->value_)++;
-         ++counter_;
-         return counter_==2 ? kStop : kContinue;
-      }
-   private:
-      // ----------member data ---------------------------
-      ReturnType data_;
-      int counter_;
-      bool issueStop_;
+  ReturnType produce(const DummyRecord&);
+
+  void startingNewLoop(unsigned int) {}
+  Status duringLoop(const edm::Event&, const edm::EventSetup&) { return issueStop_ ? kStop : kContinue; }
+  Status endOfLoop(const edm::EventSetup&, unsigned int) {
+    (data_->value_)++;
+    ++counter_;
+    return counter_ == 2 ? kStop : kContinue;
+  }
+
+private:
+  // ----------member data ---------------------------
+  ConstReturnType data() const { return get_underlying_safe(data_); }
+  ReturnType& data() { return get_underlying_safe(data_); }
+
+  edm::propagate_const<ReturnType> data_;
+  int counter_;
+  bool issueStop_;
 };
 
 //
@@ -75,36 +72,27 @@ class DummyLooper : public edm::ESProducerLooper {
 // constructors and destructor
 //
 DummyLooper::DummyLooper(const edm::ParameterSet& iConfig)
-            : data_(new DummyData(iConfig.getUntrackedParameter<int>("value"))), counter_(0),
-issueStop_(iConfig.getUntrackedParameter<bool>("issueStop",false))
-{
-   //the following line is needed to tell the framework what
-   // data is being produced
-   setWhatProduced(this);
+    : data_(new DummyData(iConfig.getUntrackedParameter<int>("value"))),
+      counter_(0),
+      issueStop_(iConfig.getUntrackedParameter<bool>("issueStop", false)) {
+  //the following line is needed to tell the framework what
+  // data is being produced
+  setWhatProduced(this);
 
-   //now do what ever other initialization is needed
+  //now do what ever other initialization is needed
 }
 
-
-DummyLooper::~DummyLooper()
-{
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
-
+DummyLooper::~DummyLooper() {
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
 }
-
 
 //
 // member functions
 //
 
 // ------------ method called to produce the data  ------------
-DummyLooper::ReturnType
-DummyLooper::produce(const DummyRecord&)
-{
-   return data_ ;
-}
+DummyLooper::ReturnType DummyLooper::produce(const DummyRecord&) { return data(); }
 
 //define this as a plug-in
 DEFINE_FWK_LOOPER(DummyLooper);

@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+from __future__ import print_function
 VERSION='1.00'
 import os,sys,time
 import optparse
@@ -54,12 +55,12 @@ if __name__ == '__main__':
     parser.add_option('--inputLumiJSON',dest='inputLumiJSON',action='store',
                         help='Input Lumi/Pileup file in JSON format (required)')
     parser.add_option('--verbose',dest='verbose',action='store_true',help='verbose mode for printing' )
-    
+    parser.add_option('--runperiod',dest='runperiod',action='store', default='Run1',help='select runperiod Run1 or Run2, default Run1' )
     # parse arguments
     try:
         (options, args) = parser.parse_args()
     except Exception as e:
-        print e
+        print(e)
 #    if not args:
 #        parser.print_usage()
 #        sys.exit()
@@ -71,14 +72,15 @@ if __name__ == '__main__':
 #    options=parser.parse_args()
 
     if options.verbose:
-        print 'General configuration'
-        print '\toutputfile: ',options.outputfile
-        print '\tinput selection file: ',options.inputfile
+        print('General configuration')
+        print('\toutputfile: ',options.outputfile)
+        print('\tinput selection file: ',options.inputfile)
 
-
+    #print options.runperiod
     #inpf = open (options.inputfile, 'r')
     #inputfilecontent = inpf.read()
-    inputRange =  csvLumibyLSParser.csvLumibyLSParser (options.inputfile).runsandls()
+      
+    inputRange =  csvLumibyLSParser.csvLumibyLSParser (options.inputfile,options.runperiod).runsandls()
 
     #print 'number of runs processed %d' % csvLumibyLSParser.csvLumibyLSParser (options.inputfile).numruns()
 
@@ -93,7 +95,7 @@ if __name__ == '__main__':
     OUTPUTLINE = ""
     OUTPUTLINE+='{'
 
-    for (run, lslist) in sorted (inputRange.iteritems() ):
+    for (run, lslist) in sorted (inputRange.items()):
         # now, look for matching run, then match lumi sections
         #print "searching for run %d" % (run)
         if run in inputPileupRange.keys():
@@ -113,7 +115,7 @@ if __name__ == '__main__':
                         scale=HLTlumiInfo[1]/PUlumiInfo[0] # rescale to HLT recorded Lumi
 
                     if scale > 1.001:
-                        print 'Run %d, LS %d, HLT Scale (%f), HLTL (%f), PUL (%f) larger than one - please check!' % (run, LSnumber, scale, HLTlumiInfo[1],PUlumiInfo[0])
+                        print('Run %d, LS %d, HLT Scale (%f), HLTL (%f), PUL (%f) larger than one - please check!' % (run, LSnumber, scale, HLTlumiInfo[1],PUlumiInfo[0]))
                         scale=1.01  # HLT integrated values are wrong, punt                        
 
                     newIntLumi = scale*PUlumiInfo[0]
@@ -143,7 +145,7 @@ if __name__ == '__main__':
             OUTPUTLINE += '], '
 
         else:  # trouble
-            print "Run %d not found in Lumi/Pileup input file.  Check your files!" % (run)
+            print("Run %d not found in Lumi/Pileup input file.  Check your files!" % (run))
 
 
 #            print run

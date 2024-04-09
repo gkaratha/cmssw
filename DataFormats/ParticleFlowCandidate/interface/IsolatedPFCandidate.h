@@ -14,38 +14,30 @@ namespace reco {
      \date   February 2007
   */
   class IsolatedPFCandidate : public PFCandidate {
-
   public:
-
-
     /// default constructor
     IsolatedPFCandidate();
-    
-    IsolatedPFCandidate( const PFCandidatePtr& candidatePtr, 
-			 double isolation );
+
+    IsolatedPFCandidate(const PFCandidatePtr& candidatePtr, double isolation);
 
     /// destructor
-    virtual ~IsolatedPFCandidate();
+    ~IsolatedPFCandidate() override;
 
     /// return a clone
-    virtual IsolatedPFCandidate * clone() const;
-    
-/*     const PFCandidateRef& parent() const { return parent_;} */
+    IsolatedPFCandidate* clone() const override;
+
+    /*     const PFCandidateRef& parent() const { return parent_;} */
 
     double isolation() const { return isolation_; }
-    
 
-    friend std::ostream& operator<<( std::ostream& out, 
-				     const IsolatedPFCandidate& c );
-  
   private:
-
-/*     PFCandidateRef parent_; */
+    /*     PFCandidateRef parent_; */
 
     double isolation_;
   };
 
+  std::ostream& operator<<(std::ostream& out, const IsolatedPFCandidate& c);
 
-}
+}  // namespace reco
 
 #endif

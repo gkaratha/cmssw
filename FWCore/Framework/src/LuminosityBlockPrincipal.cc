@@ -1,50 +1,32 @@
 #include "FWCore/Framework/interface/LuminosityBlockPrincipal.h"
-
+#include "FWCore/Framework/interface/ProductPutterBase.h"
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
-#include "FWCore/Framework/interface/DelayedReader.h"
-#include "FWCore/Framework/interface/ProductHolder.h"
-#include "FWCore/Framework/interface/RunPrincipal.h"
-#include "FWCore/Utilities/interface/EDMException.h"
 
 namespace edm {
 
-  LuminosityBlockPrincipal::LuminosityBlockPrincipal(
-      std::shared_ptr<LuminosityBlockAuxiliary> aux,
-      std::shared_ptr<ProductRegistry const> reg,
-      ProcessConfiguration const& pc,
-      HistoryAppender* historyAppender,
-      unsigned int index) :
-    Base(reg, reg->productLookup(InLumi), pc, InLumi, historyAppender),
+  LuminosityBlockPrincipal::LuminosityBlockPrincipal(std::shared_ptr<ProductRegistry const> reg,
+                                                     ProcessConfiguration const& pc,
+                                                     HistoryAppender* historyAppender,
+                                                     unsigned int index,
+                                                     bool isForPrimaryProcess)
+      : Base(reg, reg->productLookup(InLumi), pc, InLumi, historyAppender, isForPrimaryProcess),
         runPrincipal_(),
-        aux_(aux),
-        index_(index),
-        complete_(false) {
+        index_(index) {}
+
+  void LuminosityBlockPrincipal::fillLuminosityBlockPrincipal(ProcessHistory const* processHistory,
+                                                              DelayedReader* reader) {
+    fillPrincipal(aux_.processHistoryID(), processHistory, reader);
   }
 
-  void
-  LuminosityBlockPrincipal::fillLuminosityBlockPrincipal(
-      ProcessHistoryRegistry const& processHistoryRegistry,
-      DelayedReader* reader) {
-
-    complete_ = false;
-
-    fillPrincipal(aux_->processHistoryID(), processHistoryRegistry, reader);
-
-    for(auto& prod : *this) {
-      prod->setProcessHistory(processHistory());
-    }
+  void LuminosityBlockPrincipal::put(BranchDescription const& bd, std::unique_ptr<WrapperBase> edp) const {
+    put_(bd, std::move(edp));
   }
 
-  void
-  LuminosityBlockPrincipal::put(
-        BranchDescription const& bd,
-        std::unique_ptr<WrapperBase> edp) const {
-    putOrMerge(bd,std::move(edp));
+  void LuminosityBlockPrincipal::put(ProductResolverIndex index, std::unique_ptr<WrapperBase> edp) const {
+    auto phb = getProductResolverByIndex(index);
+    dynamic_cast<ProductPutterBase const*>(phb)->putProduct(std::move(edp));
   }
 
-  unsigned int
-  LuminosityBlockPrincipal::transitionIndex_() const {
-    return index().value();
-  }
+  unsigned int LuminosityBlockPrincipal::transitionIndex_() const { return index().value(); }
 
-}
+}  // namespace edm

@@ -27,42 +27,30 @@
 //---------------
 #include <string>
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTReadOutMappingHandler: public popcon::PopConSourceHandler<DTReadOutMapping> {
-
- public:
-
+class DTReadOutMappingHandler : public popcon::PopConSourceHandler<DTReadOutMapping> {
+public:
   /** Constructor
    */
-  DTReadOutMappingHandler( const edm::ParameterSet& ps );
+  DTReadOutMappingHandler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTReadOutMappingHandler();
+  ~DTReadOutMappingHandler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
- private:
-
+private:
   std::string dataTag;
   std::string fileName;
   unsigned int runNumber;
-
 };
 
-
-#endif // DTReadOutMappingHandler_H
-
-
-
-
-
-
+#endif  // DTReadOutMappingHandler_H

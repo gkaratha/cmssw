@@ -14,43 +14,35 @@
 class GeomDet;
 
 class MuDetRing : public ForwardDetRingOneZ {
- public:
-
+public:
   /// Construct from iterators on GeomDet*
-  MuDetRing(std::vector<const GeomDet*>::const_iterator first,
-	    std::vector<const GeomDet*>::const_iterator last);
+  MuDetRing(std::vector<const GeomDet*>::const_iterator first, std::vector<const GeomDet*>::const_iterator last);
 
   /// Construct from a vector of GeomDet*
   MuDetRing(const std::vector<const GeomDet*>& dets);
 
-  virtual ~MuDetRing();
-
+  ~MuDetRing() override;
 
   // GeometricSearchDet interface
 
-  virtual const std::vector<const GeometricSearchDet*>& components() const;
+  const std::vector<const GeometricSearchDet*>& components() const override;
 
-  virtual std::pair<bool, TrajectoryStateOnSurface>
-  compatible( const TrajectoryStateOnSurface& ts, const Propagator& prop, 
-	      const MeasurementEstimator& est) const;
+  std::pair<bool, TrajectoryStateOnSurface> compatible(const TrajectoryStateOnSurface& ts,
+                                                       const Propagator& prop,
+                                                       const MeasurementEstimator& est) const override;
 
-  virtual std::vector<DetWithState> 
-  compatibleDets( const TrajectoryStateOnSurface& startingState,
-		  const Propagator& prop, 
-		  const MeasurementEstimator& est) const;
+  std::vector<DetWithState> compatibleDets(const TrajectoryStateOnSurface& startingState,
+                                           const Propagator& prop,
+                                           const MeasurementEstimator& est) const override;
 
-  virtual std::vector<DetGroup> 
-  groupedCompatibleDets( const TrajectoryStateOnSurface& startingState,
-			 const Propagator& prop,
-			 const MeasurementEstimator& est) const;
+  std::vector<DetGroup> groupedCompatibleDets(const TrajectoryStateOnSurface& startingState,
+                                              const Propagator& prop,
+                                              const MeasurementEstimator& est) const override;
 
-
- private:
-  typedef PeriodicBinFinderInPhi<float>   BinFinderType;
+private:
+  typedef PeriodicBinFinderInPhi<float> BinFinderType;
   BinFinderType theBinFinder;
 
   void init();
-
 };
 #endif
-

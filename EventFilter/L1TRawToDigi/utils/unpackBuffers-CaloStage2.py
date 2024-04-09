@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Auto generated configuration file
 # using: 
 # Revision: 1.19 
@@ -14,6 +15,16 @@ options.register('skipEvents',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Number of events to skip")
+options.register('fwVersion',
+                 268501043,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "Firmware version for unpacker configuration")
+options.register('demuxFWVersion',
+                 268501079,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "Firmware version for demux unpacker configuration")
 options.register('mpFramesPerEvent',
                  40,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -34,6 +45,16 @@ options.register('mpHeaderFrames',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "MP header frames in tx")
+options.register('mpKeyLinkRx',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "MP packet key link (Rx)")
+options.register('mpKeyLinkTx',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "MP packet key link (Tx)")
 options.register('dmFramesPerEvent',
                  6,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -45,7 +66,7 @@ options.register('dmLatency',
                  VarParsing.VarParsing.varType.int,
                  "Demux latency (frames)")
 options.register('dmOffset',
-                 28,
+                 29,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Demux offset (frames)")
@@ -90,7 +111,7 @@ options.register('doGT',
                  VarParsing.VarParsing.varType.bool,
                  "Read GT data")
 options.register('nMP',
-                 11,
+                 9,#11,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Number of MPs")
@@ -139,16 +160,16 @@ process.TFileService.fileName = cms.string('l1tCalo_2016_histos.root')
 
 
 # enable debug message logging for our modules
-process.MessageLogger.categories.append('L1TCaloEvents')
+process.MessageLogger.L1TCaloEvents=dict()
 
 process.MessageLogger.suppressInfo = cms.untracked.vstring('Geometry', 'AfterSource')
 
 if (options.dump):
-    process.MessageLogger.infos.placeholder = cms.untracked.bool(False)
-    process.MessageLogger.infos.INFO = cms.untracked.PSet(limit = cms.untracked.int32(0))
-    process.MessageLogger.infos.L1TCaloEvents = cms.untracked.PSet(
-      optionalPSet = cms.untracked.bool(True),
-      limit = cms.untracked.int32(10000)
+    process.MessageLogger.files.infos = cms.untracked.PSet(
+                                                     INFO = cms.untracked.PSet(limit = cms.untracked.int32(0)),
+                                                     L1TCaloEvents = cms.untracked.PSet(
+                                                         limit = cms.untracked.int32(10000)
+                                                     )
     )
 
 if (options.debug):
@@ -174,52 +195,110 @@ for i in range (0,options.nMP):
     offset = options.mpOffset + (options.skipEvents / options.nMP)
     if (i < options.skipEvents % options.nMP):
         offset = offset + 1    
-    mpOffsets.append(offset)
+    mpOffsets.append(int(offset))
+
+mpLatencies = cms.untracked.vint32()
+for i in range (0,options.nMP):
+    mpLatencies.append(0)
+
+boardIds = cms.untracked.vint32(range(0,options.nMP))
 
 boardOffset = options.skipEvents % options.nMP
 
 gtOffset = options.gtOffset + (options.skipEvents * options.gtFramesPerEvent)
 
 # print some debug info
-print "Job config :"
-print "maxEvents     = ", options.maxEvents
-print "skipEvents    = ", options.skipEvents
-print " "
+print("Job config :")
+print("maxEvents     = ", options.maxEvents)
+print("skipEvents    = ", options.skipEvents)
+print(" ")
 
 # MP config
 if (options.doMP):
-    print "MP config :"
-    print "nBoards       = ", options.nMP
-    print "mpBoardOffset = ", boardOffset
-    print "mpOffset      = ", mpOffsets
-    print " "
+    print("MP config :")
+    print("nBoards       = ", options.nMP)
+    print("mpBoardOffset = ", boardOffset)
+    print("mpOffset      = ", mpOffsets)
+    print(" ")
+
+mpBlock = cms.untracked.PSet(
+    rxBlockLength    = cms.untracked.vint32(40,40,40,40, # q0 0-3
+                                            40,40,40,40, # q1 4-7
+                                            40,40,40,40, # q2 8-11
+                                            40,40,40,40, # q3 12-15
+                                            40,40,40,40, # q4 16-19
+                                            40,40,40,40, # q5 20-23
+                                            40,40,40,40, # q6 24-27
+                                            40,40,40,40, # q7 28-31
+                                            40,40,40,40, # q8 32-35
+                                            40,40,40,40, # q9 36-39
+                                            40,40,40,40, # q10 40-43
+                                            40,40,40,40, # q11 44-47
+                                            40,40,40,40, # q12 48-51
+                                            40,40,40,40, # q13 52-55
+                                            40,40,40,40, # q14 56-59
+                                            40,40,40,40, # q15 60-63
+                                            40,40,40,40, # q16 64-67
+                                            40,40,40,40), # q17 68-71
+
+    txBlockLength    = cms.untracked.vint32(0,0,0,0, # q0 0-3
+                                            0,0,0,0, # q1 4-7
+                                            0,0,0,0, # q2 8-11
+                                            0,0,0,0, # q3 12-15
+                                            0,0,0,0, # q4 16-19
+                                            0,0,0,0, # q5 20-23
+                                            0,0,0,0, # q6 24-27
+                                            0,0,0,0, # q7 28-31
+                                            0,0,0,0, # q8 32-35
+                                            0,0,0,0, # q9 36-39
+                                            0,0,0,0, # q10 40-43
+                                            0,0,0,0, # q11 44-47
+                                            0,0,0,0, # q12 48-51
+                                            0,0,0,0, # q13 52-55
+                                            0,0,0,0, # q14 56-59
+                                            11,11,11,11, # q15 60-63
+                                            11,11,0,0, # q16 64-67
+                                            0,0,0,0) # q17 68-71
+)
+
+mpBlocks = cms.untracked.VPSet()
+
+for block in range(0,options.nMP):
+        mpBlocks.append(mpBlock)
 
 process.stage2MPRaw.nFramesPerEvent    = cms.untracked.int32(options.mpFramesPerEvent)
 process.stage2MPRaw.nFramesOffset    = cms.untracked.vuint32(mpOffsets)
+process.stage2MPRaw.nFramesLatency   = cms.untracked.vuint32(mpLatencies)
 process.stage2MPRaw.boardOffset    = cms.untracked.int32(boardOffset)
-#process.stage2MPRaw.nFramesLatency   = cms.untracked.vuint32(mpLatencies)
+process.stage2MPRaw.rxKeyLink    = cms.untracked.int32(options.mpKeyLinkRx)
+process.stage2MPRaw.txKeyLink    = cms.untracked.int32(options.mpKeyLinkTx)
+process.stage2MPRaw.boardId = cms.untracked.vint32(boardIds)
 process.stage2MPRaw.nHeaderFrames = cms.untracked.int32(options.mpHeaderFrames)
 process.stage2MPRaw.rxFile = cms.untracked.string("mp_rx_summary.txt")
 process.stage2MPRaw.txFile = cms.untracked.string("mp_tx_summary.txt")
+process.stage2MPRaw.blocks = cms.untracked.VPSet(mpBlocks)
+process.stage2MPRaw.fwVersion = cms.untracked.int32(options.fwVersion)
 
 # Demux config
 if (options.doDemux):
-    print "Demux config :"
-    print "dmOffset      = ", dmOffset
-    print "dmLatency     = ", options.dmLatency
-    print " "
+    print("Demux config :")
+    print("dmOffset      = ", dmOffset)
+    print("dmLatency     = ", options.dmLatency)
+    print(" ")
 
 process.stage2DemuxRaw.nFramesPerEvent    = cms.untracked.int32(options.dmFramesPerEvent)
 process.stage2DemuxRaw.nFramesOffset    = cms.untracked.vuint32(dmOffset)
-process.stage2DemuxRaw.nFramesLatency   = cms.untracked.vuint32(options.dmLatency)
+# add 1 to demux latency to take account of header, match online definition of latency
+process.stage2DemuxRaw.nFramesLatency   = cms.untracked.vuint32(options.dmLatency+1)
 process.stage2DemuxRaw.rxFile = cms.untracked.string("demux_rx_summary.txt")
 process.stage2DemuxRaw.txFile = cms.untracked.string("demux_tx_summary.txt")
+process.stage2DemuxRaw.fwVersion = cms.untracked.int32(options.demuxFWVersion)
 
 # GT config
 if (options.doGT):
-    print "GT config :"
-    print "gtOffset      = ", gtOffset
-    print "gtLatency     = ", options.gtLatency
+    print("GT config :")
+    print("gtOffset      = ", gtOffset)
+    print("gtLatency     = ", options.gtLatency)
 
 process.stage2GTRaw.nFramesPerEvent    = cms.untracked.int32(options.gtFramesPerEvent)
 process.stage2GTRaw.nFramesOffset    = cms.untracked.vuint32(gtOffset)
@@ -234,24 +313,27 @@ process.rawDataCollector.verbose = cms.untracked.int32(2)
 # dump raw data
 process.dumpRaw = cms.EDAnalyzer( 
     "DumpFEDRawDataProduct",
-    label = cms.untracked.string("rawDataCollector"),
+    token = cms.untracked.InputTag("rawDataCollector"),
     feds = cms.untracked.vint32 ( 1360, 1366, 1404 ),
-    dumpPayload = cms.untracked.bool ( False )
+    dumpPayload = cms.untracked.bool ( options.dump )
 )
 
 # raw to digi
 process.load('EventFilter.L1TRawToDigi.caloStage2Digis_cfi')
 process.caloStage2Digis.InputLabel = cms.InputTag('rawDataCollector')
+process.caloStage2Digis.debug      = cms.untracked.bool(options.debug)
+process.caloStage2Digis.FWId  = cms.uint32(options.fwVersion)
+process.caloStage2Digis.DmxFWId = cms.uint32(options.demuxFWVersion)
+process.caloStage2Digis.FWOverride = cms.bool(True)
+process.caloStage2Digis.TMTCheck   = cms.bool(False)
 
 process.load('EventFilter.L1TRawToDigi.gtStage2Digis_cfi')
 process.gtStage2Digis.InputLabel = cms.InputTag('rawDataCollector')
 
 # object analyser
 process.load('L1Trigger.L1TCalorimeter.l1tStage2CaloAnalyzer_cfi')
-process.l1tStage2CaloAnalyzer.towerToken = cms.InputTag("caloStage2Digis")
 process.l1tStage2CaloAnalyzer.clusterToken = cms.InputTag("None")
-process.l1tStage2CaloAnalyzer.mpEGToken = cms.InputTag("None")
-process.l1tStage2CaloAnalyzer.mpTauToken = cms.InputTag("None")
+
 
 # Path and EndPath definitions
 process.path = cms.Path(
@@ -259,7 +341,7 @@ process.path = cms.Path(
     +process.stage2DemuxRaw
     +process.stage2GTRaw
     +process.rawDataCollector
-    +process.dumpRaw
+    #+process.dumpRaw
     +process.caloStage2Digis
     +process.gtStage2Digis
     +process.l1tStage2CaloAnalyzer
@@ -277,4 +359,5 @@ if (not options.doGT):
 process.out = cms.EndPath(
     process.output
 )
+
 

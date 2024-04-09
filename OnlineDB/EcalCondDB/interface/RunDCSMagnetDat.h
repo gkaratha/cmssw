@@ -13,15 +13,15 @@
 #include "OnlineDB/Oracle/interface/Oracle.h"
 
 class RunDCSMagnetDat : public IDataItem {
- public:
+public:
   typedef oracle::occi::ResultSet ResultSet;
 
   friend class EcalCondDBInterface;
   RunDCSMagnetDat();
-  ~RunDCSMagnetDat();
+  ~RunDCSMagnetDat() override;
 
   // User data methods
-  inline std::string getTable() { return "CMSFWMAGNET_LV"; }
+  inline std::string getTable() override { return "CMSFWMAGNET_LV"; }
   inline std::string getMagnetAccount() { return "CMS_DCS_ENV_PVSS_COND"; }
   inline void setMagnetCurrent(float t) { m_current = t; }
   inline float getMagnetCurrent() const { return m_current; }
@@ -29,30 +29,24 @@ class RunDCSMagnetDat : public IDataItem {
   void setTime(const Tm& start);
   Tm getTime() const;
 
- private:
+private:
   ResultSet* getMagnetRset();
 
   int nowMicroseconds();
 
-  void fillTheMap(ResultSet *, std::map< EcalLogicID, RunDCSMagnetDat >* );
+  void fillTheMap(ResultSet*, std::map<EcalLogicID, RunDCSMagnetDat>*);
 
-  void prepareWrite() 
-    throw(std::runtime_error);
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const RunDCSMagnetDat* item, RunIOV* iov )
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const RunDCSMagnetDat* item, RunIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, RunDCSMagnetDat >* fillMap, RunIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, RunDCSMagnetDat>* fillMap, RunIOV* iov) noexcept(false);
 
-  void fetchLastData(std::map< EcalLogicID, RunDCSMagnetDat >* fillMap)
-     throw(std::runtime_error);
-
+  void fetchLastData(std::map<EcalLogicID, RunDCSMagnetDat>* fillMap) noexcept(false);
 
   // User data
   float m_current;
   Tm m_time;
-
 };
 
 #endif

@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-ecalDigisValidation = cms.EDAnalyzer("EcalDigisValidation",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+ecalDigisValidation = DQMEDAnalyzer('EcalDigisValidation',
     outputFile = cms.untracked.string(''),
     verbose = cms.untracked.bool(False),
     EBdigiCollection = cms.InputTag("simEcalDigis","ebDigis"),
@@ -10,8 +11,5 @@ ecalDigisValidation = cms.EDAnalyzer("EcalDigisValidation",
     moduleLabelG4 = cms.string('g4SimHits')
 )
 
-from Configuration.StandardSequences.Eras import eras
-if eras.fastSim.isChosen():
-    ecalDigisValidation.moduleLabelG4 = cms.string('famosSimHits')
-
-
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(ecalDigisValidation, moduleLabelG4 = 'fastSimProducer')

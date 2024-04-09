@@ -10,33 +10,22 @@
 #ifndef __EcalADCToGeVXMLTranslator_h_
 #define __EcalADCToGeVXMLTranslator_h_
 
-
-#include "CondTools/Ecal/interface/XercesString.h"
 #include "CondTools/Ecal/interface/EcalCondHeader.h"
 #include <string>
-
 
 class EcalADCToGeVConstant;
 
 class EcalADCToGeVXMLTranslator {
-
 public:
+  static int readXML(const std::string& filename, EcalCondHeader& header, EcalADCToGeVConstant& record);
 
-  static int readXML  (const std::string& filename, 
-		       EcalCondHeader& header,
-		       EcalADCToGeVConstant& record);
+  static int writeXML(const std::string& filename, const EcalCondHeader& header, const EcalADCToGeVConstant& record);
 
-  static int writeXML (const std::string& filename,
-		       const EcalCondHeader& header,
-		       const EcalADCToGeVConstant& record);
-
-  static std::string dumpXML(const EcalCondHeader& header,
-			     const EcalADCToGeVConstant& record);
+private:
+  static std::string dumpXML(const EcalCondHeader& header, const EcalADCToGeVConstant& record);
 };
 
-
-
-#endif // __EcalADCToGeVXMLTranslator_h_
+#endif  // __EcalADCToGeVXMLTranslator_h_
 
 // Configure (x)emacs for this file ...
 // Local Variables:

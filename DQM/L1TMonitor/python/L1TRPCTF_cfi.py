@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-l1tRpctf = cms.EDAnalyzer("L1TRPCTF",
-    disableROOToutput = cms.untracked.bool(True),
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+l1tRpctf = DQMEDAnalyzer('L1TRPCTF',
     rpctfSource = cms.InputTag("l1GtUnpack"),
     rpctfRPCDigiSource = cms.InputTag("muonRPCDigis"),
     output_dir = cms.untracked.string('L1T/L1TRPCTF'),

@@ -3,17 +3,28 @@
 # Import skeleton process
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
-# Switch on "unscheduled" mode
-process.options.allowUnscheduled = cms.untracked.bool( True )
 #process.Tracer = cms.Service( "Tracer" )
 
 # Load default PAT
 process.load( "PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff" )
+patAlgosToolsTask.add(process.patCandidatesTask)
+#Temporary customize to the unit tests that fail due to old input samples
+process.patTaus.skipMissingTauID = True
+
 process.load( "PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff" )
+patAlgosToolsTask.add(process.selectedPatCandidatesTask)
+
 process.p = cms.Path(
     process.selectedPatCandidates
     )
 
+process.patLowPtElectrons.addElectronID = False
+process.patLowPtElectrons.electronSource = "gedGsfElectrons"
+process.patLowPtElectrons.genParticleMatch = "electronMatch"
+process.selectedPatLowPtElectrons.cut = "pt>99999."
+
+process.filteredDisplacedMuons.srcMuons = "muons"
+process.selectedPatDisplacedMuons.cut = "pt>99999."
 
 ### Get PAT trigger tools
 from PhysicsTools.PatAlgos.tools.trigTools import *

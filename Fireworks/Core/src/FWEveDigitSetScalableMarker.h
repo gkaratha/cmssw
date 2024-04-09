@@ -6,26 +6,23 @@
 #include "TGLRnrCtx.h"
 #include "TAttMarker.h"
 
-class FWEveDigitSetScalableMarker : public TEveQuadSet, public TAttMarker
-{
+class FWEveDigitSetScalableMarker : public TEveQuadSet, public TAttMarker {
 public:
-   FWEveDigitSetScalableMarker() {}
-   virtual ~FWEveDigitSetScalableMarker() {}
-   
-   ClassDef( FWEveDigitSetScalableMarker, 0);
+  FWEveDigitSetScalableMarker() {}
+  ~FWEveDigitSetScalableMarker() override {}
+
+  ClassDefOverride(FWEveDigitSetScalableMarker, 0);
 };
 
 //--------------------------------------------
-class FWEveDigitSetScalableMarkerGL : public TEveQuadSetGL
-{
+class FWEveDigitSetScalableMarkerGL : public TEveQuadSetGL {
 public:
-   FWEveDigitSetScalableMarkerGL() {}
-   virtual ~FWEveDigitSetScalableMarkerGL() {}
-   
-   void DirectDraw(TGLRnrCtx & rnrCtx) const;
-   
-   ClassDef(FWEveDigitSetScalableMarkerGL, 0);
-};
+  FWEveDigitSetScalableMarkerGL() {}
+  ~FWEveDigitSetScalableMarkerGL() override {}
 
+  void DirectDraw(TGLRnrCtx& rnrCtx) const override;
+
+  ClassDefOverride(FWEveDigitSetScalableMarkerGL, 0);
+};
 
 #endif

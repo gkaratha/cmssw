@@ -8,7 +8,7 @@
  *  \author Marcello Maggi -- INFN Bari
  */
 #include "SimMuon/RPCDigitizer/src/RPCSim.h"
-#include <FWCore/Framework/interface/EventSetup.h>
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "SimMuon/RPCDigitizer/src/RPCSynchronizer.h"
 
 class RPCGeometry;
@@ -17,22 +17,19 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class RPCSimParam : public RPCSim
-{
- public:
+class RPCSimParam : public RPCSim {
+public:
   RPCSimParam(const edm::ParameterSet& config);
-  ~RPCSimParam();
+  ~RPCSimParam() override;
 
-  void simulate(const RPCRoll* roll,
-		const edm::PSimHitContainer& rpcHits,
-                CLHEP::HepRandomEngine*) override;
+  void simulate(const RPCRoll* roll, const edm::PSimHitContainer& rpcHits, CLHEP::HepRandomEngine*) override;
 
-  void simulateNoise(const RPCRoll*,
-                     CLHEP::HepRandomEngine*) override;
+  void simulateNoise(const RPCRoll*, CLHEP::HepRandomEngine*) override;
 
- private:
-  void init(){};
- private:
+private:
+  void init() override{};
+
+private:
   double aveEff;
   double aveCls;
   double resRPC;

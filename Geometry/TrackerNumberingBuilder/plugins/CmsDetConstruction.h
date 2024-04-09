@@ -1,19 +1,23 @@
 #ifndef Geometry_TrackerNumberingBuilder_CmsDetConstruction_H
-#define Geometry_TrackerNumberingBuilderCmsDetConstruction_H
-#include<string>
-#include<vector>
+#define Geometry_TrackerNumberingBuilder_CmsDetConstruction_H
+
 #include "Geometry/TrackerNumberingBuilder/plugins/CmsTrackerLevelBuilder.h"
+#include <string>
+#include <vector>
+
 /**
  * Adds GeometricDets representing final modules to the previous level
  */
-class CmsDetConstruction : public CmsTrackerLevelBuilder {
- public:
-  void  buildComponent(DDFilteredView& , GeometricDet*, std::string);
- private:
-  void buildDets(DDFilteredView& , GeometricDet* , std::string);
-  void buildSmallDets(DDFilteredView& , GeometricDet* , std::string);
+template <class FilteredView>
+class CmsDetConstruction : public CmsTrackerLevelBuilder<FilteredView> {
+public:
+  void buildComponent(FilteredView&, GeometricDet*, const std::string&) override;
+
+private:
+  void buildDets(const FilteredView&, GeometricDet*, const std::string&);
+  void buildSmallDetsforGlued(FilteredView&, GeometricDet*, const std::string&);
+  void buildSmallDetsforStack(FilteredView&, GeometricDet*, const std::string&);
+  void buildSmallDetsfor3D(FilteredView&, GeometricDet*, const std::string&);
 };
 
-
-
-#endif
+#endif  // Geometry_TrackerNumberingBuilder_CmsDetConstruction_H

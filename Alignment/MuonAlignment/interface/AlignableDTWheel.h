@@ -9,13 +9,11 @@
  *  \author Andre Sznajder - UERJ(Brazil)
  */
 
-
-#include "Alignment/CommonAlignment/interface/Alignable.h"
+#include "Alignment/CommonAlignment/interface/Utilities.h"
 #include "Alignment/CommonAlignment/interface/AlignableComposite.h"
 #include "Alignment/CommonAlignment/interface/AlignableSurface.h"
 
 #include "Alignment/MuonAlignment/interface/AlignableDTStation.h"
-
 
 #include <vector>
 
@@ -26,49 +24,27 @@ class GeomDet;
 /// Misalignment can be de-/reactivated (forwarded to components).
 ///
 
-class AlignableDTWheel : public AlignableComposite 
-{
+class AlignableDTWheel : public AlignableComposite {
+public:
+  AlignableDTWheel(const std::vector<AlignableDTStation*>& dtStations);
 
- public:
-
-  AlignableDTWheel( const std::vector<AlignableDTStation*>& dtStations );
-
-  ~AlignableDTWheel();
-  
-  virtual std::vector<Alignable*> components() const 
-  {
-
-        std::vector<Alignable*> result;
-        result.insert( result.end(), theDTStations.begin(), theDTStations.end() );
-        return result;
-
-  }
-  
   // gets the global position as the average over all positions of the layers
-  PositionType computePosition() ;
+  PositionType computePosition();
   // get the global orientation
-  RotationType computeOrientation() ; //see explanation for "theOrientation"
+  RotationType computeOrientation();  //see explanation for "theOrientation"
   // get the Surface
-  AlignableSurface computeSurface() ;
+  AlignableSurface computeSurface();
 
-  AlignableDTStation &station(int i);  
-  
+  AlignableDTStation& station(int i);
+
   /// Printout muon DT wheel information (not recursive)
-  friend std::ostream& operator << ( std::ostream&, const AlignableDTWheel& );
+  friend std::ostream& operator<<(std::ostream&, const AlignableDTWheel&);
 
   /// Recursive printout of the muon DT wheel structure
-  void dump( void ) const;
-
+  void dump(void) const override;
 
 private:
-
   std::vector<AlignableDTStation*> theDTStations;
-
-
 };
 
 #endif
-
-
-
-

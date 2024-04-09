@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+topSingleLeptonDQM = DQMEDAnalyzer('TopSingleLeptonDQM',
   ## ------------------------------------------------------
   ## SETUP
   ##
@@ -129,7 +130,7 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
   )
 )
 
-topSingleMuonLooseDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
+topSingleMuonLooseDQM_PU = DQMEDAnalyzer('TopSingleLeptonDQM',
   ## ------------------------------------------------------
   ## SETUP
   ##
@@ -289,7 +290,7 @@ topSingleMuonLooseDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
   )
 )
 
-topSingleMuonMediumDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
+topSingleMuonMediumDQM_PU = DQMEDAnalyzer('TopSingleLeptonDQM',
   ## ------------------------------------------------------
   ## SETUP
   ##
@@ -350,18 +351,6 @@ topSingleMuonMediumDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
       select = cms.string("pt>30 & abs(eta)<2.5"),
       ## when omitted monitor histograms for b-tagging will not be filled                                                                                                   
       jetBTaggers  = cms.PSet(
-        trackCountingEff = cms.PSet(
-          label = cms.InputTag("pfTrackCountingHighEffBJetTags" ),
-          workingPoint = cms.double(1.25)
-        ),
-        trackCountingPur = cms.PSet(
-          label = cms.InputTag("pfTrackCountingHighPurBJetTags" ),
-          workingPoint = cms.double(3.00)
-        ),
-        secondaryVertex  = cms.PSet(
-          label = cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"),
-          workingPoint = cms.double(2.05)
-	    ),
 		cvsVertex = cms.PSet(
           label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
 	          workingPoint = cms.double(0.970)
@@ -454,7 +443,7 @@ topSingleMuonMediumDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
   )
 )
 
-topSingleElectronLooseDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
+topSingleElectronLooseDQM_PU = DQMEDAnalyzer('TopSingleLeptonDQM',
   ## ------------------------------------------------------
   ## SETUP
   ##
@@ -616,7 +605,7 @@ topSingleElectronLooseDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
   )
 )
 
-topSingleElectronMediumDQM_PU = cms.EDAnalyzer("TopSingleLeptonDQM",
+topSingleElectronMediumDQM_PU = DQMEDAnalyzer('TopSingleLeptonDQM',
   ## ------------------------------------------------------
   ## SETUP
   ##

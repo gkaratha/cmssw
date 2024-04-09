@@ -1,14 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-#
-# This object is used to make changes for different running scenarios
-#
-from Configuration.StandardSequences.Eras import eras
-
 #Analyzer taken from online dqm
 from DQM.TrackingMonitor.MonitorTrackSTAMuons_cfi import *
 from DQM.TrackingMonitor.MonitorTrackGLBMuons_cfi import *
-from DQMOffline.Muon.dtSegmTask_cfi import *
+from DQM.TrackingMonitor.MonitorTrackInnerTrackMuons_cff import *
+
 
 #dedicated analyzers for offline dqm 
 from DQMOffline.Muon.muonAnalyzer_cff import *
@@ -19,23 +15,22 @@ from DQMOffline.Muon.muonIsolationDQM_cff import *
 #dedicated clients for offline dqm 
 from DQMOffline.Muon.muonQualityTests_cff import *
 
-dqmInfoMuons = cms.EDAnalyzer("DQMEventInfo",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+dqmInfoMuons = DQMEDAnalyzer('DQMEventInfo',
                               subSystemFolder = cms.untracked.string('Muons')
                               )
 
-muonTrackAnalyzers = cms.Sequence(MonitorTrackSTAMuons*MonitorTrackGLBMuons)
+muonTrackAnalyzers = cms.Sequence(MonitorTrackSTAMuons*MonitorTrackGLBMuons*MonitorTrackINNMuons)
 
 muonMonitors = cms.Sequence(muonTrackAnalyzers*
-                            dtSegmentsMonitor*
                             cscMonitor*
                             muonAnalyzer*
                             muonIdDQM*
                             dqmInfoMuons*
                             muIsoDQM_seq)
-# Modify for if the phase 1 pixel detector is active
-if eras.phase1Pixel.isChosen() :
-    muonMonitors.remove(muonAnalyzer)
+
+muonMonitors_miniAOD = cms.Sequence( muonAnalyzer_miniAOD*
+                                     muIsoDQM_seq_miniAOD)
+
 
 muonMonitorsAndQualityTests = cms.Sequence(muonMonitors*muonQualityTests)
-
-

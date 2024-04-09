@@ -7,13 +7,15 @@
 #include <utility>
 
 struct BlobComplexData {
-  BlobComplexData() {}
+  BlobComplexData() {
+    a = 0;
+    b = 0;
+  }
 
   void fill(unsigned int &serial);
   void print() const;
-  bool operator == (const BlobComplexData &rhs) const;
-  bool operator != (const BlobComplexData &rhs) const
-  { return !(*this == rhs); }
+  bool operator==(const BlobComplexData &rhs) const;
+  bool operator!=(const BlobComplexData &rhs) const { return !(*this == rhs); }
 
   unsigned int a, b;
   std::vector<unsigned int> values;
@@ -26,9 +28,8 @@ struct BlobComplexContent {
 
   void fill(unsigned int &serial);
   void print() const;
-  bool operator == (const BlobComplexContent &rhs) const;
-  bool operator != (const BlobComplexContent &rhs) const
-  { return !(*this == rhs); }
+  bool operator==(const BlobComplexContent &rhs) const;
+  bool operator!=(const BlobComplexContent &rhs) const { return !(*this == rhs); }
 
   typedef std::pair<BlobComplexData, unsigned int> Data;
 
@@ -40,13 +41,15 @@ struct BlobComplexContent {
 };
 
 struct BlobComplexObjects {
-  BlobComplexObjects() {}
+  BlobComplexObjects() {
+    a = 0;
+    b = 0;
+  }
 
   void fill(unsigned int &serial);
   void print() const;
-  bool operator == (const BlobComplexObjects &rhs) const;
-  bool operator != (const BlobComplexObjects &rhs) const
-  { return !(*this == rhs); }
+  bool operator==(const BlobComplexObjects &rhs) const;
+  bool operator!=(const BlobComplexObjects &rhs) const { return !(*this == rhs); }
 
   unsigned int a, b;
   std::vector<BlobComplexContent> content;
@@ -59,9 +62,8 @@ struct BlobComplex {
 
   void fill(unsigned int &serial);
   void print() const;
-  bool operator == (const BlobComplex &rhs) const;
-  bool operator != (const BlobComplex &rhs) const
-  { return !(*this == rhs); }
+  bool operator==(const BlobComplex &rhs) const;
+  bool operator!=(const BlobComplex &rhs) const { return !(*this == rhs); }
 
   std::vector<BlobComplexObjects> objects;
 

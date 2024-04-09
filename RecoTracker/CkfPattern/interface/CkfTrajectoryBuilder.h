@@ -10,8 +10,8 @@ class TrajectorySeed;
 class TrajectoryStateOnSurface;
 class TrajectoryFilter;
 
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Event.h"
 
@@ -26,60 +26,65 @@ class TrajectoryFilter;
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
 
 #include <map>
-#include <boost/unordered_map.hpp>
 
 class TransientTrackingRecHitBuilder;
 class TrajectoryFilter;
 
-class CkfTrajectoryBuilder :public BaseCkfTrajectoryBuilder {
-
+class CkfTrajectoryBuilder : public BaseCkfTrajectoryBuilder {
 public:
+  typedef std::vector<Trajectory> TrajectoryContainer;
+  typedef std::vector<TempTrajectory> TempTrajectoryContainer;
 
-  typedef std::vector<Trajectory>         TrajectoryContainer;
-  typedef std::vector<TempTrajectory>     TempTrajectoryContainer;
+  CkfTrajectoryBuilder(const edm::ParameterSet& conf, edm::ConsumesCollector iC);
+  CkfTrajectoryBuilder(const edm::ParameterSet& conf,
+                       edm::ConsumesCollector iC,
+                       std::unique_ptr<TrajectoryFilter> filter);
 
-  CkfTrajectoryBuilder(const edm::ParameterSet& conf, edm::ConsumesCollector& iC);
-  CkfTrajectoryBuilder(const edm::ParameterSet& conf, TrajectoryFilter *filter);
+  ~CkfTrajectoryBuilder() override {}
 
-  ~CkfTrajectoryBuilder() {}
+  static void fillPSetDescription(edm::ParameterSetDescription& iDesc);
 
   /// trajectories building starting from a seed
-  virtual TrajectoryContainer trajectories(const TrajectorySeed& seed) const;
+  TrajectoryContainer trajectories(const TrajectorySeed& seed) const override;
   /// trajectories building starting from a seed
-  virtual void trajectories(const TrajectorySeed& seed, TrajectoryContainer &ret) const;
+  void trajectories(const TrajectorySeed& seed, TrajectoryContainer& ret) const override;
 
   // new interface returning the start Trajectory...
-  TempTrajectory buildTrajectories (const TrajectorySeed&,
-				    TrajectoryContainer &ret,
-				    const TrajectoryFilter*) const;
-  
-  
-  void  rebuildTrajectories(TempTrajectory const& startingTraj, const TrajectorySeed&,
-			    TrajectoryContainer& result) const {}
+  TempTrajectory buildTrajectories(const TrajectorySeed&,
+                                   TrajectoryContainer& ret,
+                                   unsigned int& nCandPerSeed,
+                                   const TrajectoryFilter*) const override;
+
+  void rebuildTrajectories(TempTrajectory const& startingTraj,
+                           const TrajectorySeed&,
+                           TrajectoryContainer& result) const override {}
 
   /// set Event for the internal MeasurementTracker data member
   //  virtual void setEvent(const edm::Event& event) const;
 
-
-
- protected:
+protected:
   int theMaxCand;               /**< Maximum number of trajectory candidates 
 		                     to propagate to the next layer. */
   float theLostHitPenalty;      /**< Chi**2 Penalty for each lost hit. */
-  bool theIntermediateCleaning;	/**< Tells whether an intermediary cleaning stage 
+  bool theIntermediateCleaning; /**< Tells whether an intermediary cleaning stage 
                                      should take place during TB. */
   bool theAlwaysUseInvalidHits;
 
-
- protected:
+protected:
   void setEvent_(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
-  virtual void findCompatibleMeasurements(const TrajectorySeed&seed, const TempTrajectory& traj, std::vector<TrajectoryMeasurement> & result) const;
+  virtual void findCompatibleMeasurements(const TrajectorySeed& seed,
+                                          const TempTrajectory& traj,
+                                          std::vector<TrajectoryMeasurement>& result) const;
 
-  void limitedCandidates(const TrajectorySeed&seed, TempTrajectory& startingTraj, TrajectoryContainer& result) const;
-  void limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, TempTrajectoryContainer &candidates, TrajectoryContainer& result) const;
-  
-  void updateTrajectory( TempTrajectory& traj, TM && tm) const;
+  unsigned int limitedCandidates(const TrajectorySeed& seed,
+                                 TempTrajectory& startingTraj,
+                                 TrajectoryContainer& result) const;
+  unsigned int limitedCandidates(const std::shared_ptr<const TrajectorySeed>& sharedSeed,
+                                 TempTrajectoryContainer& candidates,
+                                 TrajectoryContainer& result) const;
+
+  void updateTrajectory(TempTrajectory& traj, TM&& tm) const;
 
   /*  
       //not mature for integration.  

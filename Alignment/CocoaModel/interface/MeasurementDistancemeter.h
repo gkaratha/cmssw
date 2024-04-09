@@ -3,8 +3,8 @@
 // CAT: Model
 //
 // Class for measurements
-// 
-// History: v1.0 
+//
+// History: v1.0
 // Authors:
 //   Pedro Arce
 
@@ -15,24 +15,23 @@
 #include "Alignment/CocoaModel/interface/Measurement.h"
 #include "Alignment/CocoaUtilities/interface/CocoaGlobals.h"
 
-class MeasurementDistancemeter : public Measurement
-{ 
+class MeasurementDistancemeter : public Measurement {
 public:
-  MeasurementDistancemeter( const ALIint measdim, ALIstring& type, ALIstring& name )
-    : Measurement( measdim, type, name ), theFactor(1.), theFactorSigma(0.){};
-  MeasurementDistancemeter(){ };   
-  ~MeasurementDistancemeter(){ };
-    
+  MeasurementDistancemeter(const ALIint measdim, ALIstring& type, ALIstring& name)
+      : Measurement(measdim, type, name), theFactor(1.), theFactorSigma(0.){};
+  MeasurementDistancemeter(){};
+  ~MeasurementDistancemeter() override{};
+
   // Get simulated value (called every time a parameter is displaced)
-  virtual void calculateSimulatedValue( ALIbool firstTime );
+  void calculateSimulatedValue(ALIbool firstTime) override;
 
   //---------- Convert from V to rad
-  virtual void setConversionFactor( const std::vector<ALIstring>& wordlist );
+  void setConversionFactor(const std::vector<ALIstring>& wordlist) override;
 
   //---------- Add any correction between the measurement data and the default format in COCOA
-  virtual void correctValueAndSigma();
+  void correctValueAndSigma() override;
 
- private:
+private:
   ALIdouble theFactor;
   ALIdouble theFactorSigma;
 };

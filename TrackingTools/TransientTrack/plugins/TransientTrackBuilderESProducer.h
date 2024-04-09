@@ -4,25 +4,25 @@
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 
-#include <boost/shared_ptr.hpp>
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 
-class  TransientTrackBuilderESProducer: public edm::ESProducer{
- public:
-  TransientTrackBuilderESProducer(const edm::ParameterSet & p);
-  virtual ~TransientTrackBuilderESProducer(); 
-  boost::shared_ptr<TransientTrackBuilder> produce(const TransientTrackRecord &);
- private:
-  boost::shared_ptr<TransientTrackBuilder> _builder;
-  edm::ParameterSet pset_;
+#include <memory>
+
+class TransientTrackBuilderESProducer : public edm::ESProducer {
+public:
+  TransientTrackBuilderESProducer(const edm::ParameterSet &p);
+
+  std::unique_ptr<TransientTrackBuilder> produce(const TransientTrackRecord &);
+
+  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+
+private:
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magToken_;
+  edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> geomToken_;
 };
 
-
 #endif
-
-
-
-

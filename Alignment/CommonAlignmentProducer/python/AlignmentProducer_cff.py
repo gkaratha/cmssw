@@ -6,6 +6,7 @@ from Alignment.TrackerAlignment.Scenarios_cff import *
 # algorithms
 from Alignment.HIPAlignmentAlgorithm.HIPAlignmentAlgorithm_cfi import *
 from Alignment.MillePedeAlignmentAlgorithm.MillePedeAlignmentAlgorithm_cfi import *
+
 # parameters
 from Alignment.CommonAlignmentAlgorithm.AlignmentParameterStore_cfi import *
 
@@ -70,7 +71,23 @@ looper = cms.Looper("AlignmentProducer",
 
 
                     # Save alignment to DB: true requires configuration of PoolDBOutputService
-                    saveToDB = cms.bool(False),            # save alignment?
-                    saveApeToDB = cms.bool(False),         # save APE?
-                    saveDeformationsToDB = cms.bool(False) # save surface deformations (bows, etc.)?
+                    saveToDB = cms.bool(False),             # save alignment?
+                    saveApeToDB = cms.bool(False),          # save APE?
+                    saveDeformationsToDB = cms.bool(False), # save surface deformations (bows, etc.)?
+
+                    # update alignables if triggered by corresponding input IOV boundary
+                    enableAlignableUpdates = cms.bool(False),
+
+                    # Change tracker alignment record name to avoid confusion bettwen HG and LG PCL alignment
+                    trackerAlignmentRcdName = cms.string("TrackerAlignmentRcd")
                     )
+
+import Geometry.DTGeometryBuilder.dtGeometryDB_cfi
+DTGeometryAlignmentProducerAsAnalyzer = Geometry.DTGeometryBuilder.dtGeometryDB_cfi.DTGeometryESModule.clone()
+DTGeometryAlignmentProducerAsAnalyzer.appendToDataLabel = 'idealForAlignmentProducerBase'
+import Geometry.CSCGeometryBuilder.cscGeometryDB_cfi
+CSCGeometryAlignmentProducerAsAnalyzer = Geometry.CSCGeometryBuilder.cscGeometryDB_cfi.CSCGeometryESModule.clone()
+CSCGeometryAlignmentProducerAsAnalyzer.appendToDataLabel = 'idealForAlignmentProducerBase'
+import   Geometry.GEMGeometryBuilder.gemGeometryDB_cfi
+GEMGeometryAlignmentProducerAsAnalyzer = Geometry.GEMGeometryBuilder.gemGeometryDB_cfi.GEMGeometryESModule.clone()
+GEMGeometryAlignmentProducerAsAnalyzer.appendToDataLabel = 'idealForAlignmentProducerBase'

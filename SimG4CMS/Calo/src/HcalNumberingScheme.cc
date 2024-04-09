@@ -6,37 +6,31 @@
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 
-#include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include <iostream>
 
-//#define DebugLog
+//#define EDM_ML_DEBUG
 
 HcalNumberingScheme::HcalNumberingScheme() : CaloNumberingScheme(0) {
-  edm::LogInfo("HcalSim") << "Creating HcalNumberingScheme";
+  edm::LogVerbatim("HcalSim") << "Creating HcalNumberingScheme";
 }
 
-HcalNumberingScheme::~HcalNumberingScheme() {
-  edm::LogInfo("HcalSim") << "Deleting HcalNumberingScheme";
-}
+HcalNumberingScheme::~HcalNumberingScheme() { edm::LogVerbatim("HcalSim") << "Deleting HcalNumberingScheme"; }
 
-uint32_t HcalNumberingScheme::getUnitID(const HcalNumberingFromDDD::HcalID& id){
-
-  int zside = 2*(id.zside) - 1;
-  int etaR  = zside*(id.etaR);
-  HcalSubdetector subdet =  (HcalSubdetector)(id.subdet);
+uint32_t HcalNumberingScheme::getUnitID(const HcalNumberingFromDDD::HcalID& id) {
+  int zside = 2 * (id.zside) - 1;
+  int etaR = zside * (id.etaR);
+  HcalSubdetector subdet = (HcalSubdetector)(id.subdet);
 
   //pack it into an integer
   // to be consistent with HcalDetId convention
-  uint32_t index = HcalDetId(subdet,etaR,id.phis,id.depth).rawId();
+  HcalDetId hid(subdet, etaR, id.phis, id.depth);
+  uint32_t index = hid.rawId();
 
-#ifdef DebugLog
-  edm::LogInfo("HcalSim") << "HcalNumberingScheme det = " << id.subdet 
-			  << " depth/lay = " << id.depth << "/" << id.lay 
-			  << " zside = " << id.zside << " eta/R = " << id.etaR 
-			  << " phi = " << id.phis << " oldphi = " << id.phi
-			  << " packed index = 0x" << std::hex << index 
-			  << std::dec << std::endl;
+#ifdef EDM_ML_DEBUG
+  edm::LogVerbatim("HcalSim") << "HcalNumberingScheme det = " << id.subdet << " depth/lay = " << id.depth << "/"
+                              << id.lay << " zside = " << id.zside << " eta/R = " << id.etaR << " phi = " << id.phis
+                              << " oldphi = " << id.phi << " packed index = 0x" << std::hex << index << std::dec << " "
+                              << hid << " " << HcalDetId(index);
 #endif
   return index;
-
 }

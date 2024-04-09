@@ -5,36 +5,33 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "G4Track.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
+#include <algorithm>
 
-SaveSimTrack::SaveSimTrack(edm::ParameterSet const & p) {
+SaveSimTrack::SaveSimTrack(edm::ParameterSet const &p) {
+  edm::ParameterSet ps = p.getParameter<edm::ParameterSet>("SaveSimTrack");
+  pdgs_ = ps.getUntrackedParameter<std::vector<int>>("PDGCodes");
 
-  pdgMin     = p.getUntrackedParameter<int>("MinimumPDGCode", 1000000);
-  pdgMax     = p.getUntrackedParameter<int>("MaximumPDGCode", 2000000);
-
-  edm::LogInfo("SaveSimTrack") << "SaveSimTrack:: Save Sim Track if PDG code "
-			       << "lies between "  << pdgMin << " and " 
-			       << pdgMax;
+  edm::LogVerbatim("SaveSimTrack") << "SaveSimTrack:: Save Sim Track if PDG code "
+                                   << "is one from the list of " << pdgs_.size() << " items";
+  for (unsigned int k = 0; k < pdgs_.size(); ++k)
+    edm::LogVerbatim("SaveSimTrack") << "[" << k << "] " << pdgs_[k];
 }
 
 SaveSimTrack::~SaveSimTrack() {}
- 
-void SaveSimTrack::update(const BeginOfTrack * trk) {
 
-  G4Track* theTrack = (G4Track*)((*trk)());
-  TrackInformation * trkInfo = (TrackInformation *)(theTrack->GetUserInformation());
-  if (trkInfo) {
-    int pdg = std::abs(theTrack->GetDefinition()->GetPDGEncoding());
-    if (pdg >= pdgMin && pdg <= pdgMax) {
-      trkInfo->storeTrack(true);
-      LogDebug("SaveSimTrack") << "Save SimTrack the Track " 
-			       << theTrack->GetTrackID() << " Type " 
-			       << theTrack->GetDefinition()->GetParticleName()
-			       << " Momentum " << theTrack->GetMomentum()/MeV 
-			       << " MeV/c";
+void SaveSimTrack::update(const BeginOfTrack *trk) {
+  const G4Track *theTrack = (*trk)();
+  TrackInformation *trkInfo = reinterpret_cast<TrackInformation *>(theTrack->GetUserInformation());
+  if (nullptr != trkInfo) {
+    int pdg = theTrack->GetDefinition()->GetPDGEncoding();
+    if (std::find(pdgs_.begin(), pdgs_.end(), pdg) != pdgs_.end()) {
+      trkInfo->setStoreTrack();
+      LogDebug("SaveSimTrack") << "Save SimTrack the Track " << theTrack->GetTrackID() << " Type "
+                               << theTrack->GetDefinition()->GetParticleName() << " Momentum "
+                               << theTrack->GetMomentum() / MeV << " MeV/c";
     }
   }
 }
-

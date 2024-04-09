@@ -9,5 +9,10 @@ EDMtoMEConvertSiStrip.runInputTag = cms.InputTag("MEtoEDMConvertSiStrip","MEtoED
 
 DQMStore = cms.Service("DQMStore")
 
-ALCAHARVESTSiStripQuality = cms.Sequence(EDMtoMEConvertSiStrip + alcaSiStripQualityHarvester)
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
+dqmEnvSiStripQuality = DQMEDHarvester('DQMHarvestingMetadata',
+                                      subSystemFolder = cms.untracked.string('AlCaReco'),  
+                                      )
+
+ALCAHARVESTSiStripQuality = cms.Sequence(EDMtoMEConvertSiStrip + alcaSiStripQualityHarvester + dqmEnvSiStripQuality)
 #ALCAHARVESTSiStripQuality = cms.Sequence(EDMtoMEConvertSiStrip + dqmSaver)

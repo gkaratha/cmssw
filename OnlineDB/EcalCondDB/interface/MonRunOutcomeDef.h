@@ -10,11 +10,11 @@
  *   Def for monitoring run outcomes
  */
 class MonRunOutcomeDef : public IDef {
-  public:
+public:
   friend class EcalCondDBInterface;
-  
+
   MonRunOutcomeDef();
-  virtual ~MonRunOutcomeDef();
+  ~MonRunOutcomeDef() override;
 
   // Methods for user data
   std::string getShortDesc() const;
@@ -23,19 +23,19 @@ class MonRunOutcomeDef : public IDef {
   std::string getLongDesc() const;
 
   // Methods from IUniqueDBObject
-  int fetchID() throw(std::runtime_error);
-  void setByID(int id) throw(std::runtime_error);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
   inline bool operator==(const MonRunOutcomeDef &d) const { return m_shortDesc == d.m_shortDesc; }
   inline bool operator!=(const MonRunOutcomeDef &d) const { return m_shortDesc != d.m_shortDesc; }
 
- protected:
+protected:
   // User data for this def
   std::string m_shortDesc;
   std::string m_longDesc;
 
-  void fetchAllDefs( std::vector<MonRunOutcomeDef>* fillVec) throw(std::runtime_error);
+  void fetchAllDefs(std::vector<MonRunOutcomeDef> *fillVec) noexcept(false);
 };
 
 #endif

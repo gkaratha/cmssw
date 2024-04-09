@@ -16,3 +16,6 @@ SiStripClusterChargeCutTight = cms.PSet(
     value     = cms.double(1945.0) 
 )
 
+from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
+trackingLowPU.toReplaceWith(SiStripClusterChargeCutLoose, SiStripClusterChargeCutTiny)
+trackingLowPU.toReplaceWith(SiStripClusterChargeCutTight, SiStripClusterChargeCutTiny)

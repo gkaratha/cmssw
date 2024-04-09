@@ -4,20 +4,19 @@
 #include "CondCore/CondDB/interface/Types.h"
 #include "IOVSchema.h"
 #include "GTSchema.h"
-//
-#include "CondCore/DBCommon/interface/DbSession.h"
+#include "RunInfoSchema.h"
 //
 #include "RelationalAccess/ConnectionService.h"
 #include "RelationalAccess/ISessionProxy.h"
 //
 #include <memory>
+#include <mutex>
 // temporarely
-#include <boost/shared_ptr.hpp>
 
 namespace coral {
   class ISessionProxy;
   class ISchema;
-}
+}  // namespace coral
 
 namespace cond {
 
@@ -25,7 +24,7 @@ namespace cond {
 
     class ITransaction {
     public:
-      virtual ~ITransaction(){}
+      virtual ~ITransaction() {}
       virtual void commit() = 0;
       virtual void rollback() = 0;
       virtual bool isActive() = 0;
@@ -33,48 +32,58 @@ namespace cond {
       bool iovDbOpen = false;
       bool gtDbExists = false;
       bool gtDbOpen = false;
-      bool isOra = false;
+      bool runInfoDbExists = false;
+      bool runInfoDbOpen = false;
       size_t clients = 0;
     };
-    
+
     class SessionImpl {
     public:
       typedef enum { THROW, DO_NOT_THROW, CREATE } FailureOnOpeningPolicy;
+
     public:
       SessionImpl();
-      SessionImpl( boost::shared_ptr<coral::ISessionProxy>& session, 
-		   const std::string& connectionString );
+      SessionImpl(std::shared_ptr<coral::ISessionProxy>& session,
+                  const std::string& connectionString,
+                  const std::string& principalName);
 
       ~SessionImpl();
-      
+
       void close();
       bool isActive() const;
-      void startTransaction( bool readOnly=true );
+      void startTransaction(bool readOnly = true);
       void commitTransaction();
       void rollbackTransaction();
-      bool isTransactionActive( bool deep=true ) const;
+      bool isTransactionActive(bool deep = true) const;
 
-      void openIovDb( FailureOnOpeningPolicy policy = THROW );
-      void openGTDb( FailureOnOpeningPolicy policy = THROW );
+      void openIovDb(FailureOnOpeningPolicy policy = THROW);
+      void openGTDb(FailureOnOpeningPolicy policy = THROW);
+      void openRunInfoDb();
       void openDb();
       IIOVSchema& iovSchema();
       IGTSchema& gtSchema();
-      // only for the bridging...
-      bool isOra();
-      
+      IRunInfoSchema& runInfoSchema();
+
     public:
       // allows for session shared among more services. To be changed to unique_ptr when we stop needing this feature.
-      boost::shared_ptr<coral::ISessionProxy> coralSession;
-      // not really useful outside the ORA bridging...
+      std::shared_ptr<coral::ISessionProxy> coralSession;
+      std::string sessionHash;
       std::string connectionString;
+      std::string principalName;
+      std::set<std::string> lockedTags;
       std::unique_ptr<ITransaction> transaction;
-      std::unique_ptr<IIOVSchema> iovSchemaHandle; 
-      std::unique_ptr<IGTSchema> gtSchemaHandle; 
+      std::unique_ptr<IIOVSchema> iovSchemaHandle;
+      std::unique_ptr<IGTSchema> gtSchemaHandle;
+      std::unique_ptr<IRunInfoSchema> runInfoSchemaHandle;
+
+    private:
+      void releaseTagLocks();
+      std::recursive_mutex transactionMutex;
+      std::unique_lock<std::recursive_mutex> transactionLock;
     };
 
-  }
+  }  // namespace persistency
 
-}
+}  // namespace cond
 
 #endif
-

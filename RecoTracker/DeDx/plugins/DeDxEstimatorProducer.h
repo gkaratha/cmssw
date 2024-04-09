@@ -13,8 +13,8 @@
 
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h" 
-#include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
+#include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonDetUnit/interface/GluedGeomDet.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
@@ -22,10 +22,10 @@
 #include "DataFormats/TrackReco/interface/DeDxHit.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 
-
 #include "RecoTracker/DeDx/interface/BaseDeDxEstimator.h"
 #include "RecoTracker/DeDx/interface/GenericAverageDeDxEstimator.h"
 #include "RecoTracker/DeDx/interface/TruncatedAverageDeDxEstimator.h"
+#include "RecoTracker/DeDx/interface/GenericTruncatedAverageDeDxEstimator.h"
 #include "RecoTracker/DeDx/interface/MedianDeDxEstimator.h"
 #include "RecoTracker/DeDx/interface/UnbinnedFitDeDxEstimator.h"
 #include "RecoTracker/DeDx/interface/ProductDeDxDiscriminator.h"
@@ -33,12 +33,10 @@
 #include "RecoTracker/DeDx/interface/ASmirnovDeDxDiscriminator.h"
 #include "RecoTracker/DeDx/interface/BTagLikeDeDxDiscriminator.h"
 
-
 #include "RecoTracker/DeDx/interface/DeDxTools.h"
 
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
-
 
 //
 // class declaration
@@ -47,23 +45,25 @@
 class DeDxEstimatorProducer : public edm::stream::EDProducer<> {
 public:
   explicit DeDxEstimatorProducer(const edm::ParameterSet&);
-  ~DeDxEstimatorProducer();
-  static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
+  ~DeDxEstimatorProducer() override;
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-  virtual void beginRun(edm::Run const& run, const edm::EventSetup&) override;
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  void beginRun(edm::Run const& run, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-  void   makeCalibrationMap(const TrackerGeometry& tkGeom);
-  void   processHit(const TrackingRecHit * recHit, float trackMomentum, float& cosine, reco::DeDxHitCollection& dedxHits, int& NClusterSaturating);
+  void makeCalibrationMap(const TrackerGeometry& tkGeom);
+  void processHit(const TrackingRecHit* recHit,
+                  float trackMomentum,
+                  float& cosine,
+                  reco::DeDxHitCollection& dedxHits,
+                  int& NClusterSaturating);
 
   // ----------member data ---------------------------
-  BaseDeDxEstimator*                m_estimator;
+  std::unique_ptr<BaseDeDxEstimator> m_estimator;
 
-  edm::EDGetTokenT<TrajTrackAssociationCollection>   m_trajTrackAssociationTag;
-  edm::EDGetTokenT<reco::TrackCollection>  m_tracksTag;
+  edm::EDGetTokenT<reco::TrackCollection> m_tracksTag;
 
-  bool useTrajectory;
   bool usePixel;
   bool useStrip;
   float meVperADCPixel;
@@ -71,13 +71,15 @@ private:
 
   unsigned int MaxNrStrips;
 
-  std::string                       m_calibrationPath;
-  bool                              useCalibration;
-  bool                              shapetest;
+  std::string m_calibrationPath;
+  bool useCalibration;
+  bool shapetest;
 
-  std::vector< std::vector<float> > calibGains; 
+  std::vector<std::vector<float> > calibGains;
   unsigned int m_off;
+
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tkGeomToken;
+  const TrackerGeometry* tkGeom = nullptr;
 };
 
 #endif
-

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import operator
 import itertools
 import copy
@@ -12,6 +13,7 @@ from PhysicsTools.HeppyCore.framework.event import Event
 from PhysicsTools.HeppyCore.statistics.counter import Counter, Counters
 from PhysicsTools.Heppy.analyzers.core.AutoHandle import AutoHandle
 from PhysicsTools.Heppy.physicsobjects.Photon import Photon
+from PhysicsTools.Heppy.physicsutils.PhotonCalibrator import Run2PhotonCalibrator
 
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi, bestMatch, matchObjectCollection3
 
@@ -29,6 +31,14 @@ class PhotonAnalyzer( Analyzer ):
         if self.doFootprintRemovedIsolation:
             self.footprintRemovedIsolationPUCorr =  self.cfg_ana.footprintRemovedIsolationPUCorr
             self.IsolationComputer = heppy.IsolationComputer()
+	#FIXME: only Embedded works
+        if self.cfg_ana.doPhotonScaleCorrections:
+            conf = cfg_ana.doPhotonScaleCorrections
+            self.photonEnergyCalibrator = Run2PhotonCalibrator(
+                conf['data'],
+                cfg_comp.isMC,
+                conf['isSync'] if 'isSync' in conf else False,
+            )
 
     def declareHandles(self):
         super(PhotonAnalyzer, self).declareHandles()
@@ -64,6 +74,11 @@ class PhotonAnalyzer( Analyzer ):
         if self.doFootprintRemovedIsolation:
             # values are taken from EGamma implementation: https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_X/RecoEgamma/PhotonIdentification/plugins/PhotonIDValueMapProducer.cc#L198-L199
             self.IsolationComputer.setPackedCandidates(self.handles['packedCandidates'].product(), -1, 0.1, 0.2)
+
+        # Photon scale calibrations
+        if self.cfg_ana.doPhotonScaleCorrections:
+            for gamma in event.allphotons:
+                self.photonEnergyCalibrator.correct(gamma, event.run)
 
         foundPhoton = False
         for gamma in event.allphotons:
@@ -296,20 +311,20 @@ class PhotonAnalyzer( Analyzer ):
         gamma.ftprRelIso03 = gamma.ftprAbsIso03/gamma.pt()
 
     def printInfo(self, event):
-        print '----------------'
+        print('----------------')
         if len(event.selectedPhotons)>0:
-            print 'lenght: ',len(event.selectedPhotons)
-            print 'gamma candidate pt: ',event.selectedPhotons[0].pt()
-            print 'gamma candidate eta: ',event.selectedPhotons[0].eta()
-            print 'gamma candidate phi: ',event.selectedPhotons[0].phi()
-            print 'gamma candidate mass: ',event.selectedPhotons[0].mass()
-            print 'gamma candidate HoE: ',event.selectedPhotons[0].hOVERe()
-            print 'gamma candidate r9: ',event.selectedPhotons[0].full5x5_r9()
-            print 'gamma candidate sigmaIetaIeta: ',event.selectedPhotons[0].full5x5_sigmaIetaIeta()
-            print 'gamma candidate had iso: ',event.selectedPhotons[0].chargedHadronIso()
-            print 'gamma candidate neu iso: ',event.selectedPhotons[0].neutralHadronIso()
-            print 'gamma candidate gamma iso: ',event.selectedPhotons[0].photonIso()
-            print 'gamma idCutBased',event.selectedPhotons[0].idCutBased
+            print('lenght: ',len(event.selectedPhotons))
+            print('gamma candidate pt: ',event.selectedPhotons[0].pt())
+            print('gamma candidate eta: ',event.selectedPhotons[0].eta())
+            print('gamma candidate phi: ',event.selectedPhotons[0].phi())
+            print('gamma candidate mass: ',event.selectedPhotons[0].mass())
+            print('gamma candidate HoE: ',event.selectedPhotons[0].hOVERe())
+            print('gamma candidate r9: ',event.selectedPhotons[0].full5x5_r9())
+            print('gamma candidate sigmaIetaIeta: ',event.selectedPhotons[0].full5x5_sigmaIetaIeta())
+            print('gamma candidate had iso: ',event.selectedPhotons[0].chargedHadronIso())
+            print('gamma candidate neu iso: ',event.selectedPhotons[0].neutralHadronIso())
+            print('gamma candidate gamma iso: ',event.selectedPhotons[0].photonIso())
+            print('gamma idCutBased',event.selectedPhotons[0].idCutBased)
 
 
     def process(self, event):
@@ -335,6 +350,8 @@ setattr(PhotonAnalyzer,"defaultConfig",cfg.Analyzer(
     photons='slimmedPhotons',
     ptMin = 20,
     etaMax = 2.5,
+    # energy scale corrections (off by default)
+    doPhotonScaleCorrections=False, 
     gammaID = "PhotonCutBasedIDLoose_CSA14",
     rhoPhoton = 'fixedGridRhoFastjetAll',
     gamma_isoCorr = 'rhoArea',

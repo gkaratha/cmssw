@@ -2,30 +2,24 @@
 #define DQM_SiStripCommissioningClients_CalibrationHistograms_H
 
 #include "DQM/SiStripCommissioningClients/interface/CommissioningHistograms.h"
-
-
-class DQMStore;
+#include "DQMServices/Core/interface/DQMStore.h"
 
 class CalibrationHistograms : virtual public CommissioningHistograms {
+public:
+  CalibrationHistograms(const edm::ParameterSet& pset, DQMStore*, const sistrip::RunType& task = sistrip::CALIBRATION);
+  ~CalibrationHistograms() override;
 
- public:
-  
-  CalibrationHistograms( const edm::ParameterSet& pset,
-                         DQMStore*,
-                         const sistrip::RunType& task = sistrip::CALIBRATION );
-  virtual ~CalibrationHistograms();
-  
-  void histoAnalysis( bool debug );
+  void histoAnalysis(bool debug) override;
 
-  void printAnalyses(); // override
+  void printAnalyses() override;  // override
 
- protected: 
+  void save(std::string& filename, uint32_t run_number = 0, std::string partitionName = "");
 
-  int calchan_;
-  int isha_;
-  int vfs_;
-  
+private:
+  // Needed for the calibration-scan analysis
+  float targetRiseTime_;
+  float targetDecayTime_;
+  bool tuneSimultaneously_;
 };
 
-#endif // DQM_SiStripCommissioningClients_CalibrationHistograms_H
-
+#endif  // DQM_SiStripCommissioningClients_CalibrationHistograms_H

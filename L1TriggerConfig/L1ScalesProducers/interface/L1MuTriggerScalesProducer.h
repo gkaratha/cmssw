@@ -14,7 +14,6 @@
 
 // system include files
 #include <memory>
-#include <boost/shared_ptr.hpp>
 #include <vector>
 
 // user include files
@@ -26,7 +25,6 @@
 #include "CondFormats/L1TObjects/interface/L1MuTriggerScales.h"
 #include "CondFormats/DataRecord/interface/L1MuTriggerScalesRcd.h"
 
-
 //
 // class declaration
 //
@@ -34,14 +32,14 @@
 class L1MuTriggerScalesProducer : public edm::ESProducer {
 public:
   L1MuTriggerScalesProducer(const edm::ParameterSet&);
-  ~L1MuTriggerScalesProducer();
-  
-  std::auto_ptr<L1MuTriggerScales> produceL1MuTriggerScales(const L1MuTriggerScalesRcd&);
+  ~L1MuTriggerScalesProducer() override;
+
+  std::unique_ptr<L1MuTriggerScales> produceL1MuTriggerScales(const L1MuTriggerScalesRcd&);
 
 private:
   // ----------member data ---------------------------
-  
-  L1MuTriggerScales m_scales ;
+
+  L1MuTriggerScales m_scales;
 };
 
 #endif

@@ -1,7 +1,8 @@
 ## import skeleton process
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
+
 # verbose flags for the PF2PAT modules
-process.options.allowUnscheduled = cms.untracked.bool(True)
+
 #process.Tracer = cms.Service("Tracer")
 
 # Configure PAT to use PF2PAT instead of AOD sources
@@ -10,6 +11,8 @@ from PhysicsTools.PatAlgos.tools.pfTools import *
 postfix = "PFlow"
 jetAlgo="AK4"
 usePF2PAT(process,runPF2PAT=True, jetAlgo=jetAlgo, runOnMC=True, postfix=postfix)
+#Temporary customize to the unit tests that fail due to old input samples
+getattr(process,"patTaus"+postfix).skipMissingTauID = True
 
 # to turn on type-1 MET corrections, use the following call
 #usePF2PAT(process,runPF2PAT=True, jetAlgo=jetAlgo, runOnMC=True, postfix=postfix, typeIMetCorrections=True)
@@ -46,8 +49,7 @@ getattr(process,"pfNoJet"+postfix).enable = True
 # to use tau-cleaned jet collection uncomment the following:
 #getattr(process,"pfNoTau"+postfix).enable = True
 
-# verbose flags for the PF2PAT modules
-getattr(process,"pfNoMuonJME"+postfix).verbose = False
+# verbose flags for the PF2PAT modules, if any:
 
 # enable delta beta correction for muon selection in PF2PAT?
 getattr(process,"pfIsolatedMuons"+postfix).doDeltaBetaCorrection = cms.bool(False)

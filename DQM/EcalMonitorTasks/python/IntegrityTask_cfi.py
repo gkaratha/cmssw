@@ -18,6 +18,13 @@ ecalIntegrityTask = cms.untracked.PSet(
             btype = cms.untracked.string('SuperCrystal'),
             description = cms.untracked.string('')
         ),
+        MapByLumi = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sIntegrityTask/%(prefix)sIT%(suffix)s integrity errors map by lumi'),
+            kind = cms.untracked.string('TH2F'),
+            otype = cms.untracked.string('Ecal3P'),
+            btype = cms.untracked.string('Crystal'),
+            description = cms.untracked.string('Integrity error occupancy map for this lumisection. Includes Gain, ChId, GainSwitch, TowerId, and BlockSize errors.')
+        ),
         ByLumi = cms.untracked.PSet(
             path = cms.untracked.string('%(subdet)s/%(prefix)sIntegrityTask/%(prefix)sIT weighted integrity errors by lumi'),
             kind = cms.untracked.string('TH1F'),
@@ -63,6 +70,21 @@ ecalIntegrityTask = cms.untracked.PSet(
             otype = cms.untracked.string('SM'),
             btype = cms.untracked.string('SuperCrystal'),
             description = cms.untracked.string('')
+        ),
+        TTIDTotal = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sIntegrityTask/%(prefix)sIT weighted TTID errors'),
+            kind = cms.untracked.string('TH1F'),
+            otype = cms.untracked.string('Ecal2P'),
+            btype = cms.untracked.string('DCC'),
+            description = cms.untracked.string('Total number of TTID errors for each FED. Histogram filled weighted by no.of crystals per tower to be compatible with the other integrity errors which are binned by crystals.')
+        ),
+        TTIDByLumi = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sIntegrityTask/%(prefix)sIT weighted TTID errors by lumi'),
+            kind = cms.untracked.string('TH1F'),
+            otype = cms.untracked.string('Ecal2P'),
+            btype = cms.untracked.string('DCC'),
+	    perLumi = cms.untracked.bool(True),
+            description = cms.untracked.string('Total number of TTID errors for each FED in this lumi section. Histogram filled weighted by no.of crystals per tower to be compatible with the other integrity errors which are binned by crystals.')
         )
     )
 )

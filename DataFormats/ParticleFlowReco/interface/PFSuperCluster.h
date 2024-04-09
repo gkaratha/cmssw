@@ -8,8 +8,6 @@
 #include <iostream>
 #include <vector>
 
-
-
 class PFSuperClusterAlgo;
 
 namespace reco {
@@ -25,32 +23,28 @@ namespace reco {
   */
   class PFSuperCluster : public PFCluster {
   public:
-
-
-    PFSuperCluster(){}
+    PFSuperCluster() {}
 
     /// constructor
     PFSuperCluster(const edm::PtrVector<reco::PFCluster>& clusters);
-   
+
     /// resets clusters parameters
     void reset();
-    
+
     /// vector of clusters
-    const edm::PtrVector< reco::PFCluster >& clusters() const 
-      { return clusters_; }
-    
+    const edm::PtrVector<reco::PFCluster>& clusters() const { return clusters_; }
+
     PFSuperCluster& operator=(const PFSuperCluster&);
-    
-    friend    std::ostream& operator<<(std::ostream& out, 
-				       const PFSuperCluster& cluster);
 
   private:
-    
     /// vector of clusters
-    edm::PtrVector< reco::PFCluster >  clusters_;
-    
+    edm::PtrVector<reco::PFCluster> clusters_;
+
     friend class ::PFSuperClusterAlgo;
   };
-}
+
+  std::ostream& operator<<(std::ostream& out, const PFSuperCluster& cluster);
+
+}  // namespace reco
 
 #endif

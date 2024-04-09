@@ -1,5 +1,7 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
+from __future__ import print_function
+from builtins import range
 import re,os,sys
 import optparse
 
@@ -24,14 +26,20 @@ NAME_TO_TITLE = {
 "map_DTvsz_dydz.png" : "map of dydz residual vs z",
 "map_DTvsz_x.png" : "map of x residual vs z",
 "map_DTvsz_y.png" : "map of y residual vs z",
+"map_DTvsz_all_dxdz.png" : "map of dxdz residual vs z",
+"map_DTvsz_all_dydz.png" : "map of dydz residual vs z",
+"map_DTvsz_all_x.png" : "map of x residual vs z",
+"map_DTvsz_all_y.png" : "map of y residual vs z",
 "map_CSCvsphi_dxdz.png" : "map of d(rphi)/dz residual vs phi",
 "map_CSCvsphi_x.png" : "map of rphi residual vs phi",
 "map_CSCvsr_dxdz.png" : "map of d(rphi)/dz residual vs r",
 "map_CSCvsr_x.png" : "map of rphi residual vs r",
+"segdifphi_x_dt_csc_resid.png" : "segdiff DT-CSC in x residuals vs phi",
 "segdifphi_dt13_resid.png" : "segdiff in x residuals vs phi",
 "segdifphi_dt13_slope.png" : "segdiff in dxdz residuals vs phi",
 "segdifphi_dt2_resid.png" : "segdiff in y residuals vs phi",
 "segdifphi_dt2_slope.png" : "segdiff in dydz residuals vs phi",
+"segdif_x_dt_csc_resid.png" : "segdiff DT-CSC in x residuals",
 "segdif_dt13_resid.png" : "segdiff in x residuals",
 "segdif_dt13_slope.png" : "segdiff in dxdz residuals",
 "segdif_dt2_resid.png" : "segdiff in y residuals",
@@ -75,7 +83,7 @@ parser.add_option("-v", "--verbose",
 options,args=parser.parse_args()
 
 if options.inputDir=='':
-  print "\nOne or more of REQUIRED options is missing!\n"
+  print("\nOne or more of REQUIRED options is missing!\n")
   parser.print_help()
   # See \n"+sys.argv[0]+" --help"
   sys.exit()
@@ -114,18 +122,17 @@ def parseDir(dir,label,it1="",itN=""):
                    iteration, so it must contain a itN substring 
      label         is a label for tree's folder for this directory"""
   if len(itN)>0 and dir.find(itN)==-1:
-    print "directory ", dir, "has no ", itN, " in it!!"
+    print("directory ", dir, "has no ", itN, " in it!!")
     return ["problem!!!",""]
   res = [label,dir]
-  files = os.listdir(dir)
-  files.sort()
+  files = sorted(os.listdir(dir))
   for f in files:
     if re.match(".+\.png", f):
       if len(it1)>0 and len(itN)>0:
         lnN = [itN,dir+'/'+f]
         dir1 = dir.replace(itN,it1)
         if not os.access(dir1+'/'+f,os.F_OK):
-          print "WARNING: no ",dir1+'/'+f," file found!!!"
+          print("WARNING: no ",dir1+'/'+f," file found!!!")
         ln1 = [it1,dir1+'/'+f]
         ln = [NAME_TO_TITLE[f],dir+'/'+f,ln1,lnN]
         res.append(ln)
@@ -145,11 +152,11 @@ dt_basedir = iteration_directory+'/MB/'
 tree_level2 = parseDir(dt_basedir,"MB",iteration1,iterationN)
 for wheel in DT_TYPES:
   dd = dt_basedir + wheel[0]
-  print dd
+  print(dd)
   tree_level3 = parseDir(dd,wheel[0],iteration1,iterationN)
   for station in wheel[2]:
     dd = dt_basedir + wheel[0]+'/'+station[1]
-    print dd 
+    print(dd) 
     tree_level4 = parseDir(dd,station[0],iteration1,iterationN)
     for sector in range(1,station[2]+1):
       ssector = "%02d" % sector
@@ -169,15 +176,15 @@ tree_level1.append(tree_level2)
 csc_basedir = iteration_directory+'/'
 for endcap in CSC_TYPES:
   dd = csc_basedir+endcap[0]
-  print dd
+  print(dd)
   tree_level2 = parseDir(dd,endcap[0],iteration1,iterationN)
   for station in endcap[2]:
     dd = csc_basedir+endcap[0]+'/'+station[1]
-    print dd
+    print(dd)
     tree_level3 = parseDir(dd,station[0],iteration1,iterationN)
     for ring in station[2]:
       dd = csc_basedir+endcap[0]+'/'+station[1]+'/'+ring[1]
-      print dd
+      print(dd)
       tree_level4 = parseDir(dd,"%s/%s" % (station[0],ring[1]),iteration1,iterationN)
       for chamber in range(1,ring[2]+1):
         schamber = "%02d" % chamber
@@ -199,11 +206,11 @@ tree_level1.append(tree_level2)
 
 
 mytree.append(tree_level1)
-print " "
+print(" ")
 #pp.pprint(mytree)
-print
+print()
 
 ff = open("tree_items.js",mode="w")
-print >>ff, "var TREE_ITEMS = "
+print("var TREE_ITEMS = ", file=ff)
 json.dump(mytree,ff)
 ff.close()

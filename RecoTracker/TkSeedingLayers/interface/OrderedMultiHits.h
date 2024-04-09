@@ -7,14 +7,10 @@
 
 class OrderedMultiHits : public std::vector<SeedingHitSet>, public OrderedSeedingHits {
 public:
+  ~OrderedMultiHits() override {}
 
-  virtual ~OrderedMultiHits(){}
+  unsigned int size() const override { return std::vector<SeedingHitSet>::size(); }
 
-  virtual unsigned int size() const { return std::vector<SeedingHitSet>::size(); }
-
-  virtual const SeedingHitSet & operator[](unsigned int i) const {
-    return std::vector<SeedingHitSet>::operator[](i);
-  }
-
+  const SeedingHitSet& operator[](unsigned int i) const override { return std::vector<SeedingHitSet>::operator[](i); }
 };
 #endif

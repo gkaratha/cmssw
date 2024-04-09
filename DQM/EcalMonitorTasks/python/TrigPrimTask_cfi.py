@@ -1,29 +1,37 @@
 import FWCore.ParameterSet.Config as cms
 
 bxBins = [
-    "1",
-    "271",
-    "541",
-    "892",
-    "1162",
-    "1432",
-    "1783",
-    "2053",
-    "2323",
-    "2674",
-    "2944",
-    "3214",
-    "3446",
-    "3490",
-    "3491",
-    "3565"
+    1,
+    271,
+    541,
+    892,
+    1162,
+    1432,
+    1783,
+    2053,
+    2323,
+    2674,
+    2944,
+    3214,
+    3446,
+    3490,
+    3491,
+    3565
 ]
+bxBinLabels = [str(i) for i in bxBins]
+
+bxBinsFine = [i for i in range(1, 3601)]
+bxBinLabelsFine = [str(i) for i in bxBinsFine]
+nBXBinsFine = len(bxBinsFine)
 
 ecalTrigPrimTask = cms.untracked.PSet(
     params = cms.untracked.PSet(
         #    HLTMuonPath = cms.untracked.string('HLT_Mu5_v*'),
         #    HLTCaloPath = cms.untracked.string('HLT_SingleJet*'),
-        runOnEmul = cms.untracked.bool(True)
+        bxBins = cms.untracked.vint32(bxBins),
+        bxBinsFine = cms.untracked.vint32(bxBinsFine),
+        runOnEmul = cms.untracked.bool(True),
+        lhcStatusInfoCollectionTag = cms.untracked.InputTag("tcdsDigis","tcdsRecord")
     ),
     MEs = cms.untracked.PSet(
         LowIntMap = cms.untracked.PSet(
@@ -59,14 +67,14 @@ ecalTrigPrimTask = cms.untracked.PSet(
             kind = cms.untracked.string('TProfile'),
             otype = cms.untracked.string('Ecal3P'),
             xaxis = cms.untracked.PSet(
-                high = cms.untracked.double(16.0),
-                nbins = cms.untracked.int32(16),
+                high = cms.untracked.double(1.0*nBXBinsFine),
+                nbins = cms.untracked.int32(nBXBinsFine),
                 low = cms.untracked.double(0.0),
-                title = cms.untracked.string('bunch crossing'),
-                labels = cms.untracked.vstring(bxBins)
+                title = cms.untracked.string('BX Id'),
+                labels = cms.untracked.vstring(bxBinLabelsFine)
             ),
             btype = cms.untracked.string('User'),
-            description = cms.untracked.string('TP occupancy in different bunch crossing intervals. This plot is filled by data from physics data stream. It is normal to have very little entries in BX >= 3490.')
+            description = cms.untracked.string('TP occupancy in different bunch crossing intervals. This plot is filled by data from physics data stream. BX ids start at 1. It is normal to have very little entries in BX >= 3490. The Customize button can be used to zoom in.')
         ),
         HighIntMap = cms.untracked.PSet(
             path = cms.untracked.string('%(subdet)s/%(prefix)sSelectiveReadoutTask/Counters/%(prefix)sSRT tower high interest counter%(suffix)s'),
@@ -84,13 +92,13 @@ ecalTrigPrimTask = cms.untracked.PSet(
                 high = cms.untracked.double(16.0),
                 nbins = cms.untracked.int32(16),
                 low = cms.untracked.double(0.0),
-                title = cms.untracked.string('bunch crossing'),
-                labels = cms.untracked.vstring(bxBins)
+                title = cms.untracked.string('BX Id'),
+                labels = cms.untracked.vstring(bxBinLabels)
             ),
             yaxis = cms.untracked.PSet(
                 title = cms.untracked.string('TP Et')
             ),
-            description = cms.untracked.string('Mean TP Et in different bunch crossing intervals. This plot is filled by data from physics data stream. It is normal to have very little entries in BX >= 3490.')
+            description = cms.untracked.string('Mean TP Et in different bunch crossing intervals. This plot is filled by data from physics data stream. BX ids start at 1. It is normal to have very little entries in BX >= 3490.')
         ),
         EtEmulError = cms.untracked.PSet(
 #            path = cms.untracked.string('Ecal/Errors/TriggerPrimitives/EtEmulation/'),
@@ -143,11 +151,45 @@ ecalTrigPrimTask = cms.untracked.PSet(
                 nbins = cms.untracked.int32(8),
                 low = cms.untracked.double(-0.5),
                 title = cms.untracked.string('TT flag'),
-                labels = cms.untracked.vstring(map(str, range(0, 8)))
+                labels = cms.untracked.vstring([ str(i) for i in range(0, 8)])
             ),
             otype = cms.untracked.string('Ecal3P'),
             btype = cms.untracked.string('DCC'),
             description = cms.untracked.string('Distribution of the trigger tower flags.')
+        ),
+        TTFlagsVsEt = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sSelectiveReadoutTask/%(prefix)sSRT TT Flags vs Et%(suffix)s'),
+            kind = cms.untracked.string('TH2F'),
+            yaxis = cms.untracked.PSet(
+                high = cms.untracked.double(7.5),
+                nbins = cms.untracked.int32(8),
+                low = cms.untracked.double(-0.5),
+                title = cms.untracked.string('TT flag'),
+                labels = cms.untracked.vstring([ str(i) for i in range(0, 8)])
+            ),
+            otype = cms.untracked.string('Ecal3P'),
+            xaxis = cms.untracked.PSet(
+                high = cms.untracked.double(50.0),
+                nbins = cms.untracked.int32(100),
+                low = cms.untracked.double(0.0),
+                title = cms.untracked.string('TP Et')
+            ),
+            btype = cms.untracked.string('User'),
+            description = cms.untracked.string('2D histograms of of TT flags of a corresponding to a given TT vs Et measured by that tower.')
+        ),
+        TTFlags4 = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/%(prefix)sTTT TTF4 Occupancy%(suffix)s'),
+            kind = cms.untracked.string('TH2F'),
+            otype = cms.untracked.string('Ecal3P'),
+            btype = cms.untracked.string('TriggerTower'),
+            description = cms.untracked.string('Occupancy for TP digis with TTF=4.')
+        ),
+        TTFlags4ByLumi = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/%(prefix)sTTT TTF4 Occupancy%(suffix)s by lumi'),
+            kind = cms.untracked.string('TH2F'),
+            otype = cms.untracked.string('Ecal3P'),
+            btype = cms.untracked.string('TriggerTower'),
+            description = cms.untracked.string('Occupancy for TP digis with TTF=4, by lumisection.')
         ),
         TTMaskMap = cms.untracked.PSet(
             path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/TTStatus/%(prefix)sTTT TT Masking Status%(sm)s'),
@@ -155,6 +197,13 @@ ecalTrigPrimTask = cms.untracked.PSet(
             otype = cms.untracked.string('SM'),
             btype = cms.untracked.string('PseudoStrip'),
             description = cms.untracked.string('Trigger tower and pseudo-strip masking status: a TT or strip is red if it is masked')
+        ),
+        TTMaskMapAll = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/%(prefix)sTTT TT Masking Status%(suffix)s'),
+            kind = cms.untracked.string('TH2F'),
+            otype = cms.untracked.string('Ecal3P'),
+            btype = cms.untracked.string('TriggerTower'),
+            description = cms.untracked.string('Trigger tower masking status: a TT is red if it is masked.')
         ),
         TTFMismatch = cms.untracked.PSet(
 #            path = cms.untracked.string('Ecal/Errors/TriggerPrimitives/FlagMismatch/'),
@@ -176,6 +225,19 @@ ecalTrigPrimTask = cms.untracked.PSet(
             otype = cms.untracked.string('Ecal3P'),
             btype = cms.untracked.string('TriggerTower'),
             description = cms.untracked.string('2D distribution of the trigger primitive Et.')
+        ),
+        EtSummaryByLumi = cms.untracked.PSet(
+            path = cms.untracked.string('%(subdet)s/%(prefix)sSummaryClient/%(prefix)sTTT%(suffix)s Et trigger tower summary by lumi'),
+            kind = cms.untracked.string('TProfile2D'),
+            zaxis = cms.untracked.PSet(
+                high = cms.untracked.double(256.0),
+                nbins = cms.untracked.int32(128),
+                low = cms.untracked.double(0.0),
+                title = cms.untracked.string('TP Et')
+            ),
+            otype = cms.untracked.string('Ecal3P'),
+            btype = cms.untracked.string('TriggerTower'),
+            description = cms.untracked.string('2D distribution of the Trigger Primitives Et for this lumisection.')
         ),
         EtRealMap = cms.untracked.PSet(
             path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/%(prefix)sTTT Et map Real Digis %(sm)s'),
@@ -202,6 +264,32 @@ ecalTrigPrimTask = cms.untracked.PSet(
             ),
             btype = cms.untracked.string('User'),
             description = cms.untracked.string('Distribution of the trigger primitive Et.')
+        ),
+        RealvEmulEt = cms.untracked.PSet(
+            kind = cms.untracked.string('TH2F'),
+            xaxis = cms.untracked.PSet(
+                high = cms.untracked.double(256.0),
+                nbins = cms.untracked.int32(128),
+                low = cms.untracked.double(0.0),
+                title = cms.untracked.string('Real data TP Et (ADC)')
+            ),
+            otype = cms.untracked.string('Ecal3P'),
+            yaxis = cms.untracked.PSet(
+                high = cms.untracked.double(256.0),
+                nbins = cms.untracked.int32(128),
+                low = cms.untracked.double(0.0),
+                title = cms.untracked.string('Emulated TP Et (ADC)')
+            ),
+            btype = cms.untracked.string('User'),
+            path = cms.untracked.string('%(subdet)s/%(prefix)sTriggerTowerTask/%(prefix)sTTT Real vs Emulated TP Et%(suffix)s'),
+            description = cms.untracked.string('Real data VS emulated TP Et (in-time)')
+        ),
+        LHCStatusByLumi = cms.untracked.PSet(
+            path = cms.untracked.string('Ecal/Trends/LHC status by lumi'),
+            kind = cms.untracked.string('REAL'),
+            otype = cms.untracked.string('None'),
+            btype = cms.untracked.string('User'),
+            description = cms.untracked.string('LHC Status in this lumisection. The convention for the value is the same as in the plot Info/LhcInfo/beamMode')
         )
     )
 )

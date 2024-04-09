@@ -8,54 +8,49 @@ class TGCheckButton;
 class FWConfigurationManager;
 class FWEventItemsManager;
 
-class FWPartialConfigGUI : public TGTransientFrame
-{
- public:
-  FWPartialConfigGUI(const char* path,  FWConfigurationManager*);
-  ~FWPartialConfigGUI() {}
+class FWPartialConfigGUI : public TGTransientFrame {
+public:
+  FWPartialConfigGUI(const char* path, FWConfigurationManager*);
+  ~FWPartialConfigGUI() override {}
   void Cancel();
 
- protected:
-  std::vector <TGCheckButton*> m_entries;
+protected:
+  std::vector<TGCheckButton*> m_entries;
   FWConfiguration m_origConfig;
   FWConfigurationManager* m_cfgMng;
 
-  ClassDef(FWPartialConfigGUI, 0);
+  ClassDefOverride(FWPartialConfigGUI, 0);
 };
 
 //---------------------------------------------------------------------
 
-class FWPartialConfigLoadGUI : public FWPartialConfigGUI
-{
- public:
-  FWPartialConfigLoadGUI( const char* path,  FWConfigurationManager* ,FWEventItemsManager*);
-  ~FWPartialConfigLoadGUI();
+class FWPartialConfigLoadGUI : public FWPartialConfigGUI {
+public:
+  FWPartialConfigLoadGUI(const char* path, FWConfigurationManager*, FWEventItemsManager*);
+  ~FWPartialConfigLoadGUI() override;
 
   void Load();
 
- private:
+private:
   FWEventItemsManager* m_eiMng;
   const char* m_oldConfigName;
-  ClassDef(FWPartialConfigLoadGUI, 0);
+  ClassDefOverride(FWPartialConfigLoadGUI, 0);
 };
-
 
 //---------------------------------------------------------------------
 
-class FWPartialConfigSaveGUI : public FWPartialConfigGUI
-{
- public:
-   FWPartialConfigSaveGUI( const char* path_out,const char* path_in, FWConfigurationManager* );
-  ~FWPartialConfigSaveGUI() {}
+class FWPartialConfigSaveGUI : public FWPartialConfigGUI {
+public:
+  FWPartialConfigSaveGUI(const char* path_out, const char* path_in, FWConfigurationManager*);
+  ~FWPartialConfigSaveGUI() override {}
 
   void WriteConfig();
 
- private:
+private:
   std::string m_outFileName;
   std::string m_currFileName;
 
-  ClassDef(FWPartialConfigSaveGUI, 0);
+  ClassDefOverride(FWPartialConfigSaveGUI, 0);
 };
-
 
 #endif

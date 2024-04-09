@@ -1,45 +1,20 @@
 #ifndef DDL_Map_H
 #define DDL_Map_H
 
-#include "DetectorDescription/Parser/src/DDXMLElement.h"
-#include "DetectorDescription/Core/interface/DDMap.h"
-
-#include <vector>
 #include <map>
 #include <string>
+#include <vector>
 
-// Boost parser, spirit, for parsing the std::vector elements.
-#include "boost/spirit/include/classic.hpp"
+#include "DetectorDescription/Core/interface/DDReadMapType.h"
+#include "DetectorDescription/Core/interface/DDMap.h"
+#include "DetectorDescription/Parser/src/DDXMLElement.h"
 
-namespace boost { namespace spirit { namespace classic { } } }
+class DDCompactView;
+class DDLElementRegistry;
 
-class Mapper : public boost::spirit::classic::grammar<Mapper> {
-public:
-  Mapper() { };
-  ~Mapper() { };
-  template <typename ScannerT> struct definition;
-};
-
-class MapPair {
-public:
-  MapPair() { };
-  ~MapPair() { };
-  void operator()(char const* str, char const* end) const;
-};
-
-class MapMakeName {
-public:
-  MapMakeName() { };
-  ~MapMakeName() { };
-  void operator()(char const* str, char const* end) const;
-};
-
-class MapMakeDouble {
-public:
-  MapMakeDouble() { };
-  ~MapMakeDouble() { };
-  void operator()(char const* str, char const* end) const;
-};
+class MapPair;
+class MapMakeName;
+class MapMakeDouble;
 
 ///  DDLMap handles Map container.
 /** @class DDLMap
@@ -55,38 +30,33 @@ public:
  *  has a name associated with the Map for the DDD name-reference system.
  *
  */
-class DDLMap : public DDXMLElement
-{
+class DDLMap final : public DDXMLElement {
   friend class MapPair;
   friend class MapMakeName;
   friend class MapMakeDouble;
 
 public:
+  DDLMap(DDLElementRegistry* myreg);
 
-  DDLMap( DDLElementRegistry* myreg );
+  void preProcessElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
+  void processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
 
-  virtual ~DDLMap( void );
-
-  void preProcessElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv );
-
-  void processElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv );
-
-  ReadMapType<std::map<std::string,double> > & getMapOfMaps( void );
+  ReadMapType<std::map<std::string, double> >& getMapOfMaps(void);
 
 private:
   dd_map_type pMap;
-  ReadMapType<std::map<std::string,double> > pMapMap;
+  ReadMapType<std::map<std::string, double> > pMapMap;
   double pDouble;
   std::string pName;
   std::string pNameSpace;
 
-  void errorOut( const char* str );
+  void errorOut(const char* str);
 
-  void do_pair( char const* str, char const* end );
+  void do_pair(char const* str, char const* end);
 
-  void do_makeName( char const* str, char const* end );
+  void do_makeName(char const* str, char const* end);
 
-  void do_makeDouble( char const* str, char const* end );
+  void do_makeDouble(char const* str, char const* end);
 };
 
 #endif

@@ -4,27 +4,21 @@
 #include "Validation/Geometry/interface/MaterialBudgetFormat.h"
 #include "Validation/Geometry/interface/TestHistoMgr.h"
 
-class MaterialBudgetHistos : public MaterialBudgetFormat
-{
+class MaterialBudgetHistos : public MaterialBudgetFormat {
 public:
+  MaterialBudgetHistos(std::shared_ptr<MaterialBudgetData> data,
+                       std::shared_ptr<TestHistoMgr> mgr,
+                       const std::string& fileName);
+  ~MaterialBudgetHistos() override {}
 
-  MaterialBudgetHistos( MaterialBudgetData* data, 
-			TestHistoMgr* mgr, 
-			const std::string& fileName );   
-  virtual ~MaterialBudgetHistos(){ hend(); }
+  void fillStartTrack() override;
+  void fillPerStep() override;
+  void fillEndTrack() override;
+  void endOfRun() override;
 
-  virtual void fillStartTrack();
-  virtual void fillPerStep();
-  virtual void fillEndTrack();
-  
 private:
+  virtual void book();
 
-  virtual void book(); 
-  virtual void hend(); 
-  
-
- private:
-  int MAXNUMBERSTEPS;
   double* theDmb;
   double* theX;
   double* theY;
@@ -32,9 +26,7 @@ private:
   double* theVoluId;
   double* theMateId;
 
-  TestHistoMgr* hmgr;
-
+  std::shared_ptr<TestHistoMgr> hmgr;
 };
-
 
 #endif

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import ROOT
 
 from PhysicsTools.Heppy.analyzers.core.Analyzer import Analyzer
@@ -18,7 +19,7 @@ class TriggerBitAnalyzer( Analyzer ):
         self.checkL1prescale = getattr(self.cfg_ana,"checkL1prescale",False)
         self.force1prescale = False
         if self.cfg_comp.isMC and self.saveIsUnprescaled:
-            print 'Cannot save prescale information in MC: will put everything to unprescaled'
+            print('Cannot save prescale information in MC: will put everything to unprescaled')
             self.saveIsUnprescaled = False
             self.checkL1prescale = False
             self.force1prescale = True
@@ -41,7 +42,7 @@ class TriggerBitAnalyzer( Analyzer ):
             self.allPaths = set()
             self.triggerBitCheckersSingleBits = []
 
-        for T, TL in self.cfg_ana.triggerBits.iteritems():
+        for T, TL in self.cfg_ana.triggerBits.items():
                 trigVec = ROOT.vector(ROOT.string)()
                 for TP in TL:
                     trigVec.push_back(TP)
@@ -55,15 +56,16 @@ class TriggerBitAnalyzer( Analyzer ):
                                 setup.globalVariables = []
                             if outname[-1] == '*' :
                                 outname=outname[0:-1]
-                            setup.globalVariables.append( NTupleVariable(outname, eval("lambda ev: ev.%s" % outname), help="Trigger bit  %s"%TP) )
-                            if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_isUnprescaled', eval("lambda ev: ev.%s_isUnprescaled" % outname), help="Trigger bit  %s isUnprescaled flag"%TP) )
+                            setup.globalVariables.append( NTupleVariable(outname, eval("lambda ev: ev.%s" % outname), int, help="Trigger bit  %s"%TP) )
+                            if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_isUnprescaled', eval("lambda ev: ev.%s_isUnprescaled" % outname), int, help="Trigger bit  %s isUnprescaled flag"%TP) )
+                            if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_Prescale', eval("lambda ev: ev.%s_Prescale" % outname), int, help="get prescale %s "%TP) )
                             self.triggerBitCheckersSingleBits.append( (TP, ROOT.heppy.TriggerBitChecker(trigVecBit)) )
 
                 outname="%s_%s"%(self.outprefix,T)  
                 if not hasattr(setup ,"globalVariables") :
                         setup.globalVariables = []
-                setup.globalVariables.append( NTupleVariable(outname, eval("lambda ev: ev.%s" % outname), help="OR of %s"%TL) )
-                if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_isUnprescaled', eval("lambda ev: ev.%s_isUnprescaled" % outname), help="OR of %s is Unprescaled flag"%TL) )
+                setup.globalVariables.append( NTupleVariable(outname, eval("lambda ev: ev.%s" % outname), int, help="OR of %s"%TL) )
+                if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_isUnprescaled', eval("lambda ev: ev.%s_isUnprescaled" % outname), int, help="OR of %s is Unprescaled flag"%TL) )
                 self.triggerBitCheckers.append( (T, ROOT.heppy.TriggerBitChecker(trigVec)) )
                 
 
@@ -93,11 +95,21 @@ class TriggerBitAnalyzer( Analyzer ):
                setattr(event,outname, TC.check(event.input.object(), triggerResults))
                if self.saveIsUnprescaled:
                    unpr =  TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales)
+                   getpr =  TC.getprescale(event.input.object(), triggerResults, triggerPrescales)
                    if self.checkL1prescale:
                        unpr = unpr and TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales_min)
                        unpr = unpr and TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales_max)
-                   setattr(event,outname+'_isUnprescaled', unpr) 
-               if self.force1prescale: setattr(event,outname+'_isUnprescaled', True)
+                       getprl1min = TC.getprescale(event.input.object(), triggerResults, triggerPrescales_min)
+                       getprl1max = TC.getprescale(event.input.object(), triggerResults, triggerPrescales_max)
+                       if (getprl1min != getprl1max):
+                           getpr = -999
+                       else: 
+                           getpr = getprl1min*getpr
+                   setattr(event,outname+'_isUnprescaled', unpr)
+                   setattr(event,outname+'_Prescale', getpr)
+               if self.force1prescale: 
+                   setattr(event,outname+'_isUnprescaled', True)
+                   setattr(event,outname+'_Prescale', 1)
 
         return True
 
@@ -126,6 +138,7 @@ setattr(TriggerBitAnalyzer,"defaultEventFlagsConfig",cfg.Analyzer(
         "HBHENoiseFilter" : [ "Flag_HBHENoiseFilter" ],
         "HBHENoiseIsoFilter" : [ "Flag_HBHENoiseIsoFilter" ],
         "CSCTightHaloFilter" : [ "Flag_CSCTightHaloFilter" ],
+        "CSCTightHalo2015Filter" : [ "Flag_CSCTightHalo2015Filter" ],
         "hcalLaserEventFilter" : [ "Flag_hcalLaserEventFilter" ],
         "EcalDeadCellTriggerPrimitiveFilter" : [ "Flag_EcalDeadCellTriggerPrimitiveFilter" ],
         "goodVertices" : [ "Flag_goodVertices" ],

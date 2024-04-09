@@ -6,22 +6,22 @@
 
 #include <string>
 
-#include <stdlib.h>
+#include <cstdlib>
 
-namespace evf{
+namespace evf {
 
-  class DirManager{
-
+  class DirManager {
   public:
     DirManager(std::string &d) : dir_(d) {}
-    virtual ~DirManager(){}
+    virtual ~DirManager() {}
     unsigned int findHighestRun();
     std::string findHighestRunDir();
     std::string findRunDir(unsigned int);
     bool checkDirEmpty(std::string &);
+
   private:
-      std::string dir_; // this is the base dir with all runs in it 
+    std::string dir_;  // this is the base dir with all runs in it
   };
 
-}
+}  // namespace evf
 #endif

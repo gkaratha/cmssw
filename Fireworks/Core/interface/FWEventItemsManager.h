@@ -20,7 +20,7 @@
 
 // system include files
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "sigc++/signal.h"
 
 // user include files
@@ -28,10 +28,10 @@
 
 // forward declarations
 namespace edm {
-   class EventBase;
+  class EventBase;
 }
 namespace fireworks {
-   class Context;
+  class Context;
 }
 
 class FWEventItem;
@@ -41,53 +41,53 @@ class FWSelectionManager;
 class FWItemAccessorFactory;
 class FWProxyBuilderConfiguration;
 
-class FWEventItemsManager : public FWConfigurable
-{
+class FWEventItemsManager : public FWConfigurable {
 public:
-   //does not take ownership of the object to which it points but does keep reference
-   FWEventItemsManager(FWModelChangeManager*);
-   virtual ~FWEventItemsManager();
+  //does not take ownership of the object to which it points but does keep reference
+  FWEventItemsManager(FWModelChangeManager*);
+  ~FWEventItemsManager() override;
 
-   typedef std::vector<FWEventItem*>::const_iterator const_iterator;
+  typedef std::vector<FWEventItem*>::const_iterator const_iterator;
 
-   //configuration management interface
-   void addTo(FWConfiguration&) const;
-   void setFrom(const FWConfiguration&);
+  //configuration management interface
+  void addTo(FWConfiguration&) const override;
+  void setFrom(const FWConfiguration&) override;
 
-   // ---------- const member functions ---------------------
-   ///NOTE: iterator is allowed to return a null object for items that have been removed
-   const_iterator begin() const;
-   const_iterator end() const;
-   // const std::vector<FWEventItem*> &items () const { return m_items; }
+  // ---------- const member functions ---------------------
+  ///NOTE: iterator is allowed to return a null object for items that have been removed
+  const_iterator begin() const;
+  const_iterator end() const;
+  // const std::vector<FWEventItem*> &items () const { return m_items; }
 
-   const FWEventItem* find(const std::string& iName) const;
-   // ---------- static member functions --------------------
+  const FWEventItem* find(const std::string& iName) const;
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   const FWEventItem* add(const FWPhysicsObjectDesc& iItem,  const FWConfiguration* pbConf = 0);
-   void clearItems();
+  // ---------- member functions ---------------------------
+  FWEventItem* add(const FWPhysicsObjectDesc& iItem, const FWConfiguration* pbConf = nullptr, bool doSetEvent = true);
+  void clearItems();
 
-   void newEvent(const edm::EventBase* iEvent);
+  void newEvent(const edm::EventBase* iEvent);
 
-   void setContext(fireworks::Context*);
+  void setContext(fireworks::Context*);
 
-   sigc::signal<void, FWEventItem*> newItem_;
-   sigc::signal<void> goingToClearItems_;
+  sigc::signal<void(FWEventItem*)> newItem_;
+  sigc::signal<void(const FWEventItem*)> removingItem_;
+  sigc::signal<void()> goingToClearItems_;
+
+  FWEventItemsManager(const FWEventItemsManager&) = delete;  // stop default
+
+  const FWEventItemsManager& operator=(const FWEventItemsManager&) = delete;  // stop default
+
 private:
+  void removeItem(const FWEventItem*);
 
-   void removeItem(const FWEventItem*);
-   FWEventItemsManager(const FWEventItemsManager&);    // stop default
+  // ---------- member data --------------------------------
+  std::vector<FWEventItem*> m_items;
+  FWModelChangeManager* m_changeManager;
+  fireworks::Context* m_context;
 
-   const FWEventItemsManager& operator=(const FWEventItemsManager&);    // stop default
-
-   // ---------- member data --------------------------------
-   std::vector<FWEventItem*> m_items;
-   FWModelChangeManager* m_changeManager;
-   fireworks::Context* m_context;
-
-   const edm::EventBase* m_event;
-   boost::shared_ptr<FWItemAccessorFactory> m_accessorFactory;
+  const edm::EventBase* m_event;
+  std::shared_ptr<FWItemAccessorFactory> m_accessorFactory;
 };
-
 
 #endif

@@ -1,12 +1,21 @@
+from __future__ import print_function
 # The following comments couldn't be translated into the new config version:
 #! /bin/env cmsRun
 
 import FWCore.ParameterSet.Config as cms
+process = cms.Process("validation")
+
+# load the full reconstraction configuration, to make sure we're getting all needed dependencies
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 whichJets  = "ak4PFJetsCHS"
 applyJEC = True
 corrLabel = 'ak4PFCHS'
-tag =  'MCRUN2_74_V7::All'
+from Configuration.AlCa.GlobalTag import GlobalTag
+tag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 useTrigger = False
 triggerPath = "HLT_PFJet80_v*"
 runOnMC    = True
@@ -15,14 +24,13 @@ runOnMC    = True
 flavPlots = "allbcldusg"
 
 ###prints###
-print "jet collcetion asked : ", whichJets
-print "JEC applied?", applyJEC, ", correction:", corrLabel 
-print "trigger will be used ? : ", useTrigger, ", Trigger paths:", triggerPath
-print "is it MC ? : ", runOnMC, ", Flavours:", flavPlots
-print "Global Tag : ", tag
+print("jet collcetion asked : ", whichJets)
+print("JEC applied?", applyJEC, ", correction:", corrLabel) 
+print("trigger will be used ? : ", useTrigger, ", Trigger paths:", triggerPath)
+print("is it MC ? : ", runOnMC, ", Flavours:", flavPlots)
+print("Global Tag : ", tag.globaltag)
 ############
 
-process = cms.Process("validation")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.load("DQMServices.Core.DQM_cfg")
 
@@ -37,6 +45,7 @@ process.JECseq = cms.Sequence(getattr(process,corrLabel+"L1FastL2L3CorrectorChai
 
 newjetID=cms.InputTag(whichJets)
 process.ak4JetFlavourInfos.jets = newjetID
+process.ak4JetFlavourInfos.hadronFlavourHasPriority = cms.bool(True)
 if not "ak4PFJetsCHS" in whichJets:
     process.ak4JetTracksAssociatorAtVertexPF.jets = newjetID
     process.pfImpactParameterTagInfos.jets        = newjetID
@@ -52,7 +61,7 @@ process.btagSequence = cms.Sequence(
 process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.btagSequence)
 
 ###
-print "inputTag : ", process.ak4JetTracksAssociatorAtVertexPF.jets
+print("inputTag : ", process.ak4JetTracksAssociatorAtVertexPF.jets)
 ###
 
 process.load("Validation.RecoB.bTagAnalysis_firststep_cfi")
@@ -128,10 +137,5 @@ process.PoolSource.fileNames = [
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-# load the full reconstraction configuration, to make sure we're getting all needed dependencies
-process.load("Configuration.StandardSequences.MagneticField_cff")
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.GlobalTag.globaltag = tag
+process.GlobalTag = tag
 

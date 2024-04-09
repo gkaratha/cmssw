@@ -7,10 +7,10 @@
 #include <string>
 #include <map>
 
-#include <time.h>
-#include <stdio.h>
+#include <ctime>
+#include <cstdio>
 
-#include <math.h>
+#include <cmath>
 #include "TF1.h"
 #include "TH1F.h"
 #include "TMath.h"
@@ -21,33 +21,24 @@
 #include <sstream>
 
 class EvolutionECAL {
-
 public:
-
-  EvolutionECAL();
-  virtual ~EvolutionECAL();
-
+  EvolutionECAL(){};
+  ~EvolutionECAL() = default;
 
   double LightCollectionEfficiency(double z, double mu);
- double DamageProfileEta(double eta);
- double DamageProfileEtaAPD(double eta);
- double InducedAbsorptionHadronic(double lumi, double eta);
- double DoseLongitudinalProfile(double z);
- double InducedAbsorptionEM(double lumi, double eta);
- double DegradationMeanEM50GeV(double mu);
- double DegradationNonLinearityEM50GeV(double mu, double ene);
- double ResolutionConstantTermEM50GeV(double mu);
- double ChargeVPTCathode(double instLumi, double eta, double integralLumi);
- double AgingVPT(double instLumi, double integralLumi, double eta); 
- double NoiseFactorFE(double lumi, double eta);
- Double_t  EquilibriumFractionColorCentersEM(double *x, double *par);
- double LightCollectionEfficiencyWeighted(double z, double mu_ind); 
-
-
-
+  double DamageProfileEta(double eta);
+  double DamageProfileEtaAPD(double eta);
+  double InducedAbsorptionHadronic(double lumi, double eta);
+  double DoseLongitudinalProfile(double z);
+  double InducedAbsorptionEM(double lumi, double eta);
+  double DegradationMeanEM50GeV(double mu);
+  double DegradationNonLinearityEM50GeV(double mu, double ene);
+  double ResolutionConstantTermEM50GeV(double mu);
+  double ChargeVPTCathode(double instLumi, double eta, double integralLumi);
+  double AgingVPT(double instLumi, double integralLumi, double eta);
+  double NoiseFactorFE(double lumi, double eta);
+  Double_t EquilibriumFractionColorCentersEM(double *x, double *par);
+  double LightCollectionEfficiencyWeighted(double z, double mu_ind);
 };
 
-
-
 #endif
-

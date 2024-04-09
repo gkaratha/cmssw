@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 
 selectedModules = []
+selectedModules4cosmics = []
 
 pluginsMonName = {}
 modulesLabel        = {}
@@ -15,23 +16,23 @@ categories    ['LocalReco'] = cms.vstring('SiPixelRawToDigi', 'TooManyErrors', '
 
 # apparentely there are not LogError in RecoLocalTracker/SubCollectionProducers/src/TrackClusterRemover.cc
 pluginsMonName['Clusterizer'] = cms.string ( 'TrackClusterRemover' )
-modulesLabel  ['Clusterizer'] = cms.vstring( 'lowPtTripletStepClusters', 'pixelPairStepClusters', 'detachedTripletStepClusters', 'mixedTripletStepClusters', 'pixelLessStepClusters', 'tobTecStepClusters' ) # TrackClusterRemover
+modulesLabel  ['Clusterizer'] = cms.vstring( 'lowPtTripletStepClusters', 'pixelPairStepClusters', 'detachedTripletStepClusters', 'mixedTripletStepClusters', 'pixelLessStepClusters', 'tobTecStepClusters', 'displacedGeneralStepClusters', 'displacedRegionalStepClusters' ) # TrackClusterRemover
 categories    ['Clusterizer'] = cms.vstring(  )
 
 # initialStepSeeds,lowPtTripletStepSeeds, pixelPairStepSeeds, detachedTripletStepSeeds, : TooManyClusters (SeedGeneratorFromRegionHitsEDProducer),
 # photonConvTrajSeedFromSingleLeg : (PhotonConversionTrajectorySeedProducerFromSingleLeg)
 pluginsMonName['Seeding'] = cms.string ( 'Seeding' ) 
-modulesLabel  ['Seeding'] = cms.vstring( 'initialStepSeeds', 'lowPtTripletStepSeeds', 'pixelPairStepSeeds', 'detachedTripletStepSeeds', 'mixedTripletStepSeedsA', 'mixedTripletStepSeedsB', 'mixedTripletStepSeeds', 'pixelLessStepSeeds', 'tobTecStepSeeds', 'photonConvTrajSeedFromSingleLeg')
+modulesLabel  ['Seeding'] = cms.vstring( 'initialStepSeeds', 'lowPtTripletStepSeeds', 'pixelPairStepSeeds', 'detachedTripletStepSeeds', 'mixedTripletStepSeedsA', 'mixedTripletStepSeedsB', 'mixedTripletStepSeeds', 'pixelLessStepSeeds', 'tobTecStepSeeds', 'displacedGeneralStepSeeds', 'displacedRegionalStepSeeds' ,'photonConvTrajSeedFromSingleLeg')
 categories    ['Seeding'] = cms.vstring( 'TooManyClusters', 'TooManyPairs', 'TooManyTriplets', 'TooManySeeds' )
 
 # RecoTracker/CkfPattern/src/CkfTrackCandidateMakerBase.cc
 pluginsMonName['TrackCandidate'] = cms.string ( 'TrackCandidate' ) 
-modulesLabel  ['TrackCandidate'] = cms.vstring( 'initialStepTrackCandidates', 'lowPtTripletStepTrackCandidates', 'pixelPairStepTrackCandidates', 'detachedTripletStepTrackCandidates', 'mixedTripletStepTrackCandidates', 'pixelLessStepTrackCandidates', 'tobTecStepTrackCandidates', 'convTrackCandidates' )
-categories    ['TrackCandidate'] = cms.vstring( 'TooManySeeds' )
+modulesLabel  ['TrackCandidate'] = cms.vstring( 'initialStepTrackCandidates', 'lowPtTripletStepTrackCandidates', 'pixelPairStepTrackCandidates', 'detachedTripletStepTrackCandidates', 'mixedTripletStepTrackCandidates', 'pixelLessStepTrackCandidates', 'tobTecStepTrackCandidates', 'displacedGeneralStepTrackCandidates', 'displacedRegionalStepTrackCandidates', 'convTrackCandidates' )
+categories    ['TrackCandidate'] = cms.vstring( 'TooManySeeds', 'CkfPattern', 'BaseCkfTrajectoryBuilder_InfiniteLoop' )
 
 # TrackProducer:FailedPropagation 
 pluginsMonName['TrackFinder'] = cms.string ( 'TrackFinder' ) 
-modulesLabel  ['TrackFinder'] = cms.vstring( 'pixelTracks', 'initialStepTracks', 'lowPtTripletStepTracks', 'pixelPairStepTracks', 'detachedTripletStepTracks', 'mixedTripletStepTracks', 'pixelLessStepTracks', 'tobTecStepTracks', 'generalTracks' )
+modulesLabel  ['TrackFinder'] = cms.vstring( 'pixelTracks', 'initialStepTracks', 'lowPtTripletStepTracks', 'pixelPairStepTracks', 'detachedTripletStepTracks', 'mixedTripletStepTracks', 'pixelLessStepTracks', 'tobTecStepTracks', 'displacedGeneralStepTracks', 'displacedRegionalStepTracks', 'generalTracks' )
 categories    ['TrackFinder'] = cms.vstring( 'FailedPropagation' )
 
 
@@ -59,6 +60,12 @@ modulesLabel  ['FullIterTracking'] = cms.vstring(
        'tobTecStepSeeds_iter6',
        'tobTecStepTrackCandidates_iter6',
        'tobTecStepTracks_iter6',
+       'displacedGeneralStepSeeds_iter7',
+       'displacedGeneralStepTrackCandidates_iter7',
+       'displacedGeneralStepTracks_iter7',
+       'displacedRegionalStepSeeds_iter8',
+       'displacedRegionalStepTrackCandidates_iter8',
+       'displacedRegionalStepTracks_iter8',
        'photonConvTrajSeedFromSingleLeg',
        'convTrackCandidates',
        'convStepTracks',
@@ -95,6 +102,12 @@ modulesLabel  ['IterTracking'] = cms.vstring(
        'tobTecStepSeeds_iter6',
        'tobTecStepTrackCandidates_iter6',
        'tobTecStepTracks_iter6',
+       'displacedGeneralStepSeeds_iter7',
+       'displacedGeneralStepTrackCandidates_iter7',
+       'displacedGeneralStepTracks_iter7',
+       'displacedRegionalStepSeeds_iter8',
+       'displacedRegionalStepTrackCandidates_iter8',
+       'displacedRegionalStepTracks_iter8'
 )
 categories['IterTracking']     = cms.vstring(
     'TooManyClusters',
@@ -114,3 +127,30 @@ selectedModules.extend( ['Clusterizer'] )
 selectedModules.extend( ['Seeding'] )
 selectedModules.extend( ['TrackCandidate'] )
 selectedModules.extend( ['TrackFinder'] )
+
+# cosmicseedfinderP5 (CosmicSeedGenerator): TooManyClusters; combinatorialcosmicseedfinderP5 (SeedGeneratorFromRegionHitsEDProducer):TooManyClusters; regionalCosmicTrackerSeeds (CtfSpecialSeedGenerator): TooManyClusters, CtfSpecialSeedGenerator 
+pluginsMonName['cosmicsSeeding'] = cms.string ( 'Seeding' ) 
+modulesLabel  ['cosmicsSeeding'] = cms.vstring( 'cosmicseedfinderP5', 'combinatorialcosmicseedfinderP5', 'regionalCosmicTrackerSeeds', 'CtfSpecialSeedGenerator' )
+categories    ['cosmicsSeeding'] = cms.vstring( 'TooManyClusters' )
+
+# ckfTrackCandidatesP5 (CkfTrackCandidateMaker), regionalCosmicCkfTrackCandidates (CkfTrackCandidateMaker): 
+# RecoTracker/CkfPattern/src/BaseCkfTrajectoryBuilder.cc
+# - CkfPattern
+# - BaseCkfTrajectoryBuilder_InfiniteLoop
+# RecoTracker/CkfPattern/src/CkfTrajectoryBuilder.cc
+# - CkfPattern
+# RecoTracker/CkfPattern/src/CkfTrackCandidateMakerBase.cc
+# - TooManySeeds
+pluginsMonName['cosmicsTrackCandidate'] = cms.string ( 'TrackCandidate' ) 
+modulesLabel  ['cosmicsTrackCandidate'] = cms.vstring( 'ckfTrackCandidatesP5', 'regionalCosmicCkfTrackCandidates' )
+categories    ['cosmicsTrackCandidate'] = cms.vstring( 'CkfPattern', 'BaseCkfTrajectoryBuilder_InfiniteLoop', 'TooManySeeds' )
+
+pluginsMonName['cosmicsTrack'] = cms.string ( 'TrackFinder' ) 
+modulesLabel  ['cosmicsTrack'] = cms.vstring( 'ctfWithMaterialTracksCosmics', 'regionalCosmicTracks' )
+categories    ['cosmicsTrack'] = cms.vstring( 'FailedPropagation', 'RKPropagatorInS' )
+
+
+selectedModules4cosmics.extend( ['LocalReco'] )
+selectedModules4cosmics.extend( ['cosmicsSeeding'] )
+selectedModules4cosmics.extend( ['cosmicsTrackCandidate'] )
+selectedModules4cosmics.extend( ['cosmicsTrack'] )

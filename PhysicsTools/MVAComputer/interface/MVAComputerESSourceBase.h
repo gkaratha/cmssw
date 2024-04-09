@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -14,21 +14,21 @@
 
 namespace PhysicsTools {
 
-class MVAComputerESSourceBase : public edm::ESProducer {
-    public:
-	typedef boost::shared_ptr<Calibration::MVAComputerContainer> ReturnType;
+  class MVAComputerESSourceBase : public edm::ESProducer {
+  public:
+    using ReturnType = std::unique_ptr<Calibration::MVAComputerContainer>;
 
-	MVAComputerESSourceBase(const edm::ParameterSet &params);
-	virtual ~MVAComputerESSourceBase();
+    MVAComputerESSourceBase(const edm::ParameterSet &params);
+    ~MVAComputerESSourceBase() override;
 
-    protected:
-	ReturnType produce() const;
+  protected:
+    ReturnType produce() const;
 
-	typedef std::map<std::string, std::string> LabelFileMap;
+    typedef std::map<std::string, std::string> LabelFileMap;
 
-	LabelFileMap	mvaCalibrations;
-};
+    LabelFileMap mvaCalibrations;
+  };
 
-} // namespace PhysicsTools
+}  // namespace PhysicsTools
 
-#endif // PhysicsTools_MVAComputer_MVAComputerESSourceBase_h
+#endif  // PhysicsTools_MVAComputer_MVAComputerESSourceBase_h

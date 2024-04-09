@@ -20,58 +20,43 @@
 // Collaborating Class Declarations --
 //------------------------------------
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "CondCore/DBCommon/interface/DbConnection.h"
+#include "CondCore/CondDB/interface/Session.h"
 #include "CondFormats/DTObjects/interface/DTLVStatus.h"
 #include <string>
-
 
 //---------------
 // C++ Headers --
 //---------------
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTLVStatusHandler: public popcon::PopConSourceHandler<DTLVStatus> {
-
- public:
-
+class DTLVStatusHandler : public popcon::PopConSourceHandler<DTLVStatus> {
+public:
   /** Constructor
    */
-  DTLVStatusHandler( const edm::ParameterSet& ps );
+  DTLVStatusHandler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTLVStatusHandler();
+  ~DTLVStatusHandler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
- private:
-
+private:
   std::string dataTag;
   std::string onlineConnect;
   std::string onlineAuthentication;
   std::string bufferConnect;
   DTLVStatus* ccbStatus;
 
-  cond::DbConnection omds_conn;
-  cond::DbConnection buff_conn;
-  cond::DbSession omds_session;
-  cond::DbSession buff_session;
-
+  cond::persistency::Session omds_session;
+  cond::persistency::Session buff_session;
 };
 
-
-#endif // DTLVStatusHandler_H
-
-
-
-
-
-
+#endif  // DTLVStatusHandler_H

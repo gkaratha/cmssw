@@ -10,16 +10,14 @@
 /// \author: Ivan Amos Cali MIT
 ///
 
-
 // system include files
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 // user include files
 
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/global/EDProducer.h"
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -42,8 +40,6 @@
 
 #include <vector>
 
-
-
 //
 // class declaration
 //
@@ -54,7 +50,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-  virtual void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override;
+  void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override;
 
   const edm::EDGetToken EGammaToken_;
   const edm::EDGetToken RlxTauToken_;

@@ -4,8 +4,7 @@ process = cms.Process("Reader")
 
 process.load("DQM.SiStripCommon.TkHistoMap_cfi")
 
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("CalibTracker.SiStripCommon.TkDetMapESProducer_cfi")
 
 process.MessageLogger = cms.Service("MessageLogger",
     debugModules = cms.untracked.vstring(''),
@@ -32,6 +31,7 @@ process.source = cms.Source("EmptyIOVSource",
 # the DB Geometry is NOT used because in this cfg only one tag is taken from the DB and no GT is used. To be fixed if this is a problem
 process.load('Configuration.Geometry.GeometryExtended_cff')
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
 
 process.poolDBESSource = cms.ESSource("PoolDBESSource",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
@@ -107,7 +107,6 @@ process.a = cms.ESSource("PoolDBESSource",
 
 
 process.DQMStore = cms.Service("DQMStore",
-    referenceFileName = cms.untracked.string(''),
     verbose = cms.untracked.int32(1)
 )
 

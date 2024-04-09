@@ -2,7 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 
 
-photonAnalysis = cms.EDAnalyzer("PhotonAnalyzer",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+photonAnalysis = DQMEDAnalyzer('PhotonAnalyzer',
     ComponentName = cms.string('photonAnalysis'),
     phoProducer = cms.InputTag('gedPhotons'),
     analyzerName = cms.string('gedPhotonAnalyzer'),
@@ -11,7 +12,7 @@ photonAnalysis = cms.EDAnalyzer("PhotonAnalyzer",
 
     barrelRecHitProducer = cms.InputTag('reducedEcalRecHitsEB'),								
     endcapRecHitProducer = cms.InputTag('reducedEcalRecHitsEE'),
-
+    
     triggerEvent = cms.InputTag("hltTriggerSummaryAOD",""),                            
     prescaleFactor = cms.untracked.int32(1),
 

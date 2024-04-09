@@ -1,22 +1,21 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("test")
-process.load("DQMServices.Core.DQM_cfg")
 
 process.load("Geometry.TrackerGeometryBuilder.trackerGeometry_cfi")
-
 process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-
 process.load("Alignment.CommonAlignmentProducer.FakeAlignmentSource_cfi")
 
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('*'),
-    cout = cms.untracked.PSet(
-        threshold = cms.untracked.string('DEBUG')
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
     ),
-    destinations = cms.untracked.vstring('cout')
+    cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
+        threshold = cms.untracked.string('WARNING')
+    ),
+    debugModules = cms.untracked.vstring('*')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -24,13 +23,14 @@ process.maxEvents = cms.untracked.PSet(
 )
 process.source = cms.Source("EmptySource")
 
-process.TkDetMap = cms.Service("TkDetMap")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
+# load TrackerTopology (needed for TkDetMap and TkHistoMap)
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.trackerTopology = cms.ESProducer("TrackerTopologyEP")
 
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+process.tester = DQMEDAnalyzer("testTkHistoMap",
+                               inputFile = cms.FileInPath("DQM/SiStripCommon/test/data/SiStripDetInfo.dat"),
+                               readFromFile = cms.bool(False))
 
-process.tester = cms.EDAnalyzer("testTkHistoMap",
-                              readFromFile = cms.bool(False)
-                              )
 process.p = cms.Path(process.tester)
-
-

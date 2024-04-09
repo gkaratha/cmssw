@@ -13,15 +13,13 @@
 
 #include "DataFormats/METReco/interface/METFwd.h"
 
-#include <string.h>
+#include <cstring>
 
 //____________________________________________________________________________||
-namespace cms
-{
+namespace cms {
 
-//____________________________________________________________________________||
-  TCMETProducer::TCMETProducer(const edm::ParameterSet& iConfig)
-  {
+  //____________________________________________________________________________||
+  TCMETProducer::TCMETProducer(const edm::ParameterSet& iConfig) {
     std::string alias = iConfig.exists("alias") ? iConfig.getParameter<std::string>("alias") : "";
 
     produces<reco::METCollection>().setBranchAlias(alias);
@@ -29,17 +27,15 @@ namespace cms
     tcMetAlgo_.configure(iConfig, consumesCollector());
   }
 
-//____________________________________________________________________________||
-  void TCMETProducer::produce(edm::Event& event, const edm::EventSetup& setup)
-  {
-    std::auto_ptr<reco::METCollection> tcmetcoll;
-    tcmetcoll.reset(new reco::METCollection);
+  //____________________________________________________________________________||
+  void TCMETProducer::produce(edm::Event& event, const edm::EventSetup& setup) {
+    auto tcmetcoll = std::make_unique<reco::METCollection>();
     tcmetcoll->push_back(tcMetAlgo_.CalculateTCMET(event, setup));
-    event.put(tcmetcoll);
+    event.put(std::move(tcmetcoll));
   }
 
-//____________________________________________________________________________||
+  //____________________________________________________________________________||
   DEFINE_FWK_MODULE(TCMETProducer);
-}
+}  // namespace cms
 
 //____________________________________________________________________________||

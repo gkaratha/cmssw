@@ -4,6 +4,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from Alignment.ReferenceTrajectories.TrajectoryFactories_cff import *
+from Alignment.MillePedeAlignmentAlgorithm.MillePedeFileReader_cfi import *
 
 MillePedeAlignmentAlgorithm = cms.PSet(
     algoName = cms.string('MillePedeAlignmentAlgorithm'),
@@ -21,6 +22,17 @@ MillePedeAlignmentAlgorithm = cms.PSet(
 
     monitorFile = cms.untracked.string('millePedeMonitor.root'), ## if empty: no monitoring...
 
+    runAtPCL = cms.bool(False), # at the PCL the mille binaries are reset at lumi-section boundaries
+    ignoreFirstIOVCheck = cms.untracked.bool(False), # flag to ignore check if data is prior to first IOV
+    ignoreHitsWithoutGlobalDerivatives = cms.bool(False), # - if all alignables and calibration for a
+                                                          #   hit are set to '0', the hit is ignored
+                                                          # - has only an effect with non-GBL
+                                                          #   material-effects description
+    skipGlobalPositionRcdCheck = cms.bool(False), # since the change of the GlobalPositionRcd is
+                                                  # mostly driven by changes of the muon system
+                                                  # it is often safe to ignore this change for
+                                                  # tracker alignment
+
     # PSet that allows to configure the pede labeler, i.e. select the actual
     # labeler plugin to use and parameters for the selected plugin
     pedeLabeler = cms.PSet(
@@ -33,6 +45,7 @@ MillePedeAlignmentAlgorithm = cms.PSet(
     
     pedeSteerer = cms.PSet(
         fileDir = cms.untracked.string(''),
+        runDir = cms.untracked.string(''),
         steerFile = cms.string('pedeSteer'), ## beginning of steering file names
         steerFileDebug = cms.untracked.bool(False),
         # If MillePedeAlignmentAlgorithm.mode causes pede to run (e.g. 'full', 'pede' etc.),
@@ -40,7 +53,7 @@ MillePedeAlignmentAlgorithm = cms.PSet(
         #    'pedeCommand' 'steerFile'Master.txt 
         # (and - if pedeDump is not empty - extended by: > 'pedeDump')
         # (MillePedeAlignmentAlgorithm.theDir is taken into account...)
-        pedeCommand = cms.untracked.string('pede_1GB'),
+        pedeCommand = cms.untracked.string('pede'),
 
         parameterSign = cms.untracked.int32(1), ## old pede versions (before May '07) need a sign flip
         pedeDump = cms.untracked.string('pede.dump'),
@@ -56,10 +69,9 @@ MillePedeAlignmentAlgorithm = cms.PSet(
         # All this is determined from what is given as 
         # AlignmentProducer.ParameterBuilder.Selector, cf. Twiki page SWGuideMillepedeIIAlgorithm.
         Presigmas = cms.VPSet(),
-        minHieraConstrCoeff = cms.double(1.e-7), # min abs value of coeff. in hierarchy constr.
-        minHieraParPerConstr = cms.uint32(2), # ignore hierarchy constraints with less params
-        constrPrecision = cms.uint32(0), # use default precision for writing constraints to text file
-
+        minHieraConstrCoeff = cms.double(1.e-10), # min abs value of coeff. in hierarchy constr.
+        minHieraParPerConstr = cms.uint32(1), # ignore hierarchy constraints with less params
+        constrPrecision = cms.uint32(10), # precision for writing constraints to text file. Default is 6 and can be setup with constrPrecision = cms.uint32(0)
         # specify additional steering files
         additionalSteerFiles = cms.vstring(), # obsolete - can be given as entries in 'options'
         
@@ -108,6 +120,9 @@ MillePedeAlignmentAlgorithm = cms.PSet(
 					cms.PSet(name = cms.string('u'),     mean = cms.double(0.), sigma = cms.double(0.175)),
 					cms.PSet(name = cms.string('v'),     mean = cms.double(0.), sigma = cms.double(0.175))
 					)
-	)
+	),
+
+    #parameters used to read the pede files back for DQM and check on parameters
+    MillePedeFileReader = cms.PSet(MillePedeFileReader),
 )
 

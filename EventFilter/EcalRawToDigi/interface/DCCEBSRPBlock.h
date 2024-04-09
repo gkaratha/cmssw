@@ -1,7 +1,6 @@
 #ifndef DCCEBSRPBLOCK_HH
 #define DCCEBSRPBLOCK_HH
 
-
 /*
  *\ Class DCCEBSRPBlock
  *
@@ -14,10 +13,9 @@
  *
 */
 
-
 #include <iostream>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
@@ -29,27 +27,18 @@
 #include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
 #include <DataFormats/EcalDetId/interface/EcalDetIdCollections.h>
 
+class DCCEBSRPBlock : public DCCSRPBlock {
+public:
+  DCCEBSRPBlock(DCCDataUnpacker* u, EcalElectronicsMapper* m, DCCEventBlock* e, bool unpack);
 
-class DCCEBSRPBlock : public DCCSRPBlock{
-	
-  public :
+  void updateCollectors() override;
 
-    DCCEBSRPBlock( DCCDataUnpacker * u,EcalElectronicsMapper * m, DCCEventBlock * e, bool unpack);
-    
-    void updateCollectors();
-	 
-	 
-  protected :
-  
-    void addSRFlagToCollection();
-	 
-    bool checkSrpIdAndNumbSRFlags();
-    
-    std::auto_ptr<EBSrFlagCollection>  * ebSrFlagsDigis_;
-    
-    EcalTrigTowerDetId * pTTDetId_;
-		
+protected:
+  void addSRFlagToCollection() override;
+
+  bool checkSrpIdAndNumbSRFlags() override;
+
+  std::unique_ptr<EBSrFlagCollection>* ebSrFlagsDigis_;
 };
-
 
 #endif

@@ -1,6 +1,6 @@
 #ifndef HcalSimAlgos_HFShape_h
 #define HcalSimAlgos_HFShape_h
-#include<vector>
+#include <vector>
 #include "SimCalorimetry/CaloSimAlgos/interface/CaloVShape.h"
 #include "CalibCalorimetry/HcalAlgos/interface/HcalPulseShapes.h"
 /**
@@ -9,18 +9,16 @@
    \brief  shaper for HF
      
 */
-class HFShape : public CaloVShape
-{
+class HFShape : public CaloVShape {
 public:
   HFShape();
-  virtual ~HFShape(){}
-  
-  virtual double operator () (double time) const;
-  virtual double timeToRise() const;
+  ~HFShape() override {}
 
- private:
-   HcalPulseShapes::Shape shape_; 
+  double operator()(double time) const override;
+  double timeToRise() const override;
+
+private:
+  HcalPulseShapes::Shape shape_;
 };
 
 #endif
-  

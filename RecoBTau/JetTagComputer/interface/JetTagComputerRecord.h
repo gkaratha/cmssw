@@ -2,15 +2,13 @@
 #define RecoBTau_JetTagComputerRecord_h
 
 #include "FWCore/Framework/interface/DependentRecordImplementation.h"
-#include <boost/mpl/vector.hpp>
+#include <FWCore/Utilities/interface/mplVector.h>
 
 class BTauGenericMVAJetTagComputerRcd;
 class GBRWrapperRcd;
-class TransientTrackRecord;
 
-class JetTagComputerRecord :
-  public edm::eventsetup::DependentRecordImplementation<
-    JetTagComputerRecord,
-    boost::mpl::vector<BTauGenericMVAJetTagComputerRcd, GBRWrapperRcd, TransientTrackRecord> > {};
+class JetTagComputerRecord : public edm::eventsetup::DependentRecordImplementation<
+                                 JetTagComputerRecord,
+                                 edm::mpl::Vector<BTauGenericMVAJetTagComputerRcd, GBRWrapperRcd> > {};
 
 #endif

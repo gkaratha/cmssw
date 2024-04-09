@@ -15,30 +15,25 @@
  *   LMF sequence version
  */
 class LMFSeqVers : public LMFPrimVers {
- public:
+public:
   friend class LMFRunIOV;  // needs permission to write
 
   LMFSeqVers();
   LMFSeqVers(EcalDBConnection *c);
-  LMFSeqVers(oracle::occi::Environment* env,
-	     oracle::occi::Connection* conn);
-  ~LMFSeqVers();
+  LMFSeqVers(oracle::occi::Environment *env, oracle::occi::Connection *conn);
+  ~LMFSeqVers() override;
 
   // Operators
-  inline bool operator==(const LMFSeqVers &t) const { 
-    return (getDescription() == t.getDescription());
-  }
-  inline bool operator!=(const LMFSeqVers &t) const { 
-    return (getDescription() != t.getDescription());
-  }
+  inline bool operator==(const LMFSeqVers &t) const { return (getDescription() == t.getDescription()); }
+  inline bool operator!=(const LMFSeqVers &t) const { return (getDescription() != t.getDescription()); }
 
- private:
+private:
   // Methods from LMFUnique
-  std::string fetchIdSql(Statement *stmt);
-  std::string fetchAllSql(Statement *stmt) const;
-  std::string setByIDSql(Statement *stmt, int id);
-  void getParameters(ResultSet *rset);
-  LMFUnique *createObject() const;
+  std::string fetchIdSql(Statement *stmt) override;
+  std::string fetchAllSql(Statement *stmt) const override;
+  std::string setByIDSql(Statement *stmt, int id) override;
+  void getParameters(ResultSet *rset) override;
+  LMFUnique *createObject() const override;
 };
 
 #endif

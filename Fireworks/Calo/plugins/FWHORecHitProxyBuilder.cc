@@ -1,21 +1,18 @@
 #include "Fireworks/Calo/plugins/FWCaloRecHitDigitSetProxyBuilder.h"
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
 
-
-class FWHORecHitProxyBuilder : public FWCaloRecHitDigitSetProxyBuilder
-{
+class FWHORecHitProxyBuilder : public FWCaloRecHitDigitSetProxyBuilder {
 public:
-   FWHORecHitProxyBuilder( void ) { invertBox(true); }
-   virtual ~FWHORecHitProxyBuilder( void ) {}
+  FWHORecHitProxyBuilder(void) { invertBox(true); }
+  ~FWHORecHitProxyBuilder(void) override {}
 
-   REGISTER_PROXYBUILDER_METHODS();
+  REGISTER_PROXYBUILDER_METHODS();
 
-private:
-   FWHORecHitProxyBuilder( const FWHORecHitProxyBuilder& );
-   const FWHORecHitProxyBuilder& operator=( const FWHORecHitProxyBuilder& );
+  FWHORecHitProxyBuilder(const FWHORecHitProxyBuilder&) = delete;
+  const FWHORecHitProxyBuilder& operator=(const FWHORecHitProxyBuilder&) = delete;
 };
 
-REGISTER_FWPROXYBUILDER( FWHORecHitProxyBuilder, HORecHitCollection, "HO RecHit", FWViewType::kISpyBit );
+REGISTER_FWPROXYBUILDER(FWHORecHitProxyBuilder, HORecHitCollection, "HO RecHit", FWViewType::kISpyBit);
 
 // AMT scale around center, box is inverted. Scaling and e/et mode added now. Previously used fireworks::energyScaledBox3DCorners().
 

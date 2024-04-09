@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 _cosmics_
 
@@ -12,6 +12,10 @@ import sys
 from Configuration.DataProcessing.Reco import Reco
 
 class cosmics(Reco):
+    def __init__(self):
+        Reco.__init__(self)
+        self.recoSeq=''
+        self.cbSc='cosmics'
     """
     _cosmics_
 
@@ -30,12 +34,10 @@ class cosmics(Reco):
         """
         if not 'skims' in args:
             args['skims']= ['@allForPromptCosmics']
-
         if not 'customs' in args:
             args['customs']=['Configuration/DataProcessing/RecoTLR.customiseCosmicData']
         else:
             args['customs'].append('Configuration/DataProcessing/RecoTLR.customiseCosmicData')
-
         process = Reco.promptReco(self,globalTag, **args)
 
         return process
@@ -51,7 +53,6 @@ class cosmics(Reco):
 
         if not 'skims' in args:
             args['skims']= ['@allForExpressCosmics']
-
         if not 'customs' in args:
             args['customs']=['Configuration/DataProcessing/RecoTLR.customiseCosmicData']
         else:
@@ -74,8 +75,6 @@ class cosmics(Reco):
             args['customs'].append('Configuration/DataProcessing/RecoTLR.customiseCosmicData')
         process = Reco.visualizationProcessing(self,globalTag, **args)
 
-        process.reconstructionCosmics.remove(process.lumiProducer)
-
         return process
 
     def alcaHarvesting(self, globalTag, datasetName, **args):
@@ -85,6 +84,7 @@ class cosmics(Reco):
         Proton collisions data taking AlCa Harvesting
 
         """
+
         if not 'skims' in args and not 'alcapromptdataset' in args:
             args['skims']=['SiStripQuality']
             

@@ -12,30 +12,30 @@ public:
   /** Constructor using point, direction and (transverse!) curvature.
    */
   HelixArbitraryPlaneCrossing(const PositionType& point,
-				    const DirectionType& direction,
-				    const float curvature,
-			            const PropagationDirection propDir = alongMomentum);
+                              const DirectionType& direction,
+                              const float curvature,
+                              const PropagationDirection propDir = alongMomentum);
   // destructor
-  virtual ~HelixArbitraryPlaneCrossing() {}
+  ~HelixArbitraryPlaneCrossing() override {}
 
   /** Propagation status (true if valid) and (signed) path length 
    *  along the helix from the starting point to the plane. The 
    *  starting point is given in the constructor.
    */
-  virtual std::pair<bool,double> pathLength(const Plane& plane);
+  std::pair<bool, double> pathLength(const Plane& plane) override;
 
   /** Position at pathlength s from the starting point.
    */
-  virtual PositionType position(double s) const;
+  PositionType position(double s) const override;
 
   /** Direction at pathlength s from the starting point.
    */
-  virtual DirectionType direction(double s) const;
+  DirectionType direction(double s) const override;
   //
   // double precision vectors for internal use
   //
-  typedef Basic3DVector<double>  PositionTypeDouble;
-  typedef Basic3DVector<double>  DirectionTypeDouble;
+  typedef Basic3DVector<double> PositionTypeDouble;
+  typedef Basic3DVector<double> DirectionTypeDouble;
 
   /** Position at pathlength s from the starting point.
    */
@@ -48,17 +48,14 @@ public:
 private:
   /** Iteration control: check for significant distance to plane.
    */
-  inline bool notAtSurface (const Plane&,
-  			    const PositionTypeDouble&,
-			    const float) const dso_internal;
+  inline bool notAtSurface(const Plane&, const PositionTypeDouble&, const float) const dso_internal;
 
 private:
   HelixArbitraryPlaneCrossing2Order theQuadraticCrossingFromStart;
 
-
-  const double theX0,theY0,theZ0;
-  double theCosPhi0,theSinPhi0;
-  double theCosTheta,theSinTheta;
+  const double theX0, theY0, theZ0;
+  double theCosPhi0, theSinPhi0;
+  double theCosTheta, theSinTheta;
   const double theRho;
 
   const PropagationDirection thePropDir;
@@ -70,7 +67,6 @@ private:
 
   static const float theNumericalPrecision;
   static const float theMaxDistToPlane;
-
 };
 
 #endif

@@ -3,9 +3,11 @@
 
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
-#include <boost/shared_ptr.hpp>
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include <memory>
 
 /*
  * GeantPropagatorESProducer
@@ -14,21 +16,17 @@
  *
  */
 
-class GeantPropagatorESProducer: public edm::ESProducer{
- public:
-  GeantPropagatorESProducer(const edm::ParameterSet & p);
-  virtual ~GeantPropagatorESProducer() override; 
+class GeantPropagatorESProducer : public edm::ESProducer {
+public:
+  GeantPropagatorESProducer(const edm::ParameterSet &p);
+  ~GeantPropagatorESProducer() override;
 
-  boost::shared_ptr<Propagator> produce(const TrackingComponentsRecord &);
+  std::unique_ptr<Propagator> produce(const TrackingComponentsRecord &);
 
- private:
-  boost::shared_ptr<Propagator> _propagator;
+private:
   edm::ParameterSet pset_;
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
+  double plimit_;
 };
 
-
 #endif
-
-
-
-

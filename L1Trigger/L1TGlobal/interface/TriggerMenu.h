@@ -11,6 +11,8 @@
  *    <TODO: enter implementation details>
  *
  * \author: Vasile Mihai Ghete - HEPHY Vienna
+ *          Vladimir Rekovic - extend for overlap removal
+ *          Elisa Fontanesi - extended for three-body correlation conditions
  *
  * $Date$
  * $Revision$
@@ -27,288 +29,247 @@
 // user include files
 #include "L1Trigger/L1TGlobal/interface/TriggerMenuFwd.h"
 
+#include "L1Trigger/L1TGlobal/interface/GlobalScales.h"
+
 #include "L1Trigger/L1TGlobal/interface/MuonTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/MuonShowerTemplate.h"
 #include "L1Trigger/L1TGlobal/interface/CaloTemplate.h"
 #include "L1Trigger/L1TGlobal/interface/EnergySumTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtJetCountsTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtCastorTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtHfBitCountsTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtHfRingEtSumsTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/EnergySumZdcTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/AXOL1TLTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/ExternalTemplate.h"
 #include "L1Trigger/L1TGlobal/interface/CorrelationTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtBptxTemplate.h"
-#include "CondFormats/L1TObjects/interface/L1GtExternalTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/CorrelationThreeBodyTemplate.h"
+#include "L1Trigger/L1TGlobal/interface/CorrelationWithOverlapRemovalTemplate.h"
 
 // forward declarations
-class GtCondition;
+class GlobalCondition;
 class L1GtAlgorithm;
+class GlobalScales;
 
 // class declaration
-class TriggerMenu
-{
+class TriggerMenu {
+public:
+  // constructor
+  TriggerMenu();
+
+  TriggerMenu(const std::string&,
+              const unsigned int numberConditionChips,
+              const std::vector<std::vector<MuonTemplate> >&,
+              const std::vector<std::vector<MuonShowerTemplate> >&,
+              const std::vector<std::vector<CaloTemplate> >&,
+              const std::vector<std::vector<EnergySumTemplate> >&,
+              const std::vector<std::vector<EnergySumZdcTemplate> >&,
+              const std::vector<std::vector<AXOL1TLTemplate> >&,
+              const std::vector<std::vector<ExternalTemplate> >&,
+              const std::vector<std::vector<CorrelationTemplate> >&,
+              const std::vector<std::vector<CorrelationThreeBodyTemplate> >&,
+              const std::vector<std::vector<CorrelationWithOverlapRemovalTemplate> >&,
+              const std::vector<std::vector<MuonTemplate> >&,
+              const std::vector<std::vector<CaloTemplate> >&,
+              const std::vector<std::vector<EnergySumTemplate> >&);
+
+  // copy constructor
+  TriggerMenu(const TriggerMenu&);
+
+  // destructor
+  virtual ~TriggerMenu();
+
+  // assignment operator
+  TriggerMenu& operator=(const TriggerMenu&);
 
 public:
+  /// get / set / build the condition maps
+  inline const std::vector<l1t::ConditionMap>& gtConditionMap() const { return m_conditionMap; }
 
-    // constructor
-    TriggerMenu();
+  void setGtConditionMap(const std::vector<l1t::ConditionMap>&);
+  void buildGtConditionMap();
 
-    TriggerMenu(const std::string&, const unsigned int numberConditionChips,
-            const std::vector<std::vector<MuonTemplate> >&,
-            const std::vector<std::vector<CaloTemplate> >&,
-            const std::vector<std::vector<EnergySumTemplate> >&,
-            const std::vector<std::vector<L1GtJetCountsTemplate> >&,
-            const std::vector<std::vector<L1GtCastorTemplate> >&,
-            const std::vector<std::vector<L1GtHfBitCountsTemplate> >&,
-            const std::vector<std::vector<L1GtHfRingEtSumsTemplate> >&,
-            const std::vector<std::vector<L1GtBptxTemplate> >&,
-            const std::vector<std::vector<L1GtExternalTemplate> >&,
-            const std::vector<std::vector<CorrelationTemplate> >&,
-            const std::vector<std::vector<MuonTemplate> >&,
-            const std::vector<std::vector<CaloTemplate> >&,
-            const std::vector<std::vector<EnergySumTemplate> >&
-    );
+  /// get / set the trigger menu names
+  inline const std::string& gtTriggerMenuInterface() const { return m_triggerMenuInterface; }
 
-    // copy constructor
-    TriggerMenu(const TriggerMenu&);
+  void setGtTriggerMenuInterface(const std::string&);
 
-    // destructor
-    virtual ~TriggerMenu();
+  //
+  inline const std::string& gtTriggerMenuName() const { return m_triggerMenuName; }
 
-    // assignment operator
-    TriggerMenu& operator=(const TriggerMenu&);
+  void setGtTriggerMenuName(const std::string&);
 
-public:
+  //
+  inline const unsigned long gtTriggerMenuUUID() const { return m_triggerMenuUUID; }
 
-    /// get / set / build the condition maps
-    inline const std::vector<l1t::ConditionMap>& gtConditionMap() const {
-        return m_conditionMap;
-    }
+  void setGtTriggerMenuUUID(const unsigned long uuid);
 
-    void setGtConditionMap(const std::vector<l1t::ConditionMap>&);
-    void buildGtConditionMap();
+  //
+  inline const unsigned long gtTriggerMenuImplementation() const { return m_triggerMenuImplementation; }
 
-    /// get / set the trigger menu names
-    inline const std::string& gtTriggerMenuInterface() const {
-        return m_triggerMenuInterface;
-    }
+  void setGtTriggerMenuImplementation(const unsigned long);
 
-    void setGtTriggerMenuInterface(const std::string&);
+  /// menu associated scale key
+  inline const std::string& gtScaleDbKey() const { return m_scaleDbKey; }
 
-    //
-    inline const std::string& gtTriggerMenuName() const {
-        return m_triggerMenuName;
-    }
+  void setGtScaleDbKey(const std::string&);
 
-    void setGtTriggerMenuName(const std::string&);
+  /// get / set the vectors containing the conditions
+  inline const std::vector<std::vector<MuonTemplate> >& vecMuonTemplate() const { return m_vecMuonTemplate; }
 
-    //
-    inline const std::string& gtTriggerMenuImplementation() const {
-        return m_triggerMenuImplementation;
-    }
+  void setVecMuonTemplate(const std::vector<std::vector<MuonTemplate> >&);
 
-    void setGtTriggerMenuImplementation(const std::string&);
+  //
+  inline const std::vector<std::vector<MuonShowerTemplate> >& vecMuonShowerTemplate() const {
+    return m_vecMuonShowerTemplate;
+  }
 
-    /// menu associated scale key
-    inline const std::string& gtScaleDbKey() const {
-        return m_scaleDbKey;
-    }
+  void setVecMuonShowerTemplate(const std::vector<std::vector<MuonShowerTemplate> >&);
 
-    void setGtScaleDbKey(const std::string&);
+  //
+  inline const std::vector<std::vector<CaloTemplate> >& vecCaloTemplate() const { return m_vecCaloTemplate; }
 
-    /// get / set the vectors containing the conditions
-    inline const std::vector<std::vector<MuonTemplate> >& vecMuonTemplate() const {
-        return m_vecMuonTemplate;
-    }
+  void setVecCaloTemplate(const std::vector<std::vector<CaloTemplate> >&);
 
-    void setVecMuonTemplate(const std::vector<std::vector<MuonTemplate> >&);
+  //
+  inline const std::vector<std::vector<EnergySumTemplate> >& vecEnergySumTemplate() const {
+    return m_vecEnergySumTemplate;
+  }
 
-    //
-    inline const std::vector<std::vector<CaloTemplate> >& vecCaloTemplate() const {
-        return m_vecCaloTemplate;
-    }
+  void setVecEnergySumTemplate(const std::vector<std::vector<EnergySumTemplate> >&);
 
-    void setVecCaloTemplate(const std::vector<std::vector<CaloTemplate> >&);
+  //
+  inline const std::vector<std::vector<EnergySumZdcTemplate> >& vecEnergySumZdcTemplate() const {
+    return m_vecEnergySumZdcTemplate;
+  }
 
-    //
-    inline const std::vector<std::vector<EnergySumTemplate> >&
-        vecEnergySumTemplate() const {
+  void setVecEnergySumZdcTemplate(const std::vector<std::vector<EnergySumZdcTemplate> >&);
 
-        return m_vecEnergySumTemplate;
-    }
+  //
+  inline const std::vector<std::vector<AXOL1TLTemplate> >& vecAXOL1TLTemplate() const { return m_vecAXOL1TLTemplate; }
 
-    void setVecEnergySumTemplate(
-            const std::vector<std::vector<EnergySumTemplate> >&);
+  void setVecAXOL1TLTemplate(const std::vector<std::vector<AXOL1TLTemplate> >&);
 
-    //
-    inline const std::vector<std::vector<L1GtJetCountsTemplate> >&
-        vecJetCountsTemplate() const {
+  //
+  inline const std::vector<std::vector<ExternalTemplate> >& vecExternalTemplate() const {
+    return m_vecExternalTemplate;
+  }
 
-        return m_vecJetCountsTemplate;
-    }
+  void setVecExternalTemplate(const std::vector<std::vector<ExternalTemplate> >&);
 
-    void setVecJetCountsTemplate(
-            const std::vector<std::vector<L1GtJetCountsTemplate> >&);
+  //
+  inline const std::vector<std::vector<CorrelationTemplate> >& vecCorrelationTemplate() const {
+    return m_vecCorrelationTemplate;
+  }
 
-    //
-    inline const std::vector<std::vector<L1GtCastorTemplate> >&
-        vecCastorTemplate() const {
+  void setVecCorrelationTemplate(const std::vector<std::vector<CorrelationTemplate> >&);
 
-        return m_vecCastorTemplate;
-    }
+  //
+  inline const std::vector<std::vector<CorrelationThreeBodyTemplate> >& vecCorrelationThreeBodyTemplate() const {
+    return m_vecCorrelationThreeBodyTemplate;
+  }
 
-    void setVecCastorTemplate(
-            const std::vector<std::vector<L1GtCastorTemplate> >&);
+  void setVecCorrelationThreeBodyTemplate(const std::vector<std::vector<CorrelationThreeBodyTemplate> >&);
 
-    //
-    inline const std::vector<std::vector<L1GtHfBitCountsTemplate> >&
-        vecHfBitCountsTemplate() const {
+  //
+  inline const std::vector<std::vector<CorrelationWithOverlapRemovalTemplate> >&
+  vecCorrelationWithOverlapRemovalTemplate() const {
+    return m_vecCorrelationWithOverlapRemovalTemplate;
+  }
 
-        return m_vecHfBitCountsTemplate;
-    }
+  void setVecCorrelationWithOverlapRemovalTemplate(
+      const std::vector<std::vector<CorrelationWithOverlapRemovalTemplate> >&);
 
-    void setVecHfBitCountsTemplate(
-            const std::vector<std::vector<L1GtHfBitCountsTemplate> >&);
+  //
+  inline const std::vector<std::vector<MuonTemplate> >& corMuonTemplate() const { return m_corMuonTemplate; }
 
-    //
-    inline const std::vector<std::vector<L1GtHfRingEtSumsTemplate> >&
-        vecHfRingEtSumsTemplate() const {
+  void setCorMuonTemplate(const std::vector<std::vector<MuonTemplate> >&);
 
-        return m_vecHfRingEtSumsTemplate;
-    }
+  //
+  inline const std::vector<std::vector<CaloTemplate> >& corCaloTemplate() const { return m_corCaloTemplate; }
 
-    void setVecHfRingEtSumsTemplate(
-            const std::vector<std::vector<L1GtHfRingEtSumsTemplate> >&);
+  void setCorCaloTemplate(const std::vector<std::vector<CaloTemplate> >&);
 
-    //
-    inline const std::vector<std::vector<L1GtBptxTemplate> >&
-        vecBptxTemplate() const {
+  // get / set the vectors containing the conditions for correlation templates
+  //
+  inline const std::vector<std::vector<EnergySumTemplate> >& corEnergySumTemplate() const {
+    return m_corEnergySumTemplate;
+  }
 
-        return m_vecBptxTemplate;
-    }
+  void setCorEnergySumTemplate(const std::vector<std::vector<EnergySumTemplate> >&);
 
-    void setVecBptxTemplate(
-            const std::vector<std::vector<L1GtBptxTemplate> >&);
+  /// get / set the algorithm map (by name)
+  inline const l1t::AlgorithmMap& gtAlgorithmMap() const { return m_algorithmMap; }
 
-    //
+  void setGtAlgorithmMap(const l1t::AlgorithmMap&);
 
-    inline const std::vector<std::vector<L1GtExternalTemplate> >&
-        vecExternalTemplate() const {
+  /// get / set the algorithm map (by alias)
+  inline const l1t::AlgorithmMap& gtAlgorithmAliasMap() const { return m_algorithmAliasMap; }
 
-        return m_vecExternalTemplate;
-    }
+  void setGtAlgorithmAliasMap(const l1t::AlgorithmMap&);
 
-    void setVecExternalTemplate(
-            const std::vector<std::vector<L1GtExternalTemplate> >&);
+  /// get the scales
+  inline const l1t::GlobalScales& gtScales() const { return m_gtScales; }
 
-    //
-    inline const std::vector<std::vector<CorrelationTemplate> >&
-        vecCorrelationTemplate() const {
+  void setGtScales(const l1t::GlobalScales&);
 
-        return m_vecCorrelationTemplate;
-    }
-
-    void setVecCorrelationTemplate(
-            const std::vector<std::vector<CorrelationTemplate> >&);
-
-    //
-    inline const std::vector<std::vector<MuonTemplate> >& corMuonTemplate() const {
-        return m_corMuonTemplate;
-    }
-
-    void setCorMuonTemplate(const std::vector<std::vector<MuonTemplate> >&);
-
-    //
-    inline const std::vector<std::vector<CaloTemplate> >& corCaloTemplate() const {
-        return m_corCaloTemplate;
-    }
-
-    void setCorCaloTemplate(const std::vector<std::vector<CaloTemplate> >&);
-
-    // get / set the vectors containing the conditions for correlation templates
-    //
-    inline const std::vector<std::vector<EnergySumTemplate> >&
-        corEnergySumTemplate() const {
-
-        return m_corEnergySumTemplate;
-    }
-
-    void setCorEnergySumTemplate(
-            const std::vector<std::vector<EnergySumTemplate> >&);
-
-
-    /// get / set the algorithm map (by name)
-    inline const l1t::AlgorithmMap& gtAlgorithmMap() const {
-        return m_algorithmMap;
-    }
-
-    void setGtAlgorithmMap(const l1t::AlgorithmMap&);
-
-    /// get / set the algorithm map (by alias)
-    inline const l1t::AlgorithmMap& gtAlgorithmAliasMap() const {
-        return m_algorithmAliasMap;
-    }
-
-    void setGtAlgorithmAliasMap(const l1t::AlgorithmMap&);
-
+  /*
     /// get / set the technical trigger map
     inline const l1t::AlgorithmMap& gtTechnicalTriggerMap() const {
         return m_technicalTriggerMap;
     }
 
-    void setGtTechnicalTriggerMap(const l1t::AlgorithmMap&);
-
-    /// print the trigger menu
-    /// allow various verbosity levels
-    void print(std::ostream&, int&) const;
+//    void setGtTechnicalTriggerMap(const l1t::AlgorithmMap&);
+*/
+  /// print the trigger menu
+  /// allow various verbosity levels
+  void print(std::ostream&, int&) const;
 
 public:
-
-    /// get the result for algorithm with name algName
-    /// use directly the format of decisionWord (no typedef)
-    const bool gtAlgorithmResult(const std::string& algName,
-            const std::vector<bool>& decWord) const;
+  /// get the result for algorithm with name algName
+  /// use directly the format of decisionWord (no typedef)
+  const bool gtAlgorithmResult(const std::string& algName, const std::vector<bool>& decWord) const;
 
 private:
-
-    /// map containing the conditions (per condition chip) - transient
-    std::vector<l1t::ConditionMap> m_conditionMap;
+  /// map containing the conditions (per condition chip) - transient
+  std::vector<l1t::ConditionMap> m_conditionMap;
 
 private:
+  /// menu names
+  std::string m_triggerMenuInterface;
+  std::string m_triggerMenuName;
+  unsigned long m_triggerMenuImplementation;
 
-    /// menu names
-    std::string m_triggerMenuInterface;
-    std::string m_triggerMenuName;
-    std::string m_triggerMenuImplementation;
+  unsigned long m_triggerMenuUUID;
 
-    /// menu associated scale key
-    std::string m_scaleDbKey;
+  /// menu associated scale key
+  std::string m_scaleDbKey;
 
-    /// vectors containing the conditions
-    /// explicit, due to persistency...
-    std::vector<std::vector<MuonTemplate> > m_vecMuonTemplate;
-    std::vector<std::vector<CaloTemplate> > m_vecCaloTemplate;
-    std::vector<std::vector<EnergySumTemplate> > m_vecEnergySumTemplate;
-    std::vector<std::vector<L1GtJetCountsTemplate> > m_vecJetCountsTemplate;
-    std::vector<std::vector<L1GtCastorTemplate> > m_vecCastorTemplate;
-    std::vector<std::vector<L1GtHfBitCountsTemplate> > m_vecHfBitCountsTemplate;
-    std::vector<std::vector<L1GtHfRingEtSumsTemplate> > m_vecHfRingEtSumsTemplate;
-    std::vector<std::vector<L1GtBptxTemplate> > m_vecBptxTemplate;
-    std::vector<std::vector<L1GtExternalTemplate> > m_vecExternalTemplate;
+  /// vectors containing the conditions
+  /// explicit, due to persistency...
+  std::vector<std::vector<MuonTemplate> > m_vecMuonTemplate;
+  std::vector<std::vector<MuonShowerTemplate> > m_vecMuonShowerTemplate;
+  std::vector<std::vector<CaloTemplate> > m_vecCaloTemplate;
+  std::vector<std::vector<EnergySumTemplate> > m_vecEnergySumTemplate;
+  std::vector<std::vector<EnergySumZdcTemplate> > m_vecEnergySumZdcTemplate;
+  std::vector<std::vector<AXOL1TLTemplate> > m_vecAXOL1TLTemplate;
 
-    std::vector<std::vector<CorrelationTemplate> > m_vecCorrelationTemplate;
-    std::vector<std::vector<MuonTemplate> > m_corMuonTemplate;
-    std::vector<std::vector<CaloTemplate> > m_corCaloTemplate;
-    std::vector<std::vector<EnergySumTemplate> > m_corEnergySumTemplate;
+  std::vector<std::vector<ExternalTemplate> > m_vecExternalTemplate;
 
-    /// map containing the physics algorithms (by name)
-    l1t::AlgorithmMap m_algorithmMap;
+  std::vector<std::vector<CorrelationTemplate> > m_vecCorrelationTemplate;
+  std::vector<std::vector<CorrelationThreeBodyTemplate> > m_vecCorrelationThreeBodyTemplate;
+  std::vector<std::vector<CorrelationWithOverlapRemovalTemplate> > m_vecCorrelationWithOverlapRemovalTemplate;
+  std::vector<std::vector<MuonTemplate> > m_corMuonTemplate;
+  std::vector<std::vector<CaloTemplate> > m_corCaloTemplate;
+  std::vector<std::vector<EnergySumTemplate> > m_corEnergySumTemplate;
 
-    /// map containing the physics algorithms (by alias)
-    l1t::AlgorithmMap m_algorithmAliasMap;
+  /// map containing the physics algorithms (by name)
+  l1t::AlgorithmMap m_algorithmMap;
 
-    /// map containing the technical triggers
-    l1t::AlgorithmMap m_technicalTriggerMap;
+  /// map containing the physics algorithms (by alias)
+  l1t::AlgorithmMap m_algorithmAliasMap;
 
+  /// map containing the technical triggers
+  //    l1t::AlgorithmMap m_technicalTriggerMap;
 
+  // class containing the scales from the L1 Menu XML
+  l1t::GlobalScales m_gtScales;
 };
 
 #endif /*L1Trigger_L1TGlobal_TriggerMenu_h*/

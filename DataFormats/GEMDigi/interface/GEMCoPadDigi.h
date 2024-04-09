@@ -9,25 +9,25 @@
  *
  */
 
-#include <DataFormats/GEMDigi/interface/GEMPadDigi.h>
-#include <boost/cstdint.hpp>
+#include "DataFormats/GEMDigi/interface/GEMPadDigi.h"
+#include <cstdint>
 #include <iosfwd>
 
-class GEMCoPadDigi{
-
+class GEMCoPadDigi {
 public:
   explicit GEMCoPadDigi(uint8_t roll, GEMPadDigi pad1, GEMPadDigi pad2);
   GEMCoPadDigi();
 
   bool operator==(const GEMCoPadDigi& digi) const;
   bool operator!=(const GEMCoPadDigi& digi) const;
+  bool isValid() const;
 
-  int roll() const {return roll_;}
+  int roll() const { return roll_; }
   int pad(int l) const;
   int bx(int l) const;
 
-  GEMPadDigi first() const {return first_;}
-  GEMPadDigi second() const {return second_;}
+  GEMPadDigi first() const { return first_; }
+  GEMPadDigi second() const { return second_; }
 
   void print() const;
 
@@ -37,7 +37,6 @@ private:
   GEMPadDigi second_;
 };
 
-std::ostream & operator<<(std::ostream & o, const GEMCoPadDigi& digi);
+std::ostream& operator<<(std::ostream& o, const GEMCoPadDigi& digi);
 
 #endif
-

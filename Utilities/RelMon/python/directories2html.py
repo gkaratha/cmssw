@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 ################################################################################
 # RelMon: a tool for automatic Release Comparison                              
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/RelMon
@@ -9,9 +11,10 @@
 #                                                                              
 ################################################################################
 
+from builtins import range
 from os import chdir,getcwd,listdir,makedirs
 from os.path import basename,join,exists
-import cgi
+import html
 
 import sys
 theargv=sys.argv
@@ -20,16 +23,17 @@ from ROOT import TCanvas,gStyle,TH1F,TGaxis,gPad,kRed
 sys.argv=theargv
 
 import os
+import hashlib
+
 if "RELMON_SA" in os.environ:
-  from dirstructure import Comparison,Directory
-  from definitions import *
-  from utils import unpickler
+  from .dirstructure import Comparison,Directory
+  from .definitions import *
+  from .utils import unpickler
 else:
   from Utilities.RelMon.dirstructure import Comparison,Directory
   from Utilities.RelMon.definitions import *
   from Utilities.RelMon.utils import unpickler
   
-  import hashlib
 #-------------------------------------------------------------------------------
 
 def encode_obj_url(url):
@@ -255,7 +259,7 @@ def get_summary_section(directory,matrix_page=True):
   html= '<div class="span-6">'+\
         '<h3>Summary</h3>'
   html+=get_dir_stats(directory)
-  html+='<a href="%s/%s">To the DQM GUI...</a>' %(server,base_url)
+  html+='<a href="%s/%s/start?runnr=%s;dataset=/%s/%s/DQMIO;sampletype=offline_data;filter=all;referencepos=on-side;referenceshow=all;referencenorm=True;referenceobj1=other:%s:/%s/%s/DQMIO:;referenceobj2=none;referenceobj3=none;referenceobj4=none;search=;striptype=object;stripruns=;stripaxis=run;stripomit=none;workspace=Everything;size=M;focus=;zoom=no;">To the DQM GUI...</a>' %(server,base_url,meta.run1,meta.sample1,meta.release1,meta.run2,meta.sample2,meta.release2)
   html+='</div>'
         
   html+='<div class="span-7 colborder">'+\
@@ -285,7 +289,7 @@ def get_comparisons(category,directory):
   tot_counter=1
   
   # get the right ones
-  comparisons= filter (lambda comp: comp.status == cat_states[category] , directory.comparisons) 
+  comparisons= [comp for comp in directory.comparisons if comp.status == cat_states[category]] 
   n_comparisons=len(comparisons)    
 
   is_reverse=True
@@ -377,7 +381,7 @@ def get_rank_section(directory):
     h=directory.rank_histo
     rank_histof=TH1F(h.GetName(),"",h.GetNbinsX(),h.GetXaxis().GetXmin(),h.GetXaxis().GetXmax())
     rank_histof.SetLineWidth(2)
-    for i in xrange(0,h.GetNbinsX()+1):
+    for i in range(0,h.GetNbinsX()+1):
       rank_histof.SetBinContent(i,h.GetBinContent(i))
     h.SetTitle("Ranks Summary;Rank;Frequency")
     h.Draw("Hist")
@@ -505,7 +509,7 @@ def build_gauge(total_success_rate,minrate=.80,small=False,escaped=False):
     gauge_link+="&chma=10,10,10,0"
   img_tag= '<img src="%s">'%gauge_link
   if escaped:
-    img_tag=cgi.escape(img_tag)    
+    img_tag=html.escape(img_tag)    
   return img_tag
 
 #-------------------------------------------------------------------------------
@@ -549,7 +553,7 @@ def get_aggr_pairs_info(dir_dict,the_aggr_pairs=[]):
             present_subdirs[subdirname]={"nsucc":nsucc,"weight":weight}
         # Make it usable also for subdirectories
         for subsubdirname,subsubdir in subdir.get_subdirs_dict().items():          
-          for pathname in filter(lambda name:"/" in name,subdir_list):           
+          for pathname in [name for name in subdir_list if "/" in name]:           
             selected_subdirname,selected_subsubdirname = pathname.split("/")
             if selected_subdirname == subdirname and selected_subsubdirname==subsubdirname:
               #print "Studying directory ",subsubdirname," in directory ",subdirname
@@ -568,7 +572,7 @@ def get_aggr_pairs_info(dir_dict,the_aggr_pairs=[]):
                 present_subdirs[subsubdirname]={"nsucc":nsucc,"weight":weight}      
 
     if total_ndirs == 0:
-      print "No directory of the category %s is present in the samples: skipping." %cat_name
+      print("No directory of the category %s is present in the samples: skipping." %cat_name)
       continue
     
     average_success_rate=total_directory_successes/(total_ndirs)
@@ -621,7 +625,7 @@ def make_categories_summary(dir_dict,aggregation_rules):
 def make_twiki_table(dir_dict,aggregation_rules):
   
   # decide the release
-  meta= dir_dict.items()[0][1].meta
+  meta= list(dir_dict.items())[0][1].meta
   releases=sorted([meta.release1,meta.release2])
   latest_release=releases[1].split("-")[0]
   
@@ -710,7 +714,7 @@ def make_summary_table(indir,aggregation_rules,aggregation_rules_twiki, hashing_
   
   
   # Get the list of pickles
-  sample_pkls=filter(lambda name: name.endswith(".pkl"),listdir("./"))
+  sample_pkls=[name for name in listdir("./") if name.endswith(".pkl")]
   
   # Load directories, build a list of all first level subdirs  
   dir_unpicklers=[]
@@ -802,14 +806,14 @@ def make_summary_table(indir,aggregation_rules,aggregation_rules_twiki, hashing_
   page_html+='<div id="dir_chart"></div> <a href="#top">Top...</a><hr>'
   
   # Barbarian vertical space. Suggestions are welcome
-  for i in xrange(2):
+  for i in range(2):
     page_html+='<div class="span-24"><p></p></div>\n'
 
  
   # Prepare the table
   page_html+='<div class="span-24"><h2 class="alt"><a name="summary_table">Summary Table</a></h2></div>'
 
-  for i in xrange(5):
+  for i in range(5):
     page_html+='<div class="span-24"><p></p></div>\n'
     
   page_html+="""
@@ -930,8 +934,9 @@ def make_summary_table(indir,aggregation_rules,aggregation_rules_twiki, hashing_
 
 #-----------UPDATES------
 def hash_name(file_name, flag):
-    #print "     HashFILE name: "+file_name
     if flag: #if hashing flag is ON then return
+        if (3,0,0) <= sys.version_info:
+            return hashlib.md5(file_name.encode('utf-8')).hexdigest()[:10]
         return hashlib.md5(file_name).hexdigest()[:10] #md5 hashed file name with length 10
     else:
         return file_name #return standart name

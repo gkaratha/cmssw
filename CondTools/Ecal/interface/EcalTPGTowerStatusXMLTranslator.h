@@ -8,29 +8,19 @@
 #define __EcalTPGTowerStatusXMLTranslator_h_
 
 #include "CondFormats/EcalObjects/interface/EcalTPGTowerStatus.h"
-
-#include "CondTools/Ecal/interface/XercesString.h"
 #include "CondTools/Ecal/interface/EcalCondHeader.h"
 #include <string>
-#include <xercesc/dom/DOMNode.hpp>
-
 
 class EcalTPGTowerStatusXMLTranslator {
-
 public:
+  static int readXML(const std::string& filename, EcalCondHeader& header, EcalTPGTowerStatus& record);
 
-  static int readXML (const std::string& filename, 
-	              EcalCondHeader& header,
-	              EcalTPGTowerStatus& record);
+  static int writeXML(const std::string& filename, const EcalCondHeader& header, const EcalTPGTowerStatus& record);
 
-  static  int writeXML(const std::string& filename, 
-		       const EcalCondHeader& header,
-		       const EcalTPGTowerStatus& record);
-
-  static std::string dumpXML(const EcalCondHeader& header,
-			     const EcalTPGTowerStatus& record);
+private:
+  static std::string dumpXML(const EcalCondHeader& header, const EcalTPGTowerStatus& record);
 
   static void plot(std::string, const EcalTPGTowerStatus& record);
 };
 
-#endif // __EcalTPGTowerStatusXMLTranslator_h_
+#endif  // __EcalTPGTowerStatusXMLTranslator_h_

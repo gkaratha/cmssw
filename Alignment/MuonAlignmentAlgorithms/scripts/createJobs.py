@@ -1,5 +1,7 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
+from __future__ import print_function
+from builtins import range
 import os, sys, optparse, math
 
 copyargs = sys.argv[:]
@@ -327,8 +329,8 @@ if options.noCSC: doCSC = False
 doDT = True
 if options.noDT: doDT = False
 if options.noCSC and options.noDT:
-  print "cannot do --noCSC and --noDT at the same time!"
-  sys.exit()
+    print("cannot do --noCSC and --noDT at the same time!")
+    sys.exit()
 
 json_file = options.json
 
@@ -337,14 +339,14 @@ fileNamesBlocks=[]
 execfile(INPUTFILES)
 njobs = options.subjobs
 if (options.inputInBlocks):
-  njobs = len(fileNamesBlocks)
-  if njobs==0:
-    print "while --inputInBlocks is specified, the INPUTFILES has no blocks!"
-    sys.exit()
+    njobs = len(fileNamesBlocks)
+    if njobs==0:
+        print("while --inputInBlocks is specified, the INPUTFILES has no blocks!")
+        sys.exit()
 
 stepsize = int(math.ceil(1.*len(fileNames)/options.subjobs))
 
-pwd = str(os.getcwdu())
+pwd = str(os.getcwd())
 
 copytrackerdb = ""
 if trackerconnect[0:12] == "sqlite_file:": copytrackerdb += "%s " % trackerconnect[12:]
@@ -357,13 +359,13 @@ if gprcdconnect[0:12] == "sqlite_file:": copytrackerdb += "%s " % gprcdconnect[1
 # step 0: convert initial geometry to xml
 INITIALXML = INITIALGEOM + '.xml'
 if INITIALGEOM[-3:]=='.db':
-  INITIALXML = INITIALGEOM[:-3] + '.xml'
-print "Converting",INITIALGEOM,"to",INITIALXML," ...will be done in several seconds..."
-print "./Alignment/MuonAlignmentAlgorithms/scripts/convertSQLiteXML.py  %s %s --gprcdconnect %s --gprcd %s" % (INITIALGEOM,INITIALXML,gprcdconnect,gprcd)
+    INITIALXML = INITIALGEOM[:-3] + '.xml'
+print("Converting",INITIALGEOM,"to",INITIALXML," ...will be done in several seconds...")
+print("./Alignment/MuonAlignmentAlgorithms/scripts/convertSQLiteXML.py  %s %s --gprcdconnect %s --gprcd %s" % (INITIALGEOM,INITIALXML,gprcdconnect,gprcd))
 exit_code = os.system("./Alignment/MuonAlignmentAlgorithms/scripts/convertSQLiteXML.py  %s %s --gprcdconnect %s --gprcd %s" % (INITIALGEOM,INITIALXML,gprcdconnect,gprcd))
 if exit_code>0:
-  print "problem: conversion exited with code:", exit_code
-  sys.exit()
+    print("problem: conversion exited with code:", exit_code)
+    sys.exit()
 
 #####################################################################
 
@@ -480,7 +482,7 @@ export ALIGNMENT_USERESIDUALS=%(useResiduals)s
 
 cp -f %(directory)salign_cfg.py %(inputdbdir)s%(inputdb)s %(directory)s*.tmp  %(copytrackerdb)s $ALIGNMENT_CAFDIR/
 
-export ALIGNMENT_PLOTTINGTMP=`ls %(directory)splotting0*.root 2> /dev/null`
+export ALIGNMENT_PLOTTINGTMP=`find %(directory)splotting0*.root -maxdepth 1 -size +0 -print 2> /dev/null`
 
 # if it's 1st or last iteration, combine _plotting.root files into one:
 if [ \"$ALIGNMENT_ITERATION\" != \"111\" ] || [ \"$ALIGNMENT_ITERATION\" == \"%(ITERATIONS)s\" ]; then
@@ -496,7 +498,7 @@ if [ \"$ALIGNMENT_CLEANUP\" == \"True\" ] && [ \"zzz$ALIGNMENT_PLOTTINGTMP\" != 
 fi
 
 cd $ALIGNMENT_CAFDIR/
-export ALIGNMENT_ALIGNMENTTMP=`ls alignment*.tmp 2> /dev/null`
+export ALIGNMENT_ALIGNMENTTMP=`find alignment*.tmp -maxdepth 1 -size +1k -print 2> /dev/null`
 ls -l
 
 cmsRun align_cfg.py
@@ -507,7 +509,7 @@ cp -f MuonAlignmentFromReference_plotting.root $ALIGNMENT_AFSDIR/%(directory)s%(
 cd $ALIGNMENT_AFSDIR
 ./Alignment/MuonAlignmentAlgorithms/scripts/convertSQLiteXML.py %(directory)s%(director)s.db %(directory)s%(director)s.xml --noLayers --gprcdconnect $ALIGNMENT_GPRCDCONNECT --gprcd $ALIGNMENT_GPRCD
 
-export ALIGNMENT_ALIGNMENTTMP=`ls %(directory)salignment*.tmp 2> /dev/null`
+export ALIGNMENT_ALIGNMENTTMP=`find %(directory)salignment*.tmp -maxdepth 1 -size +1k -print 2> /dev/null`
 if [ \"$ALIGNMENT_CLEANUP\" == \"True\" ] && [ \"zzz$ALIGNMENT_ALIGNMENTTMP\" != \"zzz\" ]; then
   rm $ALIGNMENT_ALIGNMENTTMP
   echo " "
@@ -668,7 +670,7 @@ for iteration in range(1, ITERATIONS+1):
 
     dir_no_ = DIRNAME
     if DIRNAME[-1]=='_': dir_no_ = DIRNAME[:-1]
- 
+
     os.system("rm -rf %s; mkdir %s" % (directory, directory))
     os.system("cp Alignment/MuonAlignmentAlgorithms/python/gather_cfg.py %s" % directory)
     os.system("cp Alignment/MuonAlignmentAlgorithms/python/align_cfg.py %s" % directory)
@@ -685,10 +687,10 @@ for iteration in range(1, ITERATIONS+1):
     ### gather.sh runners for njobs
     for jobnumber in range(njobs):
         if not options.inputInBlocks:
-          inputfiles = " ".join(fileNames[jobnumber*stepsize:(jobnumber+1)*stepsize])
+            inputfiles = " ".join(fileNames[jobnumber*stepsize:(jobnumber+1)*stepsize])
         else:
-          inputfiles = " ".join(fileNamesBlocks[jobnumber])
-        
+            inputfiles = " ".join(fileNamesBlocks[jobnumber])
+
         if mapplots or segdiffplots or curvatureplots: copyplots = "plotting*.root"
         else: copyplots = ""
 
@@ -703,8 +705,7 @@ for iteration in range(1, ITERATIONS+1):
             if options.big: queue = "cmscaf1nd"
             else: queue = "cmscaf1nh"
 
-            if user_mail: bsubfile.append("bsub -R \"type==SLC5_64\" -q %s -J \"%s_gather%03d\" -u %s %s gather%03d.sh" % (queue, director, jobnumber, user_mail, waiter, jobnumber))
-	    else: bsubfile.append("bsub -R \"type==SLC5_64\" -q %s -J \"%s_gather%03d\" %s gather%03d.sh" % (queue, director, jobnumber, waiter, jobnumber))
+            bsubfile.append("bsub -R \"type==SLC6_64\" -q %s -J \"%s_gather%03d\" -u youremail.tamu.edu %s gather%03d.sh" % (queue, director, jobnumber, waiter, jobnumber))
 
             bsubnames.append("ended(%s_gather%03d)" % (director, jobnumber))
 
@@ -723,18 +724,18 @@ for iteration in range(1, ITERATIONS+1):
             station123params, station123params, useResiduals = tmp
     else:
         writeAlignCfg("%salign.sh" % directory, vars())
-    
+
     os.system("chmod +x %salign.sh" % directory)
 
     bsubfile.append("echo %salign.sh" % directory)
-    if user_mail: bsubfile.append("bsub -R \"type==SLC5_64\" -q cmscaf1nd -J \"%s_align\" -u %s -w \"%s\" align.sh" % (director, user_mail, " && ".join(bsubnames)))
-    else: bsubfile.append("bsub -R \"type==SLC5_64\" -q cmscaf1nd -J \"%s_align\" -w \"%s\" align.sh" % (director, " && ".join(bsubnames)))
-    
+    if user_mail: bsubfile.append("bsub -R \"type==SLC6_64\" -q cmscaf1nd -J \"%s_align\" -u %s -w \"%s\" align.sh" % (director, user_mail, " && ".join(bsubnames)))
+    else: bsubfile.append("bsub -R \"type==SLC6_64\" -q cmscaf1nd -J \"%s_align\" -w \"%s\" align.sh" % (director, " && ".join(bsubnames)))
+
     #bsubfile.append("cd ..")
     bsubnames = []
     last_align = "%s_align" % director
-    
-    
+
+
     ### after the last iteration (optionally) do diagnostics run
     if len(validationLabel) and iteration == ITERATIONS:
         # do we have plotting files created?
@@ -743,10 +744,10 @@ for iteration in range(1, ITERATIONS+1):
 
         writeValidationCfg("%svalidation.sh" % directory, vars())
         os.system("chmod +x %svalidation.sh" % directory)
-        
+
         bsubfile.append("echo %svalidation.sh" % directory)
-        if user_mail: bsubfile.append("bsub -R \"type==SLC5_64\" -q cmscaf1nd -J \"%s_validation\" -u %s -w \"ended(%s)\" validation.sh" % (director, user_mail, last_align))
-	else: bsubfile.append("bsub -R \"type==SLC5_64\" -q cmscaf1nd -J \"%s_validation\" -w \"ended(%s)\" validation.sh" % (director, last_align))
+        if user_mail: bsubfile.append("bsub -R \"type==SLC6_64\" -q cmscaf1nd -J \"%s_validation\" -u %s -w \"ended(%s)\" validation.sh" % (director, user_mail, last_align))
+        else: bsubfile.append("bsub -R \"type==SLC6_64\" -q cmscaf1nd -J \"%s_validation\" -w \"ended(%s)\" validation.sh" % (director, last_align))
 
     bsubfile.append("cd ..")
     bsubfile.append("")

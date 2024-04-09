@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FWEveViewManager
-// 
+//
 /**\class FWEveViewManager FWEveViewManager.h Fireworks/Core/interface/FWEveViewManager.h
 
  Description: [one line class summary]
@@ -22,7 +22,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 // user include files
 #include "Fireworks/Core/interface/FWViewManagerBase.h"
@@ -31,6 +31,7 @@
 // forward declarations
 class TEveCompund;
 class TEveScene;
+class TEveElement;
 class TEveWindowSlot;
 class FWViewBase;
 class FWEveView;
@@ -40,79 +41,76 @@ class FWInteractionList;
 
 typedef std::set<FWModelId> FWModelIds;
 
-class FWEveViewManager : public FWViewManagerBase
-{
+class FWEveViewManager : public FWViewManagerBase {
 public:
-   struct BuilderInfo
-   {
-      std::string m_name;
-      int         m_viewBit;
+  struct BuilderInfo {
+    std::string m_name;
+    int m_viewBit;
 
-      void classType(std::string& , bool&) const;
+    void classType(std::string&, bool&) const;
 
-      BuilderInfo(std::string name, int viewBit) :
-         m_name(name),
-         m_viewBit(viewBit)
-      {}
-   };
+    BuilderInfo(std::string name, int viewBit) : m_name(name), m_viewBit(viewBit) {}
+  };
 
-   FWEveViewManager(FWGUIManager*);
-   virtual ~FWEveViewManager();
+  FWEveViewManager(FWGUIManager*);
+  ~FWEveViewManager() override;
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   virtual void newItem(const FWEventItem*);
-   virtual void removeItem(const FWEventItem*);
-   virtual void eventBegin();
-   virtual void eventEnd();
-   virtual void setContext(const fireworks::Context*);
+  // ---------- member functions ---------------------------
+  void newItem(const FWEventItem*) override;
+  virtual void removeItem(const FWEventItem*);
+  void eventBegin() override;
+  void eventEnd() override;
+  void setContext(const fireworks::Context*) override;
 
-   void highlightAdded(TEveElement*);
-   void selectionAdded(TEveElement*);
-   void selectionRemoved(TEveElement*);
-   void selectionCleared();
+  void highlightAdded(TEveElement*);
+  void selectionAdded(TEveElement*);
+  void selectionRemoved(TEveElement*);
+  void selectionCleared();
 
-   FWTypeToRepresentations supportedTypesAndRepresentations() const;
+  FWTypeToRepresentations supportedTypesAndRepresentations() const override;
 
-   static void syncAllViews() { s_syncAllViews = true; }
+  static void syncAllViews() { s_syncAllViews = true; }
+
 protected:
-   virtual void modelChangesComing();
-   virtual void modelChangesDone();
-   virtual void colorsChanged();
+  void modelChangesComing() override;
+  void modelChangesDone() override;
+  void colorsChanged() override;
+
+public:
+  FWEveViewManager(const FWEveViewManager&) = delete;                   // stop default
+  const FWEveViewManager& operator=(const FWEveViewManager&) = delete;  // stop default
 
 private:
-   FWEveViewManager(const FWEveViewManager&); // stop default
-   const FWEveViewManager& operator=(const FWEveViewManager&); // stop default
+  FWViewBase* buildView(TEveWindowSlot* iParent, const std::string& type);
+  FWEveView* finishViewCreate(std::shared_ptr<FWEveView>);
 
-   FWViewBase* buildView(TEveWindowSlot* iParent, const std::string& type);
-   FWEveView*  finishViewCreate     (boost::shared_ptr<FWEveView>);
+  void beingDestroyed(const FWViewBase*);
+  void modelChanges(const FWModelIds& iIds);
+  void itemChanged(const FWEventItem*);
+  bool haveViewForBit(int) const;
+  void globalEnergyScaleChanged();
+  void eventCenterChanged();
 
-   void beingDestroyed(const FWViewBase*);
-   void modelChanges(const FWModelIds& iIds);
-   void itemChanged(const FWEventItem*);
-   bool haveViewForBit (int) const;
-   void globalEnergyScaleChanged();
+  // ---------- member data --------------------------------
 
-   // ---------- member data --------------------------------
-   
-   typedef std::map<std::string,  std::vector<BuilderInfo> >  TypeToBuilder;
-   typedef std::vector<boost::shared_ptr<FWProxyBuilderBase> >  BuilderVec;   
-   typedef BuilderVec::iterator BuilderVec_it;
-   typedef std::vector<boost::shared_ptr<FWEveView > >::iterator EveViewVec_it;
-   
-   TypeToBuilder            m_typeToBuilder;
+  typedef std::map<std::string, std::vector<BuilderInfo> > TypeToBuilder;
+  typedef std::vector<std::shared_ptr<FWProxyBuilderBase> > BuilderVec;
+  typedef BuilderVec::iterator BuilderVec_it;
+  typedef std::vector<std::shared_ptr<FWEveView> >::iterator EveViewVec_it;
 
-   static bool s_syncAllViews;
+  TypeToBuilder m_typeToBuilder;
 
-   std::map<int, BuilderVec> m_builders; // key is viewer bit
+  static bool s_syncAllViews;
 
-   std::vector< std::vector<boost::shared_ptr<FWEveView> > >  m_views;
+  std::map<int, BuilderVec> m_builders;  // key is viewer bit
 
-   std::map<const FWEventItem*,FWInteractionList*>  m_interactionLists;
+  std::vector<std::vector<std::shared_ptr<FWEveView> > > m_views;
+
+  std::map<const FWEventItem*, FWInteractionList*> m_interactionLists;
 };
-
 
 #endif

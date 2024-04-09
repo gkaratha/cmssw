@@ -12,14 +12,13 @@
 #include <L1Trigger/CSCTrackFinder/interface/CSCTrackFinderDataTypes.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/FileInPath.h>
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 
 class CSCLayer;
 
-class CSCSectorReceiverLUT
-{
- public:
-
-  CSCSectorReceiverLUT(int endcap, int sector, int subsector, int station, const edm::ParameterSet &pset, bool TMB07);
+class CSCSectorReceiverLUT {
+public:
+  CSCSectorReceiverLUT(int endcap, int sector, int subsector, int station, const edm::ParameterSet& pset, bool TMB07);
   CSCSectorReceiverLUT(const CSCSectorReceiverLUT&);
   ~CSCSectorReceiverLUT();
 
@@ -29,15 +28,15 @@ class CSCSectorReceiverLUT
 
   /// Please note, the pattern used below is the 4 bit pattern.
   /// ex) digi->getPattern(), NOT digi->getCLCTPattern()
-  lclphidat localPhi(int strip, int pattern, int quality, int lr, const bool gangedME1a = false ) const;
-  lclphidat localPhi(unsigned address, const bool gangedME1a =  false ) const;
-  lclphidat localPhi(lclphiadd address, const bool gangedME1a = false ) const;
+  lclphidat localPhi(int strip, int pattern, int quality, int lr, const bool gangedME1a = false) const;
+  lclphidat localPhi(unsigned address, const bool gangedME1a = false) const;
+  lclphidat localPhi(lclphiadd address, const bool gangedME1a = false) const;
 
   gblphidat globalPhiME(int phi_local, int wire_group, int cscid, const bool gangedME1a = false) const;
   gblphidat globalPhiME(unsigned address, const bool gangedME1a = false) const;
-  gblphidat globalPhiME(gblphiadd address, const bool gangedME1a = false ) const;
+  gblphidat globalPhiME(gblphiadd address, const bool gangedME1a = false) const;
 
-  gblphidat globalPhiMB(int phi_local,int wire_group, int cscid, const bool gangedME1a = false) const;
+  gblphidat globalPhiMB(int phi_local, int wire_group, int cscid, const bool gangedME1a = false) const;
   gblphidat globalPhiMB(unsigned address, const bool gangedME1a = false) const;
   gblphidat globalPhiMB(gblphiadd address, const bool gangedME1a = false) const;
 
@@ -48,7 +47,9 @@ class CSCSectorReceiverLUT
   /// Helpers
   std::string encodeFileIndex() const;
 
- private:
+  void setCSCGeometry(const CSCGeometry* g) { csc_g = g; }
+
+private:
   int _endcap, _sector, _subsector, _station;
 
   /// Local Phi LUT
@@ -69,11 +70,11 @@ class CSCSectorReceiverLUT
   edm::FileInPath me_gbl_phi_file;
   edm::FileInPath mb_gbl_phi_file;
   edm::FileInPath me_gbl_eta_file;
-  bool LUTsFromFile; // readLUTs from file or generate on the fly
+  bool LUTsFromFile;  // readLUTs from file or generate on the fly
   bool useMiniLUTs;  // if useMiniLUTs is set to true, the code will generate LUTs using the CSCSectorReceiverMiniLUTs class -- BJ
-  bool isBinary;     // if readLUTs is set to true, are the LUT files binary or ascii format
+  bool isBinary;  // if readLUTs is set to true, are the LUT files binary or ascii format
 
-  bool isTMB07;       // use the TMB 2007 patterns or the older set of parameters
+  bool isTMB07;  // use the TMB 2007 patterns or the older set of parameters
 
   /// Arrays for holding read in LUT information.
   /// MB LUT arrays only initialized in ME1
@@ -81,8 +82,10 @@ class CSCSectorReceiverLUT
 
   static bool me_lcl_phi_loaded;
   static lclphidat* me_lcl_phi;
-  gblphidat* me_global_phi, *mb_global_phi;
+  gblphidat *me_global_phi, *mb_global_phi;
   gbletadat* me_global_eta;
+
+  const CSCGeometry* csc_g;
 };
 
 #endif

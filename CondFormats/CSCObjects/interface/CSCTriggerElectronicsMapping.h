@@ -11,23 +11,20 @@
 #include <CondFormats/CSCObjects/interface/CSCTriggerMapping.h>
 
 class CSCTriggerElectronicsMapping : public CSCTriggerMapping {
- public:
-
+public:
   /// Constructor
-   CSCTriggerElectronicsMapping();
+  CSCTriggerElectronicsMapping();
 
   /// Destructor
-   virtual ~CSCTriggerElectronicsMapping();
+  ~CSCTriggerElectronicsMapping() override;
 
- private: 
-
-   /**
+private:
+  /**
      * Build a unique integer out of labels present in or easily derivable from the 
      * readout.
      *
      */
-    int hwId( int SPboardId, int FPGA, int cscid, int zero1=0, int zero2=0 ) const;
-
+  int hwId(int SPboardId, int FPGA, int cscid, int zero1 = 0, int zero2 = 0) const override;
 };
 
 #endif

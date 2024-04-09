@@ -11,47 +11,41 @@
  * derivatives in general follow the P.Avery's
  * "Applied Fitting Theory-VI" CBX 98-37
  */
-class VertexKinematicConstraint:public MultiTrackKinematicConstraint
-{
+class VertexKinematicConstraint : public MultiTrackKinematicConstraint {
 public:
+  VertexKinematicConstraint();
 
-VertexKinematicConstraint();
- 
-virtual ~VertexKinematicConstraint();
+  ~VertexKinematicConstraint() override;
 
-/**
+  /**
  * Returns a vector of values of constraint
  * equations at the point where the input
  * particles are defined.
  */
-virtual AlgebraicVector  value(const std::vector<KinematicState> &states,
-                        const GlobalPoint& point) const;
+  AlgebraicVector value(const std::vector<KinematicState>& states, const GlobalPoint& point) const override;
 
-/**
+  /**
  * Returns a matrix of derivatives of
  * constraint equations w.r.t. 
  * particle parameters
  */
-virtual AlgebraicMatrix parametersDerivative(const std::vector<KinematicState> &states,
-                                      const GlobalPoint& point) const;
+  AlgebraicMatrix parametersDerivative(const std::vector<KinematicState>& states,
+                                       const GlobalPoint& point) const override;
 
-/**
+  /**
  * Returns a matrix of derivatives of
  * constraint equations w.r.t. 
  * vertex position
  */
-virtual AlgebraicMatrix positionDerivative(const std::vector<KinematicState> &states,
-                                    const GlobalPoint& point) const;
-/**
+  AlgebraicMatrix positionDerivative(const std::vector<KinematicState>& states,
+                                     const GlobalPoint& point) const override;
+  /**
  * Number of equations per track used for the fit
  */
-virtual int numberOfEquations() const;
- 
-virtual VertexKinematicConstraint * clone()const
-{return new VertexKinematicConstraint(*this);}
+  int numberOfEquations() const override;
 
+  VertexKinematicConstraint* clone() const override { return new VertexKinematicConstraint(*this); }
 
 private:
-
 };
 #endif

@@ -9,13 +9,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MonH4TablePositionDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MonH4TablePositionDat();
-  ~MonH4TablePositionDat();
+  ~MonH4TablePositionDat() override;
 
   // User data methods
-  inline std::string getTable() { return "MON_H4_TABLE_POSITION_DAT"; }
+  inline std::string getTable() override { return "MON_H4_TABLE_POSITION_DAT"; }
 
   inline void setTableX(float x) { m_tableX = x; }
   inline float getTableX() const { return m_tableX; }
@@ -23,18 +23,14 @@ class MonH4TablePositionDat : public IDataItem {
   inline void setTableY(float y) { m_tableY = y; }
   inline float getTableY() const { return m_tableY; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const MonH4TablePositionDat* item, MonRunIOV* iov )
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MonH4TablePositionDat* item, MonRunIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, MonH4TablePositionDat >* fillMap, MonRunIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, MonH4TablePositionDat>* fillMap, MonRunIOV* iov) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, MonH4TablePositionDat >* data, MonRunIOV* iov)
-    throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, MonH4TablePositionDat>* data, MonRunIOV* iov) noexcept(false);
 
   // User data
   float m_tableX;

@@ -4,10 +4,9 @@
 /*
   [class]:GlobalHaloDataProducer
   [authors]: R. Remington, The University of Florida
-  [description]: EDProducer which runs the GlobalHaloAlgo and stores the GlobalHaloData object to the event. 
+  [description]: EDProducer which runs the GlobalHaloAlgo and stores the GlobalHaloData object to the event.
   [date]: October 15, 2009
-*/  
-
+*/
 
 //Standard C++ classes
 #include <iostream>
@@ -24,6 +23,7 @@
 #include <cstdlib>
 
 // user include files
+#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -79,7 +79,7 @@
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
-#include "DataFormats/HepMCCandidate/interface/PdfInfo.h" 
+#include "DataFormats/HepMCCandidate/interface/PdfInfo.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
 #include "DataFormats/GeometrySurface/interface/Plane.h"
 #include "DataFormats/GeometrySurface/interface/Cone.h"
@@ -153,17 +153,16 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
+#include "Geometry/CommonDetUnit/interface/GluedGeomDet.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetType.h"
+#include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonDetUnit/interface/PixelGeomDetType.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetType.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/TrackerNumberingBuilder/interface/GeometricDet.h"
 
 #include "L1Trigger/CSCTrackFinder/interface/CSCSectorReceiverLUT.h"
 #include "L1Trigger/CSCTrackFinder/interface/CSCSectorReceiverLUT.h"
-#include "L1Trigger/CSCCommonTrigger/interface/CSCTriggerGeometry.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -177,22 +176,22 @@
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
-namespace reco
-{
+namespace reco {
   class GlobalHaloDataProducer : public edm::stream::EDProducer<> {
-    
   public:
     explicit GlobalHaloDataProducer(const edm::ParameterSet&);
-    ~GlobalHaloDataProducer();
-    
+    ~GlobalHaloDataProducer() override;
+
   private:
-    
-    virtual void produce(edm::Event&, const edm::EventSetup&) override;
-    
+    void produce(edm::Event&, const edm::EventSetup&) override;
+
+    GlobalHaloAlgo GlobalAlgo;
+
     edm::InputTag IT_CaloTower;
     edm::InputTag IT_met;
     edm::InputTag IT_CSCRecHit;
     edm::InputTag IT_CSCSegment;
+    edm::InputTag IT_Muon;
 
     edm::InputTag IT_CSCHaloData;
     edm::InputTag IT_EcalHaloData;
@@ -202,18 +201,22 @@ namespace reco
     edm::EDGetTokenT<reco::CaloMETCollection> calomet_token_;
     edm::EDGetTokenT<CSCSegmentCollection> cscsegment_token_;
     edm::EDGetTokenT<CSCRecHit2DCollection> cscrechit_token_;
+    edm::EDGetTokenT<reco::MuonCollection> muon_token_;
     edm::EDGetTokenT<CSCHaloData> cschalo_token_;
     edm::EDGetTokenT<EcalHaloData> ecalhalo_token_;
     edm::EDGetTokenT<HcalHaloData> hcalhalo_token_;
+    edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscgeometry_token_;
+    edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> globaltrackinggeometry_token_;
+    edm::ESGetToken<CaloGeometry, CaloGeometryRecord> calogeometry_token_;
 
     float EcalMinMatchingRadius;
-    float  EcalMaxMatchingRadius;
+    float EcalMaxMatchingRadius;
     float HcalMinMatchingRadius;
     float HcalMaxMatchingRadius;
     float CaloTowerEtThreshold;
-    
+
+    bool ishlt;
   };
-}
+}  // namespace reco
 
 #endif
-  

@@ -14,16 +14,11 @@
 
 class Chi2MeasurementEstimator : public Chi2MeasurementEstimatorBase {
 public:
-
   using Chi2MeasurementEstimatorBase::Chi2MeasurementEstimatorBase;
 
-  virtual std::pair<bool,double> estimate(const TrajectoryStateOnSurface&,
-				     const TrackingRecHit&) const;
+  std::pair<bool, double> estimate(const TrajectoryStateOnSurface&, const TrackingRecHit&) const override;
 
-  virtual Chi2MeasurementEstimator* clone() const {
-    return new Chi2MeasurementEstimator(*this);
-  }
-
+  Chi2MeasurementEstimator* clone() const override { return new Chi2MeasurementEstimator(*this); }
 };
 
 #endif

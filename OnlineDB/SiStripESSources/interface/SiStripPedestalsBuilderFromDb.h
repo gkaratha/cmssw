@@ -11,31 +11,24 @@
 #include <vector>
 #include <string>
 
-
-
 class SiStripPedestalsBuilderFromDb : public SiStripPedestalsESSource {
-  
- public:
+public:
+  SiStripPedestalsBuilderFromDb(const edm::ParameterSet&);
+  ~SiStripPedestalsBuilderFromDb() override;
 
-  SiStripPedestalsBuilderFromDb( const edm::ParameterSet& );
-  virtual ~SiStripPedestalsBuilderFromDb();
-  
   /** Builds pedestals using info from configuration database. */
-  virtual SiStripPedestals* makePedestals();
-  
- protected:
-  
+  SiStripPedestals* makePedestals() override;
+
+protected:
   /** Virtual method that is called by makePedestals() to allow
       pedestals to be written to the conditions database. */
-  virtual void writePedestalsToCondDb( const SiStripPedestals& ) {;}
-  
+  virtual void writePedestalsToCondDb(const SiStripPedestals&) { ; }
+
   /** Container for DB connection parameters. */
   SiStripDbParams dbParams_;
 
   /** Service to access onlineDB and extract pedestal/noise */
   edm::Service<SiStripCondObjBuilderFromDb> condObjBuilder;
-  
 };
 
-#endif // OnlineDB_SiStripESSources_SiStripPedestalsBuilderFromDb_H
-
+#endif  // OnlineDB_SiStripESSources_SiStripPedestalsBuilderFromDb_H

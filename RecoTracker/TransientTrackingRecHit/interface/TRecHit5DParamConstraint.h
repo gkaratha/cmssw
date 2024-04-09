@@ -1,83 +1,75 @@
 #ifndef RECOTRACKER_TRANSIENTRACKINGRECHIT_TRecHit5DParamConstraint_H
 #define RECOTRACKER_TRANSIENTRACKINGRECHIT_TRecHit5DParamConstraint_H
 
-#include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
+#include "DataFormats/TrackerRecHit2D/interface/trackerHitRTTI.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/ErrorFrameTransformer.h"
 #include "DataFormats/CLHEP/interface/Migration.h"
 
-
-
-class TRecHit5DParamConstraint final : public TransientTrackingRecHit {
-
-private:
-
-  TRecHit5DParamConstraint( const TrajectoryStateOnSurface& tsos ) : tsos_( tsos ) {}
-
-  TRecHit5DParamConstraint( const TRecHit5DParamConstraint& other ) : tsos_( other.trajectoryState() ) {}
-
+class TRecHit5DParamConstraint final : public TrackingRecHit {
 public:
+  TRecHit5DParamConstraint(const TrajectoryStateOnSurface& tsos)
+      : TrackingRecHit(0, int(trackerHitRTTI::notFromCluster)), tsos_(tsos) {}
 
-  virtual ~TRecHit5DParamConstraint() {}
+  TRecHit5DParamConstraint(const GeomDet& idet, const TrajectoryStateOnSurface& tsos)
+      : TrackingRecHit(idet, int(trackerHitRTTI::notFromCluster)), tsos_(tsos) {}
 
-  virtual int dimension() const { return 5; }
+  TRecHit5DParamConstraint(const TRecHit5DParamConstraint& other) = default;
+  TRecHit5DParamConstraint(TRecHit5DParamConstraint&& other) = default;
 
-  virtual AlgebraicMatrix projectionMatrix() const {
-    AlgebraicMatrix projectionMatrix( 5, 5, 1 );
+  ~TRecHit5DParamConstraint() override {}
+
+  int dimension() const override { return 5; }
+
+  AlgebraicMatrix projectionMatrix() const override {
+    AlgebraicMatrix projectionMatrix(5, 5, 1);
     return projectionMatrix;
   }
 
-  virtual AlgebraicVector parameters() const { return asHepVector( tsos_.localParameters().vector() ); }
+  AlgebraicVector parameters() const override { return asHepVector(tsos_.localParameters().vector()); }
 
-  virtual AlgebraicSymMatrix parametersError() const { return asHepMatrix( tsos_.localError().matrix() ); }
+  AlgebraicSymMatrix parametersError() const override { return asHepMatrix(tsos_.localError().matrix()); }
 
-  virtual LocalPoint localPosition() const { return tsos_.localPosition(); }
+  LocalPoint localPosition() const override { return tsos_.localPosition(); }
 
-  virtual LocalError localPositionError() const { return tsos_.localError().positionError(); }
+  LocalError localPositionError() const override { return tsos_.localError().positionError(); }
 
-  virtual int charge() const { return tsos_.charge(); }
+  int charge() const { return tsos_.charge(); }
+  const TrajectoryStateOnSurface& trajectoryState() const { return tsos_; }
 
-  virtual bool canImproveWithTrack() const { return false; }
+  bool canImproveWithTrack() const override { return false; }
 
-  virtual const TrackingRecHit* hit() const { return 0; }
-  virtual TrackingRecHit * cloneHit() const { return 0;}
-  
-  virtual std::vector<const TrackingRecHit*> recHits() const { return std::vector<const TrackingRecHit*>(); }
-  virtual std::vector<TrackingRecHit*> recHits() { return std::vector<TrackingRecHit*>(); }
-  virtual bool sharesInput( const TrackingRecHit*, SharedInputType) const { return false;}
+  std::vector<const TrackingRecHit*> recHits() const override { return std::vector<const TrackingRecHit*>(); }
+  std::vector<TrackingRecHit*> recHits() override { return std::vector<TrackingRecHit*>(); }
 
+  // verify if same tsos
+  bool sharesInput(const TrackingRecHit*, SharedInputType) const override { return false; }
 
-  virtual const GeomDetUnit* detUnit() const { return 0; }
+  const Surface* surface() const override { return &tsos_.surface(); }
 
-  virtual const GeomDet* det() const { return 0; }
-
-  virtual const Surface* surface() const { return &tsos_.surface(); }
-
-  virtual GlobalPoint globalPosition() const { return  surface()->toGlobal(localPosition());}
-  virtual GlobalError globalPositionError() const { return ErrorFrameTransformer().transform( localPositionError(), *surface() );}
-  virtual float errorGlobalR() const { return std::sqrt(globalPositionError().rerr(globalPosition()));}
-  virtual float errorGlobalZ() const { return std::sqrt(globalPositionError().czz()); }
-  virtual float errorGlobalRPhi() const { return globalPosition().perp()*sqrt(globalPositionError().phierr(globalPosition())); }
-
-
-  virtual TransientTrackingRecHit::RecHitPointer clone( const TrajectoryStateOnSurface& tsos ) const {
-    //return new TRecHit5DParamConstraint( this->trajectoryState() );
-    return RecHitPointer(new TRecHit5DParamConstraint( tsos ));
+  GlobalPoint globalPosition() const override { return surface()->toGlobal(localPosition()); }
+  GlobalError globalPositionError() const override {
+    return ErrorFrameTransformer().transform(localPositionError(), *surface());
+  }
+  float errorGlobalR() const override { return std::sqrt(globalPositionError().rerr(globalPosition())); }
+  float errorGlobalZ() const override { return std::sqrt(globalPositionError().czz()); }
+  float errorGlobalRPhi() const override {
+    return globalPosition().perp() * sqrt(globalPositionError().phierr(globalPosition()));
   }
 
-  static TransientTrackingRecHit::RecHitPointer build( const TrajectoryStateOnSurface& tsos ) {
-    return RecHitPointer( new TRecHit5DParamConstraint( tsos ) );
+  /// ????
+  virtual RecHitPointer clone(const TrajectoryStateOnSurface& tsos) const {
+    return RecHitPointer(new TRecHit5DParamConstraint(tsos));
+  }
+
+  static RecHitPointer build(const TrajectoryStateOnSurface& tsos) {
+    return RecHitPointer(new TRecHit5DParamConstraint(tsos));
   }
 
 private:
-
   const TrajectoryStateOnSurface tsos_;
-  
-  virtual TRecHit5DParamConstraint* clone() const {
-    return new TRecHit5DParamConstraint( this->trajectoryState() );
-  }
 
-  const TrajectoryStateOnSurface& trajectoryState() const { return tsos_; }
-
+  TRecHit5DParamConstraint* clone() const override { return new TRecHit5DParamConstraint(*this); }
 };
 
 #endif

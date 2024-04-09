@@ -2,25 +2,30 @@
 #define CondCore_CondDB_Exception_h
 
 #include "FWCore/Utilities/interface/Exception.h"
-// to bw removed after the transition
-#include "CondCore/DBCommon/interface/Exception.h"
 
 namespace cond {
 
   namespace persistency {
 
-    /// Base exception class for the object to relational access 
+    /// Base exception class for the object to relational access
     class Exception : public cms::Exception {
     public:
       /// Constructor
-      Exception( const std::string& message, const std::string& methodName );
+      explicit Exception(const std::string& message);
+      /// Constructor
+      Exception(const std::string& message, const std::string& methodName);
       /// Destructor
-      virtual ~Exception() throw() {}
+      ~Exception() throw() override {}
     };
 
-    void throwException [[noreturn]] ( const std::string& message, const std::string& methodName );
+    void throwException [[noreturn]] (const std::string& message, const std::string& methodName);
 
-  }
-}
+  }  // namespace persistency
+
+  typedef persistency::Exception Exception;
+
+  void throwException [[noreturn]] (const std::string& message, const std::string& methodName);
+
+}  // namespace cond
 
 #endif

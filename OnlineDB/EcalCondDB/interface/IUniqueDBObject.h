@@ -9,11 +9,11 @@
  *   Abstract base class for an object with a single unique ID
  */
 class IUniqueDBObject : public IDBObject {
- public:
-  virtual int fetchID() throw(std::runtime_error) =0;
-  virtual void setByID(int id) throw(std::runtime_error) =0;
+public:
+  virtual int fetchID() noexcept(false) = 0;
+  virtual void setByID(int id) noexcept(false) = 0;
 
- protected:
+protected:
   // ID from the database
   int m_ID;
 };

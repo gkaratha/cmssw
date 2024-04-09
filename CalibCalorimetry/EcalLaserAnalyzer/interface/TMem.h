@@ -2,21 +2,16 @@
 #define TMem_H
 
 #include "TObject.h"
-#include<vector>
+#include <vector>
 
-class TMem: public TObject 
-{
-
- private:
-
+class TMem : public TObject {
+private:
   int _fedid;
-  std::vector <int> _memFromDcc;
-  
+  std::vector<int> _memFromDcc;
+
   void init(int);
 
- public:
-
-
+public:
   // Default Constructor, mainly for Root
   TMem();
 
@@ -24,12 +19,12 @@ class TMem: public TObject
   TMem(int);
 
   // Destructor: Does nothing
-  virtual ~TMem();
+  ~TMem() override;
 
   bool isMemRelevant(int);
   int Mem(int, int);
 
-  ClassDef(TMem,0)
+  ClassDefOverride(TMem, 0)
 };
 
 #endif

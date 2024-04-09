@@ -8,7 +8,9 @@
 <use name="pythia8"/>
 <use name="evtgen"/>
 <use name="hepmc"/>
+<use name="hepmc3"/>
 <use name="clhep"/>
+<use name="root"/>
 <export>
-  <lib   name="1"/>
+  <lib name="1"/>
 </export>

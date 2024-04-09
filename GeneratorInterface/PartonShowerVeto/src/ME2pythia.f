@@ -608,6 +608,7 @@ c      endif
 c      write(*,*)'Entering MGVETO'
 c      write(*,*)'qcut is ',qcut,' and showerkt is ',showerkt
       IPVETO=0
+      YCUT=-1.0
 c     Return if not MLM matching (or non-matched subprocess)
       
       IF(ICKKW.LE.0.OR.IEXC.eq.-1) RETURN
@@ -909,7 +910,7 @@ C        write(*,*)'mektsc 357, 358: ',mektsc,' ',VINT(357),' ',VINT(358)
      $       THEN
 C            write(*,*)'rejection'  
           if(idbg.eq.1)
-     $       WRITE(LNHOUT,*),
+     $       WRITE(LNHOUT,*)
      $       'Failed due to ',max(VINT(357),VINT(358)),' > ',SQRT(YCUT)
           GOTO 999
         ENDIF
@@ -924,7 +925,7 @@ c     Highest multiplicity case
      $       THEN
 c     $     VINT(390).GT.PTCLUS(1)**2)THEN
           if(idbg.eq.1)
-     $       WRITE(LNHOUT,*),
+     $       WRITE(LNHOUT,*)
      $       'Failed due to ',max(VINT(357),VINT(358)),' > ',PTCLUS(1)
           GOTO 999
         ENDIF
@@ -1581,7 +1582,7 @@ c     if (found) write (*,*) name,var
         write (*,*) "         setting it to default value ",def_value
         var=def_value
       else
-        write(*,*),'Found parameter ',name,var
+        write(*,*) 'Found parameter ',name,var
       endif
       return
 

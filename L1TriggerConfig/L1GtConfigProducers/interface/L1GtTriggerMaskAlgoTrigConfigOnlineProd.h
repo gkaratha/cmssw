@@ -16,7 +16,7 @@
  */
 
 // system include files
-#include "boost/shared_ptr.hpp"
+#include <memory>
 #include <string>
 
 // user include files
@@ -29,26 +29,21 @@
 // forward declarations
 
 // class declaration
-class L1GtTriggerMaskAlgoTrigConfigOnlineProd :
-        public L1ConfigOnlineProdBase<L1GtTriggerMaskAlgoTrigRcd, L1GtTriggerMask>
-{
-
+class L1GtTriggerMaskAlgoTrigConfigOnlineProd
+    : public L1ConfigOnlineProdBase<L1GtTriggerMaskAlgoTrigRcd, L1GtTriggerMask> {
 public:
+  /// constructor
+  L1GtTriggerMaskAlgoTrigConfigOnlineProd(const edm::ParameterSet&);
 
-    /// constructor
-    L1GtTriggerMaskAlgoTrigConfigOnlineProd(const edm::ParameterSet&);
+  /// destructor
+  ~L1GtTriggerMaskAlgoTrigConfigOnlineProd() override;
 
-    /// destructor
-    ~L1GtTriggerMaskAlgoTrigConfigOnlineProd();
-
-    /// public methods
-    virtual boost::shared_ptr<L1GtTriggerMask> newObject(const std::string& objectKey);
+  /// public methods
+  std::unique_ptr<L1GtTriggerMask> newObject(const std::string& objectKey) override;
 
 private:
-
-    /// partition number
-    int m_partitionNumber;
-
+  /// partition number
+  int m_partitionNumber;
 };
 
 #endif

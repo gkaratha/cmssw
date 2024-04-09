@@ -14,8 +14,9 @@
 
 class DetLayerException : public cms::Exception {
 public:
-  DetLayerException( const std::string& message) throw() : cms::Exception(message)  {}
-  virtual ~DetLayerException() throw() {}
+  DetLayerException(const std::string& message) throw() : cms::Exception(message) {}
+  ~DetLayerException() throw() override {}
+
 private:
 };
 

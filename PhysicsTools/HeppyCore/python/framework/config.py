@@ -1,7 +1,10 @@
+from __future__ import print_function
+from __future__ import absolute_import
 # Copyright (C) 2014 Colin Bernet
 # https://github.com/cbernet/heppy/blob/master/LICENSE
 
-from weight import Weight
+from .weight import Weight
+import copy
 import glob
 
 def printComps(comps, details=False):
@@ -15,18 +18,18 @@ def printComps(comps, details=False):
     for c in comps:
         if not hasattr(c, 'splitFactor'):
             c.splitFactor = 1
-        print c.name, c.splitFactor, len(c.files)
+        print(c.name, c.splitFactor, len(c.files))
         if len(c.files)==0:
             continue
         else:
             if details:
-                print c.files[0]
+                print(c.files[0])
             nJobs += c.splitFactor
             nCompsWithFiles += 1
 
-    print '-'*70
-    print '# components with files = ', nCompsWithFiles
-    print '# jobs                  = ', nJobs
+    print('-'*70)
+    print('# components with files = ', nCompsWithFiles)
+    print('# jobs                  = ', nJobs)
 
 
 class CFG(object):
@@ -40,11 +43,38 @@ class CFG(object):
         header = '{type}: {name}'.format( type=self.__class__.__name__,
                                           name=self.name)
         varlines = ['\t{var:<15}:   {value}'.format(var=var, value=value) \
-                    for var,value in sorted(vars(self).iteritems()) \
+                    for var,value in sorted(vars(self.items())) \
                     if var is not 'name']
         all = [ header ]
         all.extend(varlines)
         return '\n'.join( all )
+
+    def clone(self, **kwargs):
+        '''Make a copy of this object, redefining (or adding) some parameters, just
+           like in the CMSSW python configuration files. 
+
+           For example, you can do
+              module1 = cfg.Analyzer(SomeClass, 
+                          param1 = value1, 
+                          param2 = value2, 
+                          param3 = value3, 
+                          ...)
+              module2 = module1.clone(
+                         param2 = othervalue,
+                         newparam = newvalue)
+           and module2 will inherit the configuration of module2 except for
+           the value of param2, and for having an extra newparam of value newvalue
+           (the latter may be useful if e.g. newparam were optional, and needed
+           only when param2 == othervalue)
+
+           Note that, just like in CMSSW, this is a shallow copy and not a deep copy,
+           i.e. if in the example above value1 were to be an object, them module1 and
+           module2 will share the same instance of value1, and not have two copies.
+        '''
+        other = copy.copy(self)
+        for k,v in kwargs.items():
+            setattr(other, k, v)
+        return other
     
 class Analyzer( CFG ):
     '''Base analyzer configuration, see constructor'''
@@ -97,6 +127,12 @@ class Analyzer( CFG ):
         name = '_'.join([class_name, self.instance_label])
         return name 
 
+    def clone(self, **kwargs):
+        other = super(Analyzer, self).clone(**kwargs)
+        if 'class_object' in kwargs and 'name' not in kwargs:
+            other.name = other.build_name()
+        return other
+
     
 class Service( CFG ):
     
@@ -119,7 +155,20 @@ class Service( CFG ):
                                self.class_object.__name__])
         name = '_'.join([class_name, self.instance_label])
         return name 
-   
+
+    def __setattr__(self, name, value):
+        '''You may decide to copy an existing analyzer and change
+        its instance_label. In that case, one must stay consistent.'''
+        self.__dict__[name] = value
+        if name == 'instance_label':
+            self.name = self.build_name()   
+
+    def clone(self, **kwargs):
+        other = super(Service, self).clone(**kwargs)
+        if 'class_object' in kwargs and 'name' not in kwargs:
+            other.name = other.build_name()
+        return other
+
 
 class Sequence( list ):
     '''A list with print functionalities.
@@ -141,9 +190,9 @@ class Component( CFG ):
     DataComponent, MCComponent, EmbedComponent
     for more information.'''
     def __init__(self, name, files, tree_name=None, triggers=None, **kwargs):
-        if isinstance(triggers, basestring):
+        if isinstance(triggers, str):
             triggers = [triggers]
-        if type(files) == str:
+        if isinstance(files, str):
             files = sorted(glob.glob(files))
         super( Component, self).__init__( name = name,
                                           files = files,

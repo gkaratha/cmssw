@@ -1,75 +1,45 @@
-#ifndef DD_DividedPolycone_H
-#define DD_DividedPolycone_H
-//
-// ********************************************************************
-// 25.04.04 - M. Case ddd-ize G4ParameterisationPolycone*
-//---------------------------------------------------------------------
+#ifndef DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_POLYCONE_H
+#define DETECTOR_DESCRIPTION_PARSER_DD_DIVIDED_POLYCONE_H
 
 #include "DDDividedGeometryObject.h"
-#include "DetectorDescription/Base/interface/DDTranslation.h"
+#include "DetectorDescription/Core/interface/DDTranslation.h"
+#include "DetectorDescription/Core/interface/DDDivision.h"
 
+class DDCompactView;
 class DDLogicalPart;
 class DDRotation;
 
-//---------------------------------------------------------------------
-// Class DDDividedPolycone
-//---------------------------------------------------------------------
+class DDDividedPolyconeRho final : public DDDividedGeometryObject {
+public:
+  DDDividedPolyconeRho(const DDDivision& div, DDCompactView* cpv);
 
-class DDDividedPolyconeRho : public DDDividedGeometryObject
-{ 
- public:  // with description
-  
-  DDDividedPolyconeRho( const DDDivision& div, DDCompactView* cpv );
-  
-  virtual ~DDDividedPolyconeRho();
-  
-  virtual void checkParametersValidity();
-  
-  virtual double getMaxParameter() const;
-  
-  virtual DDTranslation makeDDTranslation( const int copyNo) const;
-
-  virtual DDRotation makeDDRotation(const int copyNo) const;
-
-  virtual DDLogicalPart makeDDLogicalPart( const int copyNo) const;
+  void checkParametersValidity() override;
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
-class DDDividedPolyconePhi : public DDDividedGeometryObject
-{ 
- public:  // with description
-  
-  DDDividedPolyconePhi( const DDDivision& div, DDCompactView* cpv );
-  
-  virtual ~DDDividedPolyconePhi();
-  
-  virtual void checkParametersValidity();
-  
-  virtual double getMaxParameter() const;
-  
-  virtual DDTranslation makeDDTranslation( const int copyNo) const;
+class DDDividedPolyconePhi final : public DDDividedGeometryObject {
+public:
+  DDDividedPolyconePhi(const DDDivision& div, DDCompactView* cpv);
 
-  virtual DDRotation makeDDRotation(const int copyNo) const;
-
-  virtual DDLogicalPart makeDDLogicalPart( const int copyNo) const;
+  void checkParametersValidity() override;
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
-class DDDividedPolyconeZ : public DDDividedGeometryObject
-{ 
- public:  // with description
-  
-  DDDividedPolyconeZ( const DDDivision& div, DDCompactView* cpv );
-  
-  virtual ~DDDividedPolyconeZ();
-  
-  virtual void checkParametersValidity();
-  
-  virtual double getMaxParameter() const;
-  
-  virtual DDTranslation makeDDTranslation( const int copyNo) const;
+class DDDividedPolyconeZ final : public DDDividedGeometryObject {
+public:
+  DDDividedPolyconeZ(const DDDivision& div, DDCompactView* cpv);
 
-  virtual DDRotation makeDDRotation(const int copyNo) const;
-
-  virtual DDLogicalPart makeDDLogicalPart( const int copyNo) const;
+  void checkParametersValidity() override;
+  double getMaxParameter() const override;
+  DDTranslation makeDDTranslation(int copyNo) const override;
+  DDRotation makeDDRotation(int copyNo) const override;
+  DDLogicalPart makeDDLogicalPart(int copyNo) const override;
 };
 
 #endif

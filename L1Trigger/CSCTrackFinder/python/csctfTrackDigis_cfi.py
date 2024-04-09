@@ -11,7 +11,7 @@ def _modifyCsctfTrackDigisForRun2( object ) :
 	object.SectorProcessor.initializeFromPSet = False 
 
 
-from L1Trigger.CSCCommonTrigger.CSCCommonTrigger_cfi import *
+from L1Trigger.CSCTriggerPrimitives.CSCCommonTrigger_cfi import *
 csctfTrackDigis = cms.EDProducer("CSCTFTrackProducer",
 	DTproducer = cms.untracked.InputTag("dtTriggerPrimitiveDigis"),
 	DtDirectProd = cms.untracked.InputTag("csctfunpacker","DT"),
@@ -126,6 +126,6 @@ csctfTrackDigis = cms.EDProducer("CSCTFTrackProducer",
 #
 # If the run2 era is active, make the required changes
 #
-from Configuration.StandardSequences.Eras import eras
-eras.run2_common.toModify( csctfTrackDigis, _modifyCsctfTrackDigisForRun2 )
+from Configuration.Eras.Modifier_run2_common_cff import run2_common
+run2_common.toModify( csctfTrackDigis, _modifyCsctfTrackDigisForRun2 )
 

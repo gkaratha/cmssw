@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class DCUCCSDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   DCUCCSDat();
-  ~DCUCCSDat();
+  ~DCUCCSDat() override;
 
   // User data methods
-  inline std::string getTable() { return "DCU_CCS_DAT"; }
+  inline std::string getTable() override { return "DCU_CCS_DAT"; }
 
   inline void setM1VDD1(float temp) { m_m1_vdd1 = temp; }
   inline void setM2VDD1(float temp) { m_m2_vdd1 = temp; }
@@ -52,16 +52,14 @@ class DCUCCSDat : public IDataItem {
     setCCSTempLow(low);
     setCCSTempHigh(high);
   }
-  inline void setM1(float vdd1, float vdd2, float vinj, float vcc, 
-		    float dcutemp) {
+  inline void setM1(float vdd1, float vdd2, float vinj, float vcc, float dcutemp) {
     setM1VDD1(vdd1);
     setM1VDD2(vdd2);
     setM1Vinj(vinj);
     setM1Vcc(vcc);
     setM1DCUTemp(dcutemp);
   }
-  inline void setM2(float vdd1, float vdd2, float vinj, float vcc, 
-		    float dcutemp) {
+  inline void setM2(float vdd1, float vdd2, float vinj, float vcc, float dcutemp) {
     setM2VDD1(vdd1);
     setM2VDD2(vdd2);
     setM2Vinj(vinj);
@@ -74,25 +72,21 @@ class DCUCCSDat : public IDataItem {
   inline float getM2VDD2() const { return m_m2_vdd2; }
   inline float getM1Vinj() const { return m_m1_vinj; }
   inline float getM2Vinj() const { return m_m2_vinj; }
-  inline float getM1Vcc()  const { return m_m1_vcc; }
-  inline float getM2Vcc()  const { return m_m2_vcc; }
-  inline float getM1DCUTemp()  const { return m_m1_dcutemp; }
-  inline float getM2DCUTemp()  const { return m_m2_dcutemp; }
+  inline float getM1Vcc() const { return m_m1_vcc; }
+  inline float getM2Vcc() const { return m_m2_vcc; }
+  inline float getM1DCUTemp() const { return m_m1_dcutemp; }
+  inline float getM2DCUTemp() const { return m_m2_dcutemp; }
   inline float getCCSTempLow() const { return m_ccstemplow; }
   inline float getCCSTempHigh() const { return m_ccstemphigh; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const DCUCCSDat* item, DCUIOV* iov)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const DCUCCSDat* item, DCUIOV* iov) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, DCUCCSDat>* data, DCUIOV* iov)
-    throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, DCUCCSDat>* data, DCUIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, DCUCCSDat >* fillVec, DCUIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, DCUCCSDat>* fillVec, DCUIOV* iov) noexcept(false);
 
   // User data
   float m_m1_vdd1;

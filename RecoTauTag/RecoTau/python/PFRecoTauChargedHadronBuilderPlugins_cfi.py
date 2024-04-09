@@ -31,9 +31,10 @@ chargedPFCandidates = cms.PSet(
     dRmergePhotonWrtOther = cms.double(0.005),    
     minBlockElementMatchesPhoton = cms.int32(2),
     maxUnmatchedBlockElementsPhoton = cms.int32(1),
-    minMergeNeutralHadronEt = cms.double(0.),
-    minMergeGammaEt = cms.double(0.),
-    minMergeChargedHadronPt = cms.double(100.)
+    minMergeNeutralHadronEt = cms.double(1.0),
+    minMergeGammaEt = cms.double(1.0),
+    minMergeChargedHadronPt = cms.double(100.),
+    verbosity = cms.int32(0)
 )
 
 # Produce a ChargedHadron candidate for each reco::Track
@@ -47,17 +48,19 @@ tracks = cms.PSet(
     qualityCuts = PFTauQualityCuts,
     dRmergeNeutralHadron = cms.double(0.10),
     dRmergePhoton = cms.double(0.05),
-    minMergeNeutralHadronEt = cms.double(0.),
-    minMergeGammaEt = cms.double(0.),
-    minMergeChargedHadronPt = cms.double(100.)
+    minMergeNeutralHadronEt = cms.double(1.0),
+    minMergeGammaEt = cms.double(1.0),
+    minMergeChargedHadronPt = cms.double(100.),
+    verbosity = cms.int32(0)
 )
 
 # Produce a ChargedHadron candidate for high Pt PFNeutralHadrons
 PFNeutralHadrons = chargedPFCandidates.clone(
-    name = cms.string("PFNeutralHadrons"),
-    plugin = cms.string("PFRecoTauChargedHadronFromPFCandidatePlugin"),
+    name = "PFNeutralHadrons",
+    plugin = "PFRecoTauChargedHadronFromPFCandidatePlugin",
     # process PFNeutralHadrons
     # (numbering scheme defined in DataFormats/ParticleFlowCandidate/interface/PFCandidate.h)
-    chargedHadronCandidatesParticleIds = cms.vint32(5),
-    minMergeChargedHadronPt = cms.double(0.)
+    chargedHadronCandidatesParticleIds = [5],
+    minMergeChargedHadronPt = 0.,
+    verbosity = 0
 )

@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class CaliTempDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   CaliTempDat();
-  ~CaliTempDat();
-  
+  ~CaliTempDat() override;
+
   // User data methods
-  inline std::string getTable() { return "CALI_TEMP_DAT"; }
+  inline std::string getTable() override { return "CALI_TEMP_DAT"; }
 
   inline void setBeta(float c) { m_beta = c; }
   inline float getBeta() const { return m_beta; }
@@ -30,28 +30,20 @@ class CaliTempDat : public IDataItem {
   inline void setTaskStatus(bool s) { m_taskStatus = s; }
   inline bool getTaskStatus() const { return m_taskStatus; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
-  
-  void writeDB(const EcalLogicID* ecid, const CaliTempDat* item, CaliIOV* iov)
-    throw(std::runtime_error);
-  
-  void fetchData(std::map< EcalLogicID, CaliTempDat >* fillVec, CaliIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, CaliTempDat >* data, CaliIOV* iov)
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const CaliTempDat* item, CaliIOV* iov) noexcept(false);
 
+  void fetchData(std::map<EcalLogicID, CaliTempDat>* fillVec, CaliIOV* iov) noexcept(false);
 
-  
+  void writeArrayDB(const std::map<EcalLogicID, CaliTempDat>* data, CaliIOV* iov) noexcept(false);
+
   // User data
   float m_beta;
   float m_r25;
   float m_offset;
   bool m_taskStatus;
-  
-  
 };
 
 #endif

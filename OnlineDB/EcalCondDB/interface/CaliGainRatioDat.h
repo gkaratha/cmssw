@@ -10,13 +10,13 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class CaliGainRatioDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   CaliGainRatioDat();
-  ~CaliGainRatioDat();
-  
+  ~CaliGainRatioDat() override;
+
   // User data methods
-  inline std::string getTable() { return "CALI_GAIN_RATIO_DAT"; }
+  inline std::string getTable() override { return "CALI_GAIN_RATIO_DAT"; }
 
   inline void setG1G12(float c) { m_g1_g12 = c; }
   inline float getG1G12() const { return m_g1_g12; }
@@ -27,24 +27,19 @@ class CaliGainRatioDat : public IDataItem {
   inline void setTaskStatus(bool s) { m_taskStatus = s; }
   inline bool getTaskStatus() const { return m_taskStatus; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
-  
-  void writeDB(const EcalLogicID* ecid, const CaliGainRatioDat* item, CaliIOV* iov)
-    throw(std::runtime_error);
-  
-  void fetchData(std::map< EcalLogicID, CaliGainRatioDat >* fillVec, CaliIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, CaliGainRatioDat >* data, CaliIOV* iov)
-    throw(std::runtime_error);
-  
+  void writeDB(const EcalLogicID* ecid, const CaliGainRatioDat* item, CaliIOV* iov) noexcept(false);
+
+  void fetchData(std::map<EcalLogicID, CaliGainRatioDat>* fillVec, CaliIOV* iov) noexcept(false);
+
+  void writeArrayDB(const std::map<EcalLogicID, CaliGainRatioDat>* data, CaliIOV* iov) noexcept(false);
+
   // User data
   float m_g1_g12;
   float m_g6_g12;
   bool m_taskStatus;
-  
 };
 
 #endif

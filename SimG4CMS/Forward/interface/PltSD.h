@@ -1,81 +1,28 @@
 #ifndef Forward_PltSD_h
 #define Forward_PltSD_h
- 
-// system include files
 
-// user include files
+#include "SimG4CMS/Forward/interface/TimingSD.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
 
-#include "SimG4Core/Notification/interface/Observer.h"
-#include "SimG4Core/SensitiveDetector/interface/SensitiveTkDetector.h"
-#include "SimG4Core/Notification/interface/BeginOfJob.h"
-#include "SimG4Core/Notification/interface/BeginOfEvent.h"
-#include "SimG4Core/Notification/interface/BeginOfTrack.h"
-
-#include "SimG4Core/Notification/interface/G4TrackToParticleID.h"
-#include "SimG4Core/Physics/interface/G4ProcessTypeEnumerator.h"
-
-#include "G4Step.hh"
-#include "G4StepPoint.hh"
-#include "G4Track.hh"
- 
 #include <string>
 
-class TrackInformation;
+class G4Step;
 class SimTrackManager;
-class TrackingSlaveSD;
-class UpdatablePSimHit;
-class G4ProcessTypeEnumerator;
-class G4TrackToParticleID;
 
-class PltSD : public SensitiveTkDetector,
-                             public Observer<const BeginOfEvent*>,
-                             public Observer<const BeginOfTrack*>,
-                             public Observer<const BeginOfJob*> {
-
+class PltSD : public TimingSD {
 public:
+  PltSD(const std::string &, const SensitiveDetectorCatalog &, edm::ParameterSet const &, const SimTrackManager *);
+  ~PltSD() override;
 
-  PltSD(std::string, const DDCompactView &, 
-		       const SensitiveDetectorCatalog &,
-		       edm::ParameterSet const &, const SimTrackManager*);
-  virtual ~PltSD();
+  uint32_t setDetUnitId(const G4Step *) override;
 
-  virtual bool     ProcessHits(G4Step *,G4TouchableHistory *);
-  virtual uint32_t setDetUnitId(G4Step*);
-  virtual void EndOfEvent(G4HCofThisEvent*);
-
-  void fillHits (edm::PSimHitContainer&, std::string use);
+protected:
+  bool checkHit(const G4Step *, BscG4Hit *) override;
 
 private:
-
-  virtual void   sendHit();
-  virtual void   updateHit(G4Step *);
-  virtual bool   newHit(G4Step *);
-  virtual bool   closeHit(G4Step *);
-  virtual void   createHit(G4Step *);
-  void           update(const BeginOfEvent *);
-  void           update(const BeginOfTrack *);
-  void           update(const BeginOfJob *);
-  virtual void   clearHits();
-  TrackInformation* getOrCreateTrackInformation(const G4Track *);
-
-private:
-
-  TrackingSlaveSD*            slave;
-  G4ProcessTypeEnumerator * theG4ProcessTypeEnumerator;
-  G4TrackToParticleID * myG4TrackToParticleID;
-  std::string        myName;
-  UpdatablePSimHit * mySimHit;
-  float energyCut;
-  float energyHistoryCut;
-
-  Local3DPoint globalEntryPoint;
-  Local3DPoint globalExitPoint;
-  G4VPhysicalVolume * oldVolume;
-  uint32_t lastId;
-  unsigned int lastTrack;
-  int eventno;
-  std::string pname;
-
+  double energyCut;
+  double energyHistoryCut;
 };
 
 #endif

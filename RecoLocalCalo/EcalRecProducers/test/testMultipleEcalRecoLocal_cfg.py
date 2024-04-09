@@ -6,9 +6,9 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.Geometry.GeometrySimDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
@@ -121,7 +121,6 @@ process.outpath = cms.EndPath(process.out)
 #########################
 
 #https://twiki.cern.ch/twiki/bin/viewauth/CMS/FastTimerService
-process.MessageLogger.categories.append('FastReport')
 process.MessageLogger.cerr.FastReport = cms.untracked.PSet( limit = cms.untracked.int32( 10000000 ) )
 
 # remove any instance of the FastTimerService
@@ -131,38 +130,15 @@ if 'FastTimerService' in process.__dict__:
 # instrument the menu with the FastTimerService
 process.load( "HLTrigger.Timer.FastTimerService_cfi" )
 
-# this is currently ignored in 7.x, and alway uses the real tim clock
-process.FastTimerService.useRealTimeClock         = True
-
-# enable specific features
-process.FastTimerService.enableTimingPaths        = True
-process.FastTimerService.enableTimingModules      = True
-process.FastTimerService.enableTimingExclusive    = True
-
 # print a text summary at the end of the job
-process.FastTimerService.enableTimingSummary      = True
-
-# skip the first path (useful for HLT timing studies to disregard the time spent loading event and conditions data)
-process.FastTimerService.skipFirstPath            = False
+process.FastTimerService.printJobSummary          = True
 
 # enable per-event DQM plots
 process.FastTimerService.enableDQM                = True
 
-# enable per-path DQM plots
-process.FastTimerService.enableDQMbyPathActive    = True
-process.FastTimerService.enableDQMbyPathTotal     = True
-process.FastTimerService.enableDQMbyPathOverhead  = True
-process.FastTimerService.enableDQMbyPathDetails   = True
-process.FastTimerService.enableDQMbyPathCounters  = True
-process.FastTimerService.enableDQMbyPathExclusive = True
-
 # enable per-module DQM plots
 process.FastTimerService.enableDQMbyModule        = True
-process.FastTimerService.enableDQMbyModuleType    = True
         
-# enable per-event DQM sumary plots
-process.FastTimerService.enableDQMSummary         = True
-
 # enable per-event DQM plots by lumisection
 process.FastTimerService.enableDQMbyLumiSection   = True
 process.FastTimerService.dqmLumiSectionsRange     = 2500    # lumisections (23.31 s)

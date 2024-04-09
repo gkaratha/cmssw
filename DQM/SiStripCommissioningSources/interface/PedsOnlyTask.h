@@ -5,10 +5,10 @@
 
 #include "DataFormats/Common/interface/DetSet.h"
 #include "DQM/SiStripCommissioningSources/interface/CommissioningTask.h"
+#include "DQMServices/Core/interface/DQMStore.h"
 
 // Forward Declarations
 class ApvAnalysisFactory;
-class DQMStore;
 class FedChannelConnection;
 class SiStripEventSummary;
 class SiStripRawDigi;
@@ -16,21 +16,19 @@ class SiStripRawDigi;
 /**
    @class PedsOnlyTask
 */
-class PedsOnlyTask : public CommissioningTask 
-{
-  public:
-    PedsOnlyTask( DQMStore *, const FedChannelConnection &);
-    virtual ~PedsOnlyTask();
+class PedsOnlyTask : public CommissioningTask {
+public:
+  PedsOnlyTask(DQMStore *, const FedChannelConnection &);
+  ~PedsOnlyTask() override;
 
-  private:
-    virtual void book();
-    virtual void fill( const SiStripEventSummary &,
-                       const edm::DetSet<SiStripRawDigi> &);
-    virtual void update();
+private:
+  void book() override;
+  void fill(const SiStripEventSummary &, const edm::DetSet<SiStripRawDigi> &) override;
+  void update() override;
 
-    std::vector<HistoSet> peds_;
+  std::vector<HistoSet> peds_;
 
-    ApvAnalysisFactory *pApvFactory_; 
+  ApvAnalysisFactory *pApvFactory_;
 };
 
-#endif // DQM_SISTRIPCOMMISSIONINGSOURCES_PEDSONLYTASK_H
+#endif  // DQM_SISTRIPCOMMISSIONINGSOURCES_PEDSONLYTASK_H

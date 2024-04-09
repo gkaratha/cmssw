@@ -1,43 +1,23 @@
-/***************************************************************************
-                          DDLString.cc  -  description
-                             -------------------
-    begin                : Friday Nov. 21, 2003
-    email                : case@ucdhep.ucdavis.edu
- ***************************************************************************/
-
 #include "DetectorDescription/Parser/src/DDLString.h"
+#include "DetectorDescription/Core/interface/DDName.h"
+#include "DetectorDescription/Core/interface/DDString.h"
+#include "DetectorDescription/Parser/src/DDXMLElement.h"
 
-#include "DetectorDescription/Base/interface/DDdebug.h"
+#include <map>
+#include <utility>
 
-DDLString::DDLString( DDLElementRegistry* myreg )
-  : DDXMLElement( myreg )
-{}
+class DDCompactView;
+class DDLElementRegistry;
 
-DDLString::~DDLString( void )
-{}
- 
-void
-DDLString::preProcessElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv )
-{}
+DDLString::DDLString(DDLElementRegistry* myreg) : DDXMLElement(myreg) {}
 
-void
-DDLString::processElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv )
-{
-  DCOUT_V('P', "DDLString::processElement started");
-  if (parent() == "ConstantsSection" || parent() == "DDDefinition")
-  {
-    // I do not like "newing" things without my control.  But this is
-    // the only way I was able to get this to work.
+void DDLString::preProcessElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) {}
 
-    std::string * ts = new std::string((getAttributeSet().find("value"))->second);
+void DDLString::processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) {
+  if (parent() == "ConstantsSection" || parent() == "DDDefinition") {
+    std::unique_ptr<std::string> ts = std::make_unique<std::string>(getAttributeSet().find("value")->second);
     DDName ddn = getDDName(nmspace);
-    DDString (ddn 
-	      , ts
-      );
-
+    DDString(ddn, std::move(ts));
     clear();
   }
-
-  DCOUT_V('P', "DDLString::processElement completed");
 }
-

@@ -1,8 +1,9 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 #from DQM.TrackingMonitorSummary.OnDemandMonitoring_cfi import *
 #  TrackingMonitorAnalyser ####
-TrackingAnalyser = cms.EDAnalyzer("TrackingAnalyser",
+TrackingAnalyser = DQMEDHarvester("TrackingAnalyser",
     nFEDinfoDir              = cms.string("SiStrip/FEDIntegrity_SM"),                                   
     nFEDinVsLSname           = cms.string("nFEDinVsLS"),
     nFEDinWdataVsLSname      = cms.string("nFEDinWdataVsLS"),
@@ -11,6 +12,7 @@ TrackingAnalyser = cms.EDAnalyzer("TrackingAnalyser",
     ShiftReportFrequency     = cms.untracked.int32(-1),
     RawDataTag               = cms.untracked.InputTag("source"),                              
     TopFolderName              = cms.untracked.string("Tracking"),
+    verbose                  = cms.untracked.bool(False),
     TrackingGlobalQualityPSets = cms.VPSet(
          cms.PSet(
              QT         = cms.string("Rate"),

@@ -2,7 +2,7 @@
 //
 // Package:    ExtractXMLFile
 // Class:      ExtractXMLFile
-// 
+//
 /**\class ExtractXMLFile ExtractXMLFile.cc test/ExtractXMLFile/src/ExtractXMLFile.cc
 
  Description: <one line class summary>
@@ -16,7 +16,6 @@
 //
 //
 
-
 // system include files
 #include <memory>
 #include <iostream>
@@ -24,7 +23,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -43,70 +42,36 @@
 
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
-//#include "DataSvc/RefException.h"
-//#include "CoralBase/Exception.h"
-
-//
-// class decleration
-//
-
-class ExtractXMLFile : public edm::EDAnalyzer {
+class ExtractXMLFile : public edm::one::EDAnalyzer<> {
 public:
-  explicit ExtractXMLFile( const edm::ParameterSet& );
-  ~ExtractXMLFile();
+  explicit ExtractXMLFile(const edm::ParameterSet&);
+  ~ExtractXMLFile() override;
 
-  
-  virtual void analyze( const edm::Event&, const edm::EventSetup& );
+  void beginJob() override {}
+  void analyze(edm::Event const&, edm::EventSetup const&) override;
+  void endJob() override {}
+
 private:
-  // ----------member data ---------------------------
   std::string label_;
   std::string fname_;
+  edm::ESGetToken<FileBlob, GeometryFileRcd> geomToken_;
 };
 
-//
-// constants, enums and typedefs
-//
+ExtractXMLFile::ExtractXMLFile(const edm::ParameterSet& iConfig)
+    : label_(iConfig.getUntrackedParameter<std::string>("label", "")),
+      fname_(iConfig.getUntrackedParameter<std::string>("fname", "")),
+      geomToken_(esConsumes<FileBlob, GeometryFileRcd>(edm::ESInputTag("", label_))) {}
 
-//
-// static data member definitions
-//
+ExtractXMLFile::~ExtractXMLFile() {}
 
-//
-// constructors and destructor
-//
-ExtractXMLFile::ExtractXMLFile( const edm::ParameterSet& iConfig ) :
-  label_(iConfig.getUntrackedParameter<std::string>("label","")),
-  fname_(iConfig.getUntrackedParameter<std::string>("fname",""))
-{
+void ExtractXMLFile::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  using namespace edm;
+
+  std::cout << "Here I am " << std::endl;
+  edm::ESHandle<FileBlob> gdd = iSetup.getHandle(geomToken_);
+  std::ofstream f(fname_.c_str());
+  (*gdd).write(f);
+  std::cout << "finished" << std::endl;
 }
 
-
-ExtractXMLFile::~ExtractXMLFile()
-{
- 
-}
-
-
-//
-// member functions
-//
-
-// ------------ method called to produce the data  ------------
-void
-ExtractXMLFile::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup )
-{
-   using namespace edm;
-
-   std::cout << "Here I am " << std::endl;
-   edm::ESHandle<FileBlob> gdd;
-   iSetup.get<GeometryFileRcd>().get(label_, gdd);
-   //std::unique_ptr<std::vector<unsigned char> > tb = (*gdd).getUncompressedBlob();
-   std::ofstream f(fname_.c_str());
-   (*gdd).write(f);
-   //f.close();
-   std::cout << "finished" << std::endl;
-}
-
-
-//define this as a plug-in
 DEFINE_FWK_MODULE(ExtractXMLFile);

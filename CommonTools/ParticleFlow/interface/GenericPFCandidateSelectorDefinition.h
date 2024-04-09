@@ -9,7 +9,9 @@
    \version  $Id: GenericPFCandidateSelectorDefinition.h,v 1.1 2011/01/28 20:56:44 srappocc Exp $
 */
 
+#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "CommonTools/ParticleFlow/interface/PFCandidateSelectorDefinition.h"
@@ -18,31 +20,25 @@
 namespace pf2pat {
 
   struct GenericPFCandidateSelectorDefinition : public PFCandidateSelectorDefinition {
+    GenericPFCandidateSelectorDefinition(const edm::ParameterSet& cfg, edm::ConsumesCollector&& iC)
+        : selector_(cfg.getParameter<std::string>("cut")) {}
 
-    GenericPFCandidateSelectorDefinition ( const edm::ParameterSet & cfg, edm::ConsumesCollector && iC ) :
-      selector_( cfg.getParameter< std::string >( "cut" ) ) { }
-
-    void select( const HandleToCollection & hc,
-		 const edm::Event & e,
-		 const edm::EventSetup& s) {
+    void select(const HandleToCollection& hc, const edm::Event& e, const edm::EventSetup& s) {
       selected_.clear();
 
-      unsigned key=0;
-      for( collection::const_iterator pfc = hc->begin();
-	   pfc != hc->end(); ++pfc, ++key) {
-
-	if( selector_(*pfc) ) {
-	  selected_.push_back( reco::PFCandidate(*pfc) );
-	  reco::PFCandidatePtr ptrToMother( hc, key );
-	  selected_.back().setSourceCandidatePtr( ptrToMother );
-
-	}
+      unsigned key = 0;
+      for (collection::const_iterator pfc = hc->begin(); pfc != hc->end(); ++pfc, ++key) {
+        if (selector_(*pfc)) {
+          selected_.push_back(reco::PFCandidate(*pfc));
+          reco::PFCandidatePtr ptrToMother(hc, key);
+          selected_.back().setSourceCandidatePtr(ptrToMother);
+        }
       }
     }
 
-    private:
+  private:
     StringCutObjectSelector<reco::PFCandidate> selector_;
   };
-}
+}  // namespace pf2pat
 
 #endif

@@ -4,7 +4,7 @@
 //
 // Package:     L1Trigger
 // Class  :     L1TriggerKeyListDummyProd
-// 
+//
 /**\class L1TriggerKeyListDummyProd L1TriggerKeyListDummyProd.h CondTools/L1Trigger/interface/L1TriggerKeyListDummyProd.h
 
  Description: <one line class summary>
@@ -14,14 +14,13 @@
 
 */
 //
-// Original Author:  
+// Original Author:
 //         Created:  Sat Mar  1 05:06:43 CET 2008
 // $Id$
 //
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/ModuleFactory.h"
@@ -34,15 +33,16 @@
 #include "CondFormats/DataRecord/interface/L1TriggerKeyListRcd.h"
 
 class L1TriggerKeyListDummyProd : public edm::ESProducer {
-   public:
-      L1TriggerKeyListDummyProd(const edm::ParameterSet&);
-      ~L1TriggerKeyListDummyProd();
+public:
+  L1TriggerKeyListDummyProd(const edm::ParameterSet&);
+  ~L1TriggerKeyListDummyProd() override;
 
-      typedef boost::shared_ptr<L1TriggerKeyList> ReturnType;
+  typedef std::unique_ptr<L1TriggerKeyList> ReturnType;
 
-      ReturnType produce(const L1TriggerKeyListRcd&);
-   private:
-      // ----------member data ---------------------------
+  ReturnType produce(const L1TriggerKeyListRcd&);
+
+private:
+  // ----------member data ---------------------------
 };
 
 #endif

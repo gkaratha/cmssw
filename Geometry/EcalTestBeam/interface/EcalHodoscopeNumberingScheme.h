@@ -8,15 +8,12 @@
 #include "Geometry/EcalCommonData/interface/EcalNumberingScheme.h"
 
 class EcalHodoscopeNumberingScheme : public EcalNumberingScheme {
-
- public:
-
+public:
   EcalHodoscopeNumberingScheme();
-  ~EcalHodoscopeNumberingScheme();
-  virtual uint32_t getUnitID(const EcalBaseNumber& baseNumber) const ;
+  ~EcalHodoscopeNumberingScheme() override;
+  uint32_t getUnitID(const EcalBaseNumber& baseNumber) const override;
 
 private:
-
 };
 
 #endif

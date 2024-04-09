@@ -12,18 +12,29 @@ Original Author: John Paul Chou (Brown University)
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
+#include "FWCore/Utilities/interface/ESGetToken.h"
+#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/HBHEIsolatedNoiseAlgos.h"
 
+class EcalChannelStatusRcd;
+class HcalChannelQuality;
+class HcalChannelQualityRcd;
+class HcalSeverityLevelComputer;
+class HcalSeverityLevelComputerRcd;
+class EcalSeverityLevelAlgo;
+class EcalSeverityLevelAlgoRcd;
+class CaloTowerConstituentsMap;
+class CaloGeometryRecord;
+class HcalFrontEndMap;
+class HcalFrontEndMapRcd;
 
 class HBHEIsolatedNoiseReflagger : public edm::stream::EDProducer<> {
- public:
+public:
   explicit HBHEIsolatedNoiseReflagger(const edm::ParameterSet&);
-  ~HBHEIsolatedNoiseReflagger();
-  
-  
- private:
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  ~HBHEIsolatedNoiseReflagger() override;
+
+private:
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
   void DumpHBHEHitMap(std::vector<HBHEHitMap>& i) const;
 
@@ -32,6 +43,7 @@ class HBHEIsolatedNoiseReflagger : public edm::stream::EDProducer<> {
   edm::EDGetTokenT<EcalRecHitCollection> tok_EB_;
   edm::EDGetTokenT<EcalRecHitCollection> tok_EE_;
   edm::EDGetTokenT<std::vector<reco::TrackExtrapolation> > tok_trackExt_;
+  const HcalFrontEndMap* hfemap;
 
   double LooseHcalIsol_;
   double LooseEcalIsol_;
@@ -39,7 +51,7 @@ class HBHEIsolatedNoiseReflagger : public edm::stream::EDProducer<> {
   double TightHcalIsol_;
   double TightEcalIsol_;
   double TightTrackIsol_;
-  
+
   double LooseRBXEne1_, LooseRBXEne2_;
   int LooseRBXHits1_, LooseRBXHits2_;
   double TightRBXEne1_, TightRBXEne2_;
@@ -52,12 +64,22 @@ class HBHEIsolatedNoiseReflagger : public edm::stream::EDProducer<> {
   double TightDiHitEne_;
   double LooseMonoHitEne_;
   double TightMonoHitEne_;
-  
+
+  double RBXEneThreshold_;
+
   bool debug_;
 
   // object validator
   ObjectValidator objvalidator_;
 
+  // ES tokens
+  edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> ecalChStatusToken_;
+  edm::ESGetToken<HcalChannelQuality, HcalChannelQualityRcd> hcalChStatusToken_;
+  edm::ESGetToken<HcalSeverityLevelComputer, HcalSeverityLevelComputerRcd> hcalSevToken_;
+  edm::ESGetToken<EcalSeverityLevelAlgo, EcalSeverityLevelAlgoRcd> ecalSevToken_;
+  edm::ESGetToken<CaloTowerConstituentsMap, CaloGeometryRecord> ctcmToken_;
+  edm::ESGetToken<HcalFrontEndMap, HcalFrontEndMapRcd> hfemapToken_;
+  edm::ESGetToken<CaloGeometry, CaloGeometryRecord> geoToken_;
 };
 
 #endif

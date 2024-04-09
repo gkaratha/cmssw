@@ -3,23 +3,21 @@
 
 #include "Fireworks/Core/interface/FWJobMetadataManager.h"
 
-namespace fwlite
-{
-   class Event;
+namespace fwlite {
+  class Event;
 }
 
 class FWJobMetadataUpdateRequest;
 
-class FWLiteJobMetadataManager : public FWJobMetadataManager
-{
+class FWLiteJobMetadataManager : public FWJobMetadataManager {
 public:
-   FWLiteJobMetadataManager(void);
-   virtual bool doUpdate(FWJobMetadataUpdateRequest *request);
+  FWLiteJobMetadataManager(void);
+  bool doUpdate(FWJobMetadataUpdateRequest *request) override;
 
-   virtual bool  hasModuleLabel(std::string& moduleLabel);
+  bool hasModuleLabel(std::string &moduleLabel) override;
 
 private:
-   const fwlite::Event *m_event;
+  const fwlite::Event *m_event;
 };
 
 #endif

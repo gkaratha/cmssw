@@ -4,7 +4,7 @@
 //
 // Package:     ServiceRegistry
 // Class  :     ServiceWrapper
-// 
+//
 /**\class ServiceWrapper ServiceWrapper.h FWCore/ServiceRegistry/interface/ServiceWrapper.h
 
  Description: Wrapper around a Service
@@ -23,40 +23,35 @@
 
 // user include files
 #include "FWCore/ServiceRegistry/interface/ServiceWrapperBase.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 // forward declarations
 namespace edm {
-   class ParameterSet;
-   class ActivityRegistry;
+  class ParameterSet;
+  class ActivityRegistry;
 
-   namespace serviceregistry {
+  namespace serviceregistry {
 
-      template< class T>
-      class ServiceWrapper : public ServiceWrapperBase
-      {
+    template <class T>
+    class ServiceWrapper : public ServiceWrapperBase {
+    public:
+      ServiceWrapper(std::unique_ptr<T> iService) : service_(std::move(iService)) {}
+      ServiceWrapper(const ServiceWrapper&) = delete;                   // stop default
+      const ServiceWrapper& operator=(const ServiceWrapper&) = delete;  // stop default
 
-public:
-         ServiceWrapper(std::auto_ptr<T> iService) :
-         service_(iService) {}
-         //virtual ~ServiceWrapper();
-         
-         // ---------- const member functions ---------------------
-         T& get() const { return *service_; }
-         
-         // ---------- static member functions --------------------
-         
-         // ---------- member functions ---------------------------
+      // ---------- const member functions ---------------------
+      T const& get() const { return *service_; }
 
-private:
-         ServiceWrapper(const ServiceWrapper&); // stop default
-         
-         const ServiceWrapper& operator=(const ServiceWrapper&); // stop default
-         
-         // ---------- member data --------------------------------
-         std::auto_ptr<T> service_;
-         
-      };
-   }
-}
+      // ---------- static member functions --------------------
+
+      // ---------- member functions ---------------------------
+      T& get() { return *service_; }
+
+    private:
+      // ---------- member data --------------------------------
+      edm::propagate_const<std::unique_ptr<T>> service_;
+    };
+  }  // namespace serviceregistry
+}  // namespace edm
 
 #endif

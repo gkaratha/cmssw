@@ -22,14 +22,13 @@
 #include <string>
 #include <list>
 
-class LMFDefFabric: public IDBObject {
- public:
+class LMFDefFabric : public IDBObject {
+public:
   LMFDefFabric();
-  LMFDefFabric(oracle::occi::Environment* env,
-	       oracle::occi::Connection* conn);
-  LMFDefFabric(EcalDBConnection *c);
-  ~LMFDefFabric();
-  
+  LMFDefFabric(oracle::occi::Environment* env, oracle::occi::Connection* conn);
+  LMFDefFabric(EcalDBConnection* c);
+  ~LMFDefFabric() override;
+
   LMFColor getColor(std::string name) const;
   LMFColor getColor(int color_index) const;
   LMFColor getColorFromID(int color_id) const;
@@ -42,26 +41,25 @@ class LMFDefFabric: public IDBObject {
   LMFRunTag getRunTagFromID(int runTag_id) const;
   int getRunTagID(std::string tag, int version) const;
 
-  std::list<LMFColor>    getColors() const;
+  std::list<LMFColor> getColors() const;
   std::list<LMFTrigType> getTriggerTypes() const;
-  std::list<LMFRunTag>   getRunTags() const;
+  std::list<LMFRunTag> getRunTags() const;
 
-  void initialize() throw(std::runtime_error);
+  void initialize() noexcept(false);
   void debug();
   void noDebug();
 
   void dump();
 
- protected:
-
+protected:
   bool _debug;
 
-  std::list<LMFColor>    _lmfColors;
+  std::list<LMFColor> _lmfColors;
   std::list<LMFTrigType> _lmfTrigTypes;
-  std::list<LMFRunTag>   _lmfRunTags;
-  std::list<LMFPrimVers> _lmfPrimVersions;  
-  std::list<LMFSeqVers>  _lmfSeqVersions;  
-  std::list<LMFCorrVers> _lmfCorrVersions;  
+  std::list<LMFRunTag> _lmfRunTags;
+  std::list<LMFPrimVers> _lmfPrimVersions;
+  std::list<LMFSeqVers> _lmfSeqVersions;
+  std::list<LMFCorrVers> _lmfCorrVersions;
 };
 
 #endif

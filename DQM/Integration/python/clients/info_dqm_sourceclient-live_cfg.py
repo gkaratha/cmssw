@@ -1,24 +1,12 @@
 import FWCore.ParameterSet.Config as cms
+import sys
 
-process = cms.Process("DQM")
+from Configuration.Eras.Era_Run3_cff import Run3
+process = cms.Process("DQM", Run3)
 
-#----------------------------
-#### Event Source
-#----------------------------
-# for live online DQM in P5
-process.load("DQM.Integration.config.inputsource_cfi")
-
-# for testing in lxplus
-#process.load("DQM.Integration.config.fileinputsource_cfi")
-
-#----------------------------
-#### DQM Environment
-#----------------------------
-process.load("DQM.Integration.config.environment_cfi")
-process.dqmEnv.subSystemFolder = 'Info'
-process.dqmSaver.tag = 'Info'
-#-----------------------------
-process.load("DQMServices.Components.DQMProvInfo_cfi")
+unitTest = False
+if 'unitTest=True' in sys.argv:
+    unitTest=True
 
 # message logger
 process.MessageLogger = cms.Service("MessageLogger",
@@ -26,59 +14,70 @@ process.MessageLogger = cms.Service("MessageLogger",
                                     cout = cms.untracked.PSet(threshold = cms.untracked.string('WARNING'))
                                     )
 
+#----------------------------
+#### Event Source
+#----------------------------
+if unitTest:
+    process.load("DQM.Integration.config.unittestinputsource_cfi")
+    from DQM.Integration.config.unittestinputsource_cfi import options
+else:
+    # for live online DQM in P5
+    process.load("DQM.Integration.config.inputsource_cfi")
+    from DQM.Integration.config.inputsource_cfi import options
+
+# for testing in lxplus
+#process.load("DQM.Integration.config.fileinputsource_cfi")
+#from DQM.Integration.config.fileinputsource_cfi import options
+
 # Global tag - Condition for P5 cluster
 process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 
-# Collision Reconstruction
-process.load("EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi")
-import EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi
-process.gtDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi.l1GtUnpack.clone()
+#----------------------------
+#### DQM Environment
+#----------------------------
+process.load("DQM.Integration.config.environment_cfi")
+process.dqmEnv.subSystemFolder = 'Info'
+process.dqmSaver.tag = 'Info'
+process.dqmSaver.runNumber = options.runNumber
+process.dqmSaverPB.tag = 'Info'
+process.dqmSaverPB.runNumber = options.runNumber
+#-----------------------------
 
-##process.load("EventFilter.L1GlobalTriggerRawToDigi.l1GtEvmUnpack_cfi")
-##import EventFilter.L1GlobalTriggerRawToDigi.l1GtEvmUnpack_cfi
-##process.gtEvmDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtEvmUnpack_cfi.l1GtEvmUnpack.clone()
-
-process.load("EventFilter.L1GlobalTriggerRawToDigi.l1GtRecord_cfi")
-import EventFilter.L1GlobalTriggerRawToDigi.conditionDumperInEdm_cfi
-process.conditionsInEdm = EventFilter.L1GlobalTriggerRawToDigi.conditionDumperInEdm_cfi.conditionDumperInEdm.clone()
-
-process.physicsBitSelector = cms.EDFilter("PhysDecl",
-                                                   applyfilter = cms.untracked.bool(False),
-                                                   debugOn     = cms.untracked.bool(False),
-                                                   HLTriggerResults = cms.InputTag("TriggerResults","","HLT")
-                                          )
-
+# Digitisation: produce the Scalers digis containing DCS bits
 process.load("EventFilter.ScalersRawToDigi.ScalersRawToDigi_cfi")
+# Digitisation: produce the TCDS digis containing BST record
+from EventFilter.OnlineMetaDataRawToDigi.tcdsRawToDigi_cfi import *
+process.tcdsDigis = tcdsRawToDigi.clone()
 
-process.dump = cms.EDAnalyzer('EventContentAnalyzer')
+# OnlineMetaDataRawToDigi will put DCSRecord to an event
+process.load('EventFilter.OnlineMetaDataRawToDigi.onlineMetaDataRawToDigi_cfi')
+process.onlineMetaDataDigis = cms.EDProducer('OnlineMetaDataRawToDigi')
+
+# DQMProvInfo is the DQM module to be run
+process.load("DQMServices.Components.DQMProvInfo_cfi")
 
 # DQM Modules
-process.dqmmodules = cms.Sequence(process.dqmEnv + process.dqmSaver)
+process.dqmmodules = cms.Sequence(process.dqmEnv + process.dqmSaver + process.dqmSaverPB)
 process.evfDQMmodulesPath = cms.Path(
-                              process.l1GtUnpack*
-			      process.gtDigis*
-			      ##process.gtEvmDigis*
-			      process.conditionsInEdm*
-			      process.l1GtRecord*
-			      process.physicsBitSelector*
-                              process.scalersRawToDigi*
-                              process.dqmProvInfo*
-                              process.dqmmodules
-)
+                                     process.scalersRawToDigi*
+                                     process.tcdsDigis*
+                                     process.onlineMetaDataRawToDigi*
+                                     process.dqmProvInfo*
+                                     process.dqmmodules
+                                     )
 process.schedule = cms.Schedule(process.evfDQMmodulesPath)
 
 process.dqmProvInfo.runType = process.runType.getRunTypeName()
 
 # Heavy Ion Specific Fed Raw Data Collection Label
 if (process.runType.getRunType() == process.runType.hi_run):
-    process.gtDigis.DaqGtInputTag = cms.InputTag("rawDataRepacker")
-    ##process.gtEvmDigis.EvmGtInputTag = cms.InputTag("rawDataRepacker")
-    process.scalersRawToDigi.scalersInputTag = cms.InputTag("rawDataRepacker")
+    process.scalersRawToDigi.scalersInputTag = "rawDataRepacker"
+    process.tcdsDigis.InputLabel = "rawDataRepacker"
 else:
-    process.gtDigis.DaqGtInputTag = cms.InputTag("rawDataCollector")
-    ##process.gtEvmDigis.EvmGtInputTag = cms.InputTag("rawDataCollector")
-    process.scalersRawToDigi.scalersInputTag = cms.InputTag("rawDataCollector")
+    process.scalersRawToDigi.scalersInputTag = "rawDataCollector"
+    process.tcdsDigis.InputLabel = "rawDataCollector"
 
 # Process customizations included here
 from DQM.Integration.config.online_customizations_cfi import *
 process = customise(process)
+print("Final Source settings:", process.source)

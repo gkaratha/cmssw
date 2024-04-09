@@ -2,7 +2,7 @@
 //
 // Package:    InputAnalyzer
 // Class:      InputAnalyzer
-// 
+//
 /**\class InputAnalyzer InputAnalyzer.cc Analyzer/InputAnalyzer/src/InputAnalyzer.cc
 
 */
@@ -15,9 +15,8 @@
 #ifndef InputAnalyzer_h
 #define InputAnalyzer_h
 
-
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -30,26 +29,22 @@
 //
 // class decleration
 //
-namespace edm
-{
-class InputAnalyzer : public edm::EDAnalyzer {
-   public:
-      explicit InputAnalyzer(const edm::ParameterSet&);
-      ~InputAnalyzer();
+namespace edm {
+  class InputAnalyzer : public edm::one::EDAnalyzer<> {
+  public:
+    explicit InputAnalyzer(const edm::ParameterSet&);
+    ~InputAnalyzer() override;
 
+  private:
+    void beginJob() override;
+    void analyze(const edm::Event&, const edm::EventSetup&) override;
+    void endJob() override;
 
-   private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() ;
+    // ----------member data ---------------------------
 
-      // ----------member data ---------------------------
-      
-      bool dataStep2_;
-  edm::EDGetTokenT<PCrossingFrame<SimTrack>> labelPCF_;
-  edm::EDGetTokenT<SimTrackContainer> labelSimTr_;
-
-  
-};
-}//edm
+    bool dataStep2_;
+    edm::EDGetTokenT<PCrossingFrame<SimTrack>> labelPCF_;
+    edm::EDGetTokenT<SimTrackContainer> labelSimTr_;
+  };
+}  // namespace edm
 #endif

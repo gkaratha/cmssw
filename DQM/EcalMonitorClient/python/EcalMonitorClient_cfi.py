@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 from DQM.EcalCommon.CommonParams_cfi import ecalCommonParams
 
@@ -10,8 +11,9 @@ from DQM.EcalMonitorClient.SelectiveReadoutClient_cfi import ecalSelectiveReadou
 from DQM.EcalMonitorClient.TimingClient_cfi import ecalTimingClient
 from DQM.EcalMonitorClient.TrigPrimClient_cfi import ecalTrigPrimClient
 from DQM.EcalMonitorClient.SummaryClient_cfi import ecalSummaryClient
+from DQM.EcalMonitorClient.MLClient_cfi import ecalMLClient
 
-ecalMonitorClient = cms.EDAnalyzer("EcalDQMonitorClient",
+ecalMonitorClient = DQMEDHarvester("EcalDQMonitorClient",
     moduleName = cms.untracked.string("Ecal Monitor Client"),
     # workers to be turned on
     workers = cms.untracked.vstring(
@@ -20,6 +22,8 @@ ecalMonitorClient = cms.EDAnalyzer("EcalDQMonitorClient",
         "PresampleClient",
         "RawDataClient",
         "TrigPrimClient",
+        "TimingClient",
+        "MLClient",
         "SummaryClient"
     ),
     # task parameters (included from indivitual cfis)
@@ -31,7 +35,8 @@ ecalMonitorClient = cms.EDAnalyzer("EcalDQMonitorClient",
         SelectiveReadoutClient = ecalSelectiveReadoutClient,
         TimingClient = ecalTimingClient,
         TrigPrimClient = ecalTrigPrimClient,
-        SummaryClient = ecalSummaryClient
+        SummaryClient = ecalSummaryClient,
+        MLClient = ecalMLClient
     ),
     commonParameters = ecalCommonParams,
     verbosity = cms.untracked.int32(0)

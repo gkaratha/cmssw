@@ -4,7 +4,7 @@
 //
 // Package:    TrackAssociator
 // Class:      MuonDetIdAssociator
-// 
+//
 /*
 
  Description: <one line class summary>
@@ -26,50 +26,56 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "CondFormats/CSCObjects/interface/CSCBadChambers.h"
 
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+class MuonDetIdAssociator : public DetIdAssociator {
+public:
+  MuonDetIdAssociator()
+      : DetIdAssociator(48, 48, 0.125), geometry_(nullptr), cscbadchambers_(nullptr), includeBadChambers_(false){};
+  MuonDetIdAssociator(const int nPhi, const int nEta, const double etaBinSize)
+      : DetIdAssociator(nPhi, nEta, etaBinSize),
+        geometry_(nullptr),
+        cscbadchambers_(nullptr),
+        includeBadChambers_(false){};
 
-class MuonDetIdAssociator: public DetIdAssociator{
- public:
-   MuonDetIdAssociator():DetIdAssociator(48, 48 , 0.125),geometry_(0),cscbadchambers_(0),includeBadChambers_(0){};
-   MuonDetIdAssociator(const int nPhi, const int nEta, const double etaBinSize)
-     :DetIdAssociator(nPhi, nEta, etaBinSize),geometry_(0),cscbadchambers_(0),includeBadChambers_(0){};
+  MuonDetIdAssociator(int nPhi,
+                      int nEta,
+                      double etaBinSize,
+                      const GlobalTrackingGeometry* geom,
+                      const CSCBadChambers* badChambers,
+                      bool includeBadChambers,
+                      bool includeGEM,
+                      bool includeME0)
+      : DetIdAssociator(nPhi, nEta, etaBinSize),
+        geometry_(geom),
+        cscbadchambers_(badChambers),
+        includeBadChambers_(includeBadChambers),
+        includeGEM_(includeGEM),
+        includeME0_(includeME0){};
 
-   MuonDetIdAssociator(const edm::ParameterSet& pSet)
-     :DetIdAssociator(pSet.getParameter<int>("nPhi"),pSet.getParameter<int>("nEta"),pSet.getParameter<double>("etaBinSize")),geometry_(0),cscbadchambers_(0),includeBadChambers_(pSet.getParameter<bool>("includeBadChambers")){};
-   
-   virtual void setGeometry(const GlobalTrackingGeometry* ptr) { geometry_ = ptr; }
+  virtual void setGeometry(const GlobalTrackingGeometry* ptr) { geometry_ = ptr; }
 
-   virtual void setGeometry(const DetIdAssociatorRecord& iRecord) override;
+  virtual void setCSCBadChambers(const CSCBadChambers* ptr) { cscbadchambers_ = ptr; }
 
-   virtual void setCSCBadChambers(const CSCBadChambers* ptr) { cscbadchambers_ = ptr; }
+  const GeomDet* getGeomDet(const DetId& id) const override;
 
-   virtual void setConditions(const DetIdAssociatorRecord& iRecord) override{
-      edm::ESHandle<CSCBadChambers> cscbadchambersH;
-      iRecord.getRecord<CSCBadChambersRcd>().get(cscbadchambersH);
-      setCSCBadChambers(cscbadchambersH.product());
-   };
+  const char* name() const override { return "AllMuonDetectors"; }
 
-   virtual const GeomDet* getGeomDet( const DetId& id ) const override;
+protected:
+  void check_setup() const override;
 
-   virtual const char* name() const override { return "AllMuonDetectors"; }
+  GlobalPoint getPosition(const DetId& id) const override;
 
- protected:
-   
-   virtual void check_setup() const override;
-   
-   virtual GlobalPoint getPosition(const DetId& id) const override;
-   
-   virtual void getValidDetIds(unsigned int, std::vector<DetId>&) const override;
-   
-   virtual std::pair<const_iterator,const_iterator> getDetIdPoints(const DetId& id, std::vector<GlobalPoint>& points) const override;
+  void getValidDetIds(unsigned int, std::vector<DetId>&) const override;
 
-   virtual bool insideElement(const GlobalPoint& point, const DetId& id) const override;
+  std::pair<const_iterator, const_iterator> getDetIdPoints(const DetId& id,
+                                                           std::vector<GlobalPoint>& points) const override;
 
-   const GlobalTrackingGeometry* geometry_;
+  bool insideElement(const GlobalPoint& point, const DetId& id) const override;
 
-   const CSCBadChambers* cscbadchambers_;
-   bool includeBadChambers_;
+  const GlobalTrackingGeometry* geometry_;
 
+  const CSCBadChambers* cscbadchambers_;
+  bool includeBadChambers_;
+  bool includeGEM_;
+  bool includeME0_;
 };
 #endif

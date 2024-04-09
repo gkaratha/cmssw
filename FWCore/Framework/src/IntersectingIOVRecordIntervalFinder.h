@@ -4,7 +4,7 @@
 //
 // Package:     Framework
 // Class  :     IntersectingIOVRecordIntervalFinder
-// 
+//
 /**\class IntersectingIOVRecordIntervalFinder IntersectingIOVRecordIntervalFinder.h FWCore/Framework/interface/IntersectingIOVRecordIntervalFinder.h
 
  Description: A RecordIntervalFinder which determines IOVs by taking the intersection of IOVs of other RecordIntervalFinders
@@ -19,42 +19,40 @@
 //
 
 // system include files
+#include <memory>
 #include <vector>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 // forward declarations
 namespace edm {
-   namespace eventsetup {
+  namespace eventsetup {
 
-      class IntersectingIOVRecordIntervalFinder : public EventSetupRecordIntervalFinder {
-         
-      public:
-         explicit IntersectingIOVRecordIntervalFinder(const EventSetupRecordKey&);
-         virtual ~IntersectingIOVRecordIntervalFinder();
-         
-         // ---------- const member functions ---------------------
-         
-         // ---------- static member functions --------------------
-         
-         // ---------- member functions ---------------------------
-         void swapFinders(std::vector<boost::shared_ptr<EventSetupRecordIntervalFinder> >&);
-      protected:
-         virtual void setIntervalFor(const EventSetupRecordKey&,
-                                     const IOVSyncValue& , 
-                                     ValidityInterval&);
-         
-      private:
-         IntersectingIOVRecordIntervalFinder(const IntersectingIOVRecordIntervalFinder&); // stop default
-         
-         const IntersectingIOVRecordIntervalFinder& operator=(const IntersectingIOVRecordIntervalFinder&); // stop default
-         
-         // ---------- member data --------------------------------
-         std::vector<boost::shared_ptr<EventSetupRecordIntervalFinder> > finders_;
-      };
-   }
-}
+    class IntersectingIOVRecordIntervalFinder : public EventSetupRecordIntervalFinder {
+    public:
+      explicit IntersectingIOVRecordIntervalFinder(const EventSetupRecordKey&);
+      IntersectingIOVRecordIntervalFinder(const IntersectingIOVRecordIntervalFinder&) = delete;
+      const IntersectingIOVRecordIntervalFinder& operator=(const IntersectingIOVRecordIntervalFinder&) = delete;
+      ~IntersectingIOVRecordIntervalFinder() override;
+
+      void swapFinders(std::vector<edm::propagate_const<std::shared_ptr<EventSetupRecordIntervalFinder>>>&);
+
+    protected:
+      void setIntervalFor(const EventSetupRecordKey&, const IOVSyncValue&, ValidityInterval&) override;
+
+    private:
+      void doResetInterval(const eventsetup::EventSetupRecordKey&) override;
+
+      bool isConcurrentFinder() const override;
+
+      bool isNonconcurrentAndIOVNeedsUpdate(const EventSetupRecordKey&, const IOVSyncValue&) const override;
+
+      // ---------- member data --------------------------------
+      std::vector<edm::propagate_const<std::shared_ptr<EventSetupRecordIntervalFinder>>> finders_;
+    };
+  }  // namespace eventsetup
+}  // namespace edm
 
 #endif

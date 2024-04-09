@@ -3,11 +3,12 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("READ")
 
 process.source = cms.Source("DQMRootSource",
+                            reScope = cms.untracked.string(""),
                             fileNames = cms.untracked.vstring("file:dqm_missing.root"))
 
 seq = cms.untracked.VEventID()
 
-process.check = cms.EDAnalyzer("MulticoreRunLumiEventChecker",
+process.check = cms.EDAnalyzer("RunLumiEventChecker",
                                eventSequence = seq)
 
 readRunElements = list()

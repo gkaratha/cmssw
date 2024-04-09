@@ -1,41 +1,33 @@
 #ifndef SiStripMonitorSummary_SiStripThresholdDQM_h
 #define SiStripMonitorSummary_SiStripThresholdDQM_h
 
-
 #include "DQM/SiStripMonitorSummary/interface/SiStripBaseCondObjDQM.h"
 
-#include "CondFormats/SiStripObjects/interface/SiStripThreshold.h"
 #include "CondFormats/DataRecord/interface/SiStripThresholdRcd.h"
+#include "CondFormats/SiStripObjects/interface/SiStripThreshold.h"
 
+class SiStripThresholdDQM : public SiStripBaseCondObjDQMGet<SiStripThreshold, SiStripThresholdRcd> {
+public:
+  SiStripThresholdDQM(edm::ESGetToken<SiStripThreshold, SiStripThresholdRcd> token,
+                      edm::RunNumber_t iRun,
+                      edm::ParameterSet const &hPSet,
+                      edm::ParameterSet const &fPSet,
+                      const TrackerTopology *tTopo,
+                      const TkDetMap *tkDetMap);
 
-class SiStripThresholdDQM : public SiStripBaseCondObjDQM{
- 
-  public:
-  
-  SiStripThresholdDQM(const edm::EventSetup & eSetup,
-                      edm::ParameterSet const& hPSet,
-                      edm::ParameterSet const& fPSet);
-  
-  virtual ~SiStripThresholdDQM();
-  
-  void getActiveDetIds(const edm::EventSetup & eSetup);
+  ~SiStripThresholdDQM() override;
 
-   void fillModMEs(const std::vector<uint32_t> & selectedDetIds, const edm::EventSetup& es); 
-   void fillSummaryMEs(const std::vector<uint32_t> & selectedDetIds, const edm::EventSetup& es); 
- 	       
-  void fillMEsForDet(const ModMEs& selModME_,uint32_t selDetId_, const TrackerTopology* tTopo);
-  void fillMEsForLayer( /*std::map<uint32_t, ModMEs> selModMEsMap_, */ uint32_t selDetId_, const TrackerTopology* tTopo);
-  
-  unsigned long long getCache(const edm::EventSetup & eSetup){ return eSetup.get<SiStripThresholdRcd>().cacheIdentifier();}
-  
-  void getConditionObject(const edm::EventSetup & eSetup){
-    eSetup.get<SiStripThresholdRcd>().get(thresholdHandle_);
-    cacheID_memory = cacheID_current;
-  }
+  void getActiveDetIds(const edm::EventSetup &eSetup) override;
 
-  private:
-    edm::ESHandle<SiStripThreshold> thresholdHandle_;
-    std::string WhichThreshold;
+  void fillModMEs(const std::vector<uint32_t> &selectedDetIds) override;
+  void fillSummaryMEs(const std::vector<uint32_t> &selectedDetIds) override;
+
+  void fillMEsForDet(const ModMEs &selModME_, uint32_t selDetId_) override;
+  void fillMEsForLayer(
+      /*std::map<uint32_t, ModMEs> selModMEsMap_, */ uint32_t selDetId_) override;
+
+private:
+  std::string WhichThreshold;
 };
 
 #endif

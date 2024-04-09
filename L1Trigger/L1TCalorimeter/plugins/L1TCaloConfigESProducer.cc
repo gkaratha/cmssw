@@ -7,10 +7,8 @@
 ///    Dummy producer for L1 calo upgrade runtime configuration
 ///
 
-
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -38,14 +36,14 @@ using namespace l1t;
 class L1TCaloConfigESProducer : public edm::ESProducer {
 public:
   L1TCaloConfigESProducer(const edm::ParameterSet&);
-  ~L1TCaloConfigESProducer();
+  ~L1TCaloConfigESProducer() override;
 
-  typedef boost::shared_ptr<CaloConfig> ReturnType;
+  using ReturnType = std::unique_ptr<CaloConfig>;
 
   ReturnType produce(const L1TCaloConfigRcd&);
 
 private:
-  CaloConfig  m_params;
+  CaloConfig m_params;
   std::string m_label;
 };
 
@@ -60,8 +58,7 @@ private:
 //
 // constructors and destructor
 //
-L1TCaloConfigESProducer::L1TCaloConfigESProducer(const edm::ParameterSet& conf)
-{
+L1TCaloConfigESProducer::L1TCaloConfigESProducer(const edm::ParameterSet& conf) {
   //the following line is needed to tell the framework what
   // data is being produced
   setWhatProduced(this);
@@ -72,31 +69,19 @@ L1TCaloConfigESProducer::L1TCaloConfigESProducer(const edm::ParameterSet& conf)
   CaloConfigHelper h(m_params, fwv, l1epoch);
 }
 
-
-L1TCaloConfigESProducer::~L1TCaloConfigESProducer()
-{
-
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
-
+L1TCaloConfigESProducer::~L1TCaloConfigESProducer() {
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
 }
-
 
 //
 // member functions
 //
 
 // ------------ method called to produce the data  ------------
-L1TCaloConfigESProducer::ReturnType
-L1TCaloConfigESProducer::produce(const L1TCaloConfigRcd& iRecord)
-{
-   using namespace edm::es;
-   boost::shared_ptr<CaloConfig> pCaloConfig ;
-   pCaloConfig = boost::shared_ptr< CaloConfig >(new CaloConfig(m_params));
-   return pCaloConfig;
+L1TCaloConfigESProducer::ReturnType L1TCaloConfigESProducer::produce(const L1TCaloConfigRcd& iRecord) {
+  return std::make_unique<CaloConfig>(m_params);
 }
-
-
 
 //define this as a plug-in
 DEFINE_FWK_EVENTSETUP_MODULE(L1TCaloConfigESProducer);

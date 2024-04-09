@@ -9,33 +9,34 @@ trackAssociatorByHitsForConversionValidation.Quality_SimToReco = 0.5
 trackAssociatorByHitsForConversionValidation.Purity_SimToReco = 0.5
 trackAssociatorByHitsForConversionValidation.Cut_RecoToSim = 0.5
 
-import PhysicsTools.RecoAlgos.trackingParticleSelector_cfi
-tpSelecForEfficiency = PhysicsTools.RecoAlgos.trackingParticleSelector_cfi.trackingParticleSelector.clone()
-tpSelecForEfficiency.chargedOnly = True
+from CommonTools.RecoAlgos.trackingParticleRefSelector_cfi import trackingParticleRefSelector as _trackingParticleRefSelector
+tpSelecForEfficiency = _trackingParticleRefSelector.clone(
+chargedOnly = True,
 # trackingParticleSelector.pdgId = cms.vint32()
-tpSelecForEfficiency.tip = 120
-tpSelecForEfficiency.lip = 280
-tpSelecForEfficiency.signalOnly = False
-tpSelecForEfficiency.minRapidity = -2.5
-tpSelecForEfficiency.ptMin = 0.3
-tpSelecForEfficiency.maxRapidity = 2.5
-tpSelecForEfficiency.minHit = 0
+tip = 120,
+lip = 280,
+signalOnly = False,
+minRapidity = -2.5,
+ptMin = 0.3,
+maxRapidity = 2.5,
+minHit = 0
+)
 
-
-tpSelecForFakeRate = PhysicsTools.RecoAlgos.trackingParticleSelector_cfi.trackingParticleSelector.clone()
-tpSelecForFakeRate.chargedOnly = True
+tpSelecForFakeRate = _trackingParticleRefSelector.clone(
+chargedOnly = True,
 # trackingParticleSelector.pdgId = cms.vint32()
-tpSelecForFakeRate.tip = 120
-tpSelecForFakeRate.lip = 280
-tpSelecForFakeRate.signalOnly = False
-tpSelecForFakeRate.minRapidity = -2.5
-tpSelecForFakeRate.ptMin = 0.
-tpSelecForFakeRate.maxRapidity = 2.5
-tpSelecForFakeRate.minHit = 0
+tip = 120,
+lip = 280,
+signalOnly = False,
+minRapidity = -2.5,
+ptMin = 0.0,
+maxRapidity = 2.5,
+minHit = 0
+)
 
 
-
-tkConversionValidation = cms.EDAnalyzer("TkConvValidator",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+tkConversionValidation = DQMEDAnalyzer('TkConvValidator',
     Name = cms.untracked.string('tkConversionValidation'),
     isRunCentrally = cms.bool(False),
     OutputFileName = cms.string('ValidationHistos.root'),
@@ -137,6 +138,5 @@ tkConversionValidation = cms.EDAnalyzer("TkConvValidator",
 )
 
 
-from Configuration.StandardSequences.Eras import eras
-if eras.fastSim.isChosen():
-    tkConversionValidation.simTracks = cms.InputTag("famosSimHits")
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(tkConversionValidation, simTracks = "fastSimProducer")

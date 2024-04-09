@@ -15,9 +15,7 @@
 // this class header
 #include "DataFormats/L1TGlobal/interface/GlobalExtBlk.h"
 
-
 // system include files
-
 
 // user include files
 
@@ -27,109 +25,64 @@
 // constructors
 
 // empty constructor, all members set to zero;
-GlobalExtBlk::GlobalExtBlk(int orbitNr, int bxNr, int bxInEvent):
-   m_orbitNr(orbitNr), m_bxNr(bxNr), m_bxInEvent(bxInEvent)
-{
-
-    //Clear out the header data
-    m_finalOR=0;
-
-    // Reserve/Clear out the decision words
-    m_extDecision.reserve(L1GlobalTriggerReadoutSetup::NumberPhysTriggers);
-    m_extDecision.assign(L1GlobalTriggerReadoutSetup::NumberPhysTriggers,false);
-    
+GlobalExtBlk::GlobalExtBlk() {
+  // Reserve/Clear out the decision words
+  m_extDecision.reserve(maxExternalConditions);
+  m_extDecision.assign(maxExternalConditions, false);
 }
-
-
-// empty constructor, all members set to zero;
-GlobalExtBlk::GlobalExtBlk( )
-{
-
-    //Clear out the header data
-    m_orbitNr=0;
-    m_bxNr=0;
-    m_bxInEvent=0;
-    m_finalOR=0;
-
-    // Reserve/Clear out the decision words
-    m_extDecision.reserve(L1GlobalTriggerReadoutSetup::NumberPhysTriggers);
-    m_extDecision.assign(L1GlobalTriggerReadoutSetup::NumberPhysTriggers,false);
-
-}
-
-
 
 // destructor
-GlobalExtBlk::~GlobalExtBlk()
-{
-
-    // empty now
+GlobalExtBlk::~GlobalExtBlk() {
+  // empty now
 }
-
 
 /// Set decision bits
-void GlobalExtBlk::setExternalDecision(int bit, bool val)   
-{ 
-//   if(bit < m_algoDecision.size()) {
-       
-      m_extDecision.at(bit) = val;   
-   
-//   } 
-   // Need some erorr checking here.
-      
-}
+void GlobalExtBlk::setExternalDecision(unsigned int bit, bool val) {
+  if (bit < m_extDecision.size()) {
+    m_extDecision.at(bit) = val;
 
+  } else {
+    // Need some erorr checking here.
+    LogTrace("L1TGlobal") << "Attempting to set a external bit " << bit << " beyond limit " << m_extDecision.size();
+  }
+}
 
 /// Get decision bits
-bool GlobalExtBlk::getExternalDecision(unsigned int bit) const  
-{ 
-   if(bit>=m_extDecision.size()) return false;
-   return m_extDecision.at(bit); 
+bool GlobalExtBlk::getExternalDecision(unsigned int bit) const {
+  if (bit >= m_extDecision.size())
+    return false;
+  return m_extDecision.at(bit);
 }
 
-
 // reset the content of a GlobalExtBlk
-void GlobalExtBlk::reset()
-{
-
-    //Clear out the header data
-    m_orbitNr=0;
-    m_bxNr=0;
-    m_bxInEvent=0;
-    m_finalOR=0;
-
-    // Clear out the decision words
-    // but leave the vector intact 
-    m_extDecision.assign(L1GlobalTriggerReadoutSetup::NumberPhysTriggers,false);
-
-
+void GlobalExtBlk::reset() {
+  // Clear out the decision words
+  // but leave the vector intact
+  m_extDecision.assign(maxExternalConditions, false);
 }
 
 // pretty print the content of a GlobalExtBlk
-void GlobalExtBlk::print(std::ostream& myCout) const
-{
+void GlobalExtBlk::print(std::ostream& myCout) const {
+  myCout << " GlobalExtBlk " << std::endl;
 
-    myCout << " GlobalExtBlk " << std::endl;
-    
-    myCout << "    Orbit Number (hex):  0x" << std::hex << std::setw(8) << std::setfill('0') << m_orbitNr << std::endl;
-
-    myCout << "    Bx Number (hex):     0x" << std::hex << std::setw(4) << std::setfill('0') << m_bxNr << std::endl;
-
-    myCout << "    Local Bx (hex):      0x" << std::hex << std::setw(1) << std::setfill('0') << m_bxInEvent << std::endl;
-
-    // Loop through bits to create a hex word of algorithm bits.
-    int lengthWd = m_extDecision.size();
-    myCout << "    External Condition   0x" << std::hex;
-    int digit = 0;
-    for(int i=lengthWd-1; i>-1; i--) {
-      if(m_extDecision.at(i)) digit |= (1 << (i%4));
-      if((i%4) == 0){
-         myCout << std::hex << std::setw(1) << digit;
-	 digit = 0; 
-      }  
-    } //end loop over algorithm bits
-    myCout << std::endl;    
-
+  // Loop through bits to create a hex word of algorithm bits.
+  int lengthWd = m_extDecision.size();
+  myCout << "    External Conditions   0x" << std::hex;
+  int digit = 0;
+  bool firstNonZero = false;
+  for (int i = lengthWd - 1; i > -1; i--) {
+    if (m_extDecision.at(i))
+      digit |= (1 << (i % 4));
+    if (digit > 0)
+      firstNonZero = true;
+    if ((i % 4) == 0 && firstNonZero) {
+      myCout << std::hex << std::setw(1) << digit;
+      digit = 0;
+      if (i % 32 == 0 && i < lengthWd - 1)
+        myCout << " ";
+    }
+  }  //end loop over algorithm bits
+  if (!firstNonZero)
+    myCout << "0";
+  myCout << std::endl;
 }
-
-

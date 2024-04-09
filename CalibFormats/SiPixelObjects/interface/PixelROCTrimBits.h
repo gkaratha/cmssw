@@ -11,19 +11,20 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include <string>
 
-namespace pos{
-/*! \class PixelROCTrimBits PixelROCTrimBits.h "interface/PixelROCTrimBits.h"
+namespace pos {
+  /*! \class PixelROCTrimBits PixelROCTrimBits.h "interface/PixelROCTrimBits.h"
 *   \brief This class implements..
 *
 *   A longer explanation will be placed here later
 */
+  class PixelROCTrimBits;
+  std::ostream& operator<<(std::ostream& s, const PixelROCTrimBits& trimbits);
+
   class PixelROCTrimBits {
-
   public:
-
     PixelROCTrimBits();
 
-    void setROCTrimBits(PixelROCName rocid ,std::string bits);
+    void setROCTrimBits(PixelROCName rocid, std::string bits);
 
     int read(PixelROCName rocid, std::string in);
     int read(PixelROCName rocid, std::ifstream& in);
@@ -40,17 +41,14 @@ namespace pos{
     void writeBinary(std::ofstream& out) const;
 
     void writeASCII(std::ofstream& out) const;
-    void writeXML(  std::ofstream* out) const;
+    void writeXML(std::ofstream* out) const;
 
-    PixelROCName name() const {return rocid_;}
+    PixelROCName name() const { return rocid_; }
 
   private:
-
     unsigned char bits_[2080];
     PixelROCName rocid_;
-
-
   };
 
-}
+}  // namespace pos
 #endif

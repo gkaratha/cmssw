@@ -9,11 +9,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Builder")
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     debugModules = cms.untracked.vstring('siStripLatencyDummyDBWriter'),
-    threshold = cms.untracked.string('INFO'),
-    destinations = cms.untracked.vstring('LatencyBuilder.log')
+    files = cms.untracked.PSet(
+        LatencyBuilder = cms.untracked.PSet(
+
+        )
+    ),
+    threshold = cms.untracked.string('INFO')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -27,12 +33,14 @@ process.source = cms.Source("EmptySource",
 process.load("CalibTracker.SiStripESProducers.fake.SiStripLatencyFakeESSource_cfi")
 process.load("CalibTracker.SiStripESProducers.DBWriter.SiStripLatencyDummyDBWriter_cfi")
 
-process.SiStripLatencyGenerator.latency = 255
-process.SiStripLatencyGenerator.mode = 0
-# process.SiStripLatencyGenerator.latency = 143
-# process.SiStripLatencyGenerator.mode = 47
-# process.SiStripLatencyGenerator.latency = 146
-# process.SiStripLatencyGenerator.mode = 37
+from CalibTracker.SiStripESProducers.fake.SiStripLatencyFakeESSource_cfi import siStripLatencyFakeESSource
+
+siStripLatencyFakeESSource.latency = 255
+siStripLatencyFakeESSource.mode = 0
+# siStripLatencyFakeESSource.latency = 143
+# siStripLatencyFakeESSource.mode = 47
+# siStripLatencyFakeESSource.latency = 146
+# siStripLatencyFakeESSource.mode = 37
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),

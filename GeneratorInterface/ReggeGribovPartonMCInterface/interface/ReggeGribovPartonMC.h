@@ -8,22 +8,21 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <math.h>
+#include <cmath>
 
 namespace HepMC {
   class GenEvent;
   class GenParticle;
   class GenVertex;
-}
+}  // namespace HepMC
 
-
-namespace gen
-{
+namespace gen {
   class ReggeGribovPartonMCHadronizer : public BaseHadronizer {
   public:
     ReggeGribovPartonMCHadronizer(const edm::ParameterSet &);
-    virtual ~ReggeGribovPartonMCHadronizer();  };
+    ~ReggeGribovPartonMCHadronizer() override;
+  };
 
-} /*end namespace*/
+}  // namespace gen
 
-#endif //ifndef REGGEGRIBOVPARTONMC_H
+#endif  //ifndef REGGEGRIBOVPARTONMC_H

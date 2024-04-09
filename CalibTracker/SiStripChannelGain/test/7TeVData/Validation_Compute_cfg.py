@@ -3,8 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("APVGAIN")
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 #this block is there to solve issue related to SiStripQualityRcd
 process.load("CalibTracker.SiStripESProducers.SiStripQualityESProducer_cfi")
@@ -34,11 +33,13 @@ process.load("CalibTracker.SiStripChannelGain.computeGain_cff")
 process.SiStripCalib.FirstSetOfConstants = cms.untracked.bool(False)
 process.SiStripCalibValidation.CalibrationLevel    = cms.untracked.int32(0) # 0==APV, 1==Laser, 2==module
 process.SiStripCalibValidation.saveSummary         = cms.untracked.bool(True)
+process.SiStripCalibValidation.calibrationMode     = cms.untracked.string( 'XXX_CALMODE_XXX' )
 
 
 if(XXX_PCL_XXX):
    process.SiStripCalibValidation.AlgoMode = cms.untracked.string('PCL')
    process.SiStripCalibValidation.harvestingMode = cms.untracked.bool(True)
+   process.SiStripCalib.DQMdir         = cms.untracked.string('XXX_DQMDIR_XXX')
    process.source = cms.Source("PoolSource",
        secondaryFileNames = cms.untracked.vstring(),
        fileNames = calibTreeList,
@@ -64,17 +65,22 @@ if(XXX_PCL_XXX):
    process.dqmSaver.convention = 'Offline'
    process.dqmSaver.workflow = '/Express/PCLTest/ALCAPROMPT'
 
-   process.EDMtoMEConvert = cms.EDAnalyzer("EDMtoMEConverter",
-       Frequency = cms.untracked.int32(50),
-       Name = cms.untracked.string('EDMtoMEConverter'),
-       Verbosity = cms.untracked.int32(0),
-       convertOnEndLumi = cms.untracked.bool(True),
-       convertOnEndRun = cms.untracked.bool(True),
-       lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterLumi"),
-       runInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterRun")
-   )
+   from DQMServices.Components.EDMtoMEConverter_cfi import *
 
-   process.p = cms.Path(process.EDMtoMEConvert * process.SiStripCalibValidation * process.dqmSaver) 
+   process.EDMtoMEConvertSiStripGains = EDMtoMEConverter.clone()
+   process.EDMtoMEConvertSiStripGains.lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterLumi")
+   process.EDMtoMEConvertSiStripGains.runInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterRun")
+
+   process.EDMtoMEConvertSiStripGainsAAG = EDMtoMEConverter.clone()
+   process.EDMtoMEConvertSiStripGainsAAG.lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAAG","MEtoEDMConverterLumi")
+   process.EDMtoMEConvertSiStripGainsAAG.runInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAAG","MEtoEDMConverterRun")
+
+
+   ConvertersSiStripGains = cms.Sequence( process.EDMtoMEConvertSiStripGains +
+                                          process.EDMtoMEConvertSiStripGainsAAG )
+
+   process.p = cms.Path( ConvertersSiStripGains * process.SiStripCalibValidation * process.dqmSaver)
+
 else:
    process.p = cms.Path(process.SiStripCalibValidation)
 

@@ -7,25 +7,20 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class CSCNeutronReader : public SubsystemNeutronReader
-{
+class CSCNeutronReader : public SubsystemNeutronReader {
 public:
-  CSCNeutronReader(const edm::ParameterSet & pset)
-  : SubsystemNeutronReader(pset) {}
-  virtual ~CSCNeutronReader() {}
+  CSCNeutronReader(const edm::ParameterSet &pset) : SubsystemNeutronReader(pset) {}
+  ~CSCNeutronReader() override {}
 
-  void addHits(std::map<int, edm::PSimHitContainer> & hitMap, CLHEP::HepRandomEngine*);
+  void addHits(std::map<int, edm::PSimHitContainer> &hitMap, CLHEP::HepRandomEngine *);
 
-  virtual int detId(int chamberIndex, int localDetId );
+  int detId(int chamberIndex, int localDetId) override;
 
   int localDetId(int globalDetId) const;
 
   int chamberType(int globalDetId) const;
 
   int chamberId(int globalDetId) const;
-
-
 };
 
 #endif
-

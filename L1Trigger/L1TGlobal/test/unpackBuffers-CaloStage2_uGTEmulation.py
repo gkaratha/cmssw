@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Auto generated configuration file
 # using: 
 # Revision: 1.19 
@@ -92,6 +93,11 @@ options.register('doGT',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Read GT data")
+options.register('newXML',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "New XML Grammar")		 
 options.register('nMP',
                  11,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -138,21 +144,22 @@ process.output = cms.OutputModule(
 # Additional output definition
 # TTree output file
 process.load("CommonTools.UtilAlgos.TFileService_cfi")
-process.TFileService.fileName = cms.string('l1tCalo_2016_histos.root')
+process.TFileService.fileName = cms.string('l1tCalo_2016_histos_'+repr(options.gtOffset)+'-'+repr(options.gtLatency)+'.root')
 
 
 # enable debug message logging for our modules
-process.MessageLogger.categories.append('L1TCaloEvents')
-process.MessageLogger.categories.append('L1TGlobalEvents')
+process.MessageLogger.L1TCaloEvents=dict()
+process.MessageLogger.L1TGlobalEvents=dict()
+process.MessageLogger.Global=dict()
 
 process.MessageLogger.suppressInfo = cms.untracked.vstring('Geometry', 'AfterSource')
 
 if (options.dump):
-    process.MessageLogger.infos.placeholder = cms.untracked.bool(False)
-    process.MessageLogger.infos.INFO = cms.untracked.PSet(limit = cms.untracked.int32(0))
-    process.MessageLogger.infos.L1TCaloEvents = cms.untracked.PSet(
-      optionalPSet = cms.untracked.bool(True),
-      limit = cms.untracked.int32(10000)
+    process.MessageLogger.files.infos = cms.untracked.PSet(
+        INFO = cms.untracked.PSet(limit = cms.untracked.int32(0)),
+        L1TCaloEvents = cms.untracked.PSet(
+            limit = cms.untracked.int32(10000)
+        )
     )
 
 if (options.debug):
@@ -187,18 +194,18 @@ gtOffset = options.gtOffset + (options.skipEvents * options.gtFramesPerEvent)
 
 
 # print some debug info
-print "Job config :"
-print "maxEvents     = ", options.maxEvents
-print "skipEvents    = ", options.skipEvents
-print " "
+print("Job config :")
+print("maxEvents     = ", options.maxEvents)
+print("skipEvents    = ", options.skipEvents)
+print(" ")
 
 # MP config
 if (options.doMP):
-    print "MP config :"
-    print "nBoards       = ", options.nMP
-    print "mpBoardOffset = ", boardOffset
-    print "mpOffset      = ", mpOffsets
-    print " "
+    print("MP config :")
+    print("nBoards       = ", options.nMP)
+    print("mpBoardOffset = ", boardOffset)
+    print("mpOffset      = ", mpOffsets)
+    print(" ")
 
 process.stage2MPRaw.nFramesPerEvent    = cms.untracked.int32(options.mpFramesPerEvent)
 process.stage2MPRaw.nFramesOffset    = cms.untracked.vuint32(mpOffsets)
@@ -209,10 +216,10 @@ process.stage2MPRaw.txFile = cms.untracked.string("merge/tx_summary.txt")
 
 # Demux config
 if (options.doDemux):
-    print "Demux config :"
-    print "dmOffset      = ", dmOffset
-    print "dmLatency     = ", options.dmLatency
-    print " "
+    print("Demux config :")
+    print("dmOffset      = ", dmOffset)
+    print("dmLatency     = ", options.dmLatency)
+    print(" ")
 
 process.stage2DemuxRaw.nFramesPerEvent    = cms.untracked.int32(options.dmFramesPerEvent)
 process.stage2DemuxRaw.nFramesOffset    = cms.untracked.vuint32(dmOffset)
@@ -222,9 +229,9 @@ process.stage2DemuxRaw.txFile = cms.untracked.string("good/demux/tx_summary.txt"
 
 # GT config
 if (options.doGT):
-    print "GT config :"
-    print "gtOffset      = ", gtOffset
-    print "gtLatency     = ", options.gtLatency
+    print("GT config :")
+    print("gtOffset      = ", gtOffset)
+    print("gtLatency     = ", options.gtLatency)
 
 process.stage2GTRaw.nFramesPerEvent    = cms.untracked.int32(options.gtFramesPerEvent)
 process.stage2GTRaw.nFramesOffset    = cms.untracked.vuint32(gtOffset)
@@ -241,7 +248,7 @@ process.dumpRaw = cms.EDAnalyzer(
     "DumpFEDRawDataProduct",
     label = cms.untracked.string("rawDataCollector"),
     feds = cms.untracked.vint32 ( 1360, 1366, 1404 ),
-    dumpPayload = cms.untracked.bool ( False )
+    dumpPayload = cms.untracked.bool ( True )
 )
 
 # raw to digi
@@ -256,26 +263,32 @@ process.gtStage2Digis.InputLabel = cms.InputTag('rawDataCollector')
 process.load('L1Trigger.L1TGlobal.StableParametersConfig_cff')
 process.load('L1Trigger.L1TGlobal.TriggerMenuXml_cfi')
 process.TriggerMenuXml.TriggerMenuLuminosity = 'startup'
-process.TriggerMenuXml.DefXmlFile = 'L1Menu_CaloSliceTest_2015.xml'
+#process.TriggerMenuXml.DefXmlFile = 'L1Menu_CaloSliceTest_2015_v4.xml'
+process.TriggerMenuXml.DefXmlFile = 'L1Menu_Point5IntegrationTest_2015_v2.xml'
+process.TriggerMenuXml.newGrammar = cms.bool(options.newXML)
+if(options.newXML):
+   print("Using new XML Grammar ")
+   #process.TriggerMenuXml.DefXmlFile = 'L1Menu_Point5IntegrationTest_2015_v1a.xml'
+   process.TriggerMenuXml.DefXmlFile = 'MuonTest.xml'
 
 process.load('L1Trigger.L1TGlobal.TriggerMenuConfig_cff')
 process.es_prefer_l1GtParameters = cms.ESPrefer('l1t::TriggerMenuXmlProducer','TriggerMenuXml')
 
-process.emL1uGtFromGtInput = cms.EDProducer("l1t::GtProducer",
+process.emL1uGtFromGtInput = cms.EDProducer("L1TGlobalProducer",
     ProduceL1GtObjectMapRecord = cms.bool(False),
     AlgorithmTriggersUnmasked = cms.bool(False),
     EmulateBxInEvent = cms.int32(1),
     L1DataBxInEvent = cms.int32(1),
     AlgorithmTriggersUnprescaled = cms.bool(False),
     ProduceL1GtDaqRecord = cms.bool(True),
-    GmtInputTag = cms.InputTag(""),
+    GmtInputTag = cms.InputTag("gtStage2Digis","GT"),
     caloInputTag = cms.InputTag("gtStage2Digis","GT"),
     AlternativeNrBxBoardDaq = cms.uint32(0),
     BstLengthBytes = cms.int32(-1),
     Verbosity = cms.untracked.int32(5)
 )
 
-process.emL1uGtFromDemuxOutput = cms.EDProducer("l1t::GtProducer",
+process.emL1uGtFromDemuxOutput = cms.EDProducer("L1TGlobalProducer",
     ProduceL1GtObjectMapRecord = cms.bool(False),
     AlgorithmTriggersUnmasked = cms.bool(False),
     EmulateBxInEvent = cms.int32(1),
@@ -303,11 +316,12 @@ process.l1tStage2CaloAnalyzer.mpTauToken = cms.InputTag("None")
 # gt analyzer
 process.l1tGlobalAnalyzer = cms.EDAnalyzer('L1TGlobalAnalyzer',
     doText = cms.untracked.bool(options.debug),
-    dmxEGToken = cms.InputTag("None"),
+    dmxEGToken = cms.InputTag("caloStage2Digis"),
     dmxTauToken = cms.InputTag("None"),
     dmxJetToken = cms.InputTag("caloStage2Digis"),
     dmxEtSumToken = cms.InputTag("caloStage2Digis"),
-    egToken = cms.InputTag("None"),
+    muToken = cms.InputTag("gtStage2Digis","GT"),
+    egToken = cms.InputTag("gtStage2Digis","GT"),
     tauToken = cms.InputTag("None"),
     jetToken = cms.InputTag("gtStage2Digis","GT"),
     etSumToken = cms.InputTag("gtStage2Digis","GT"),
@@ -317,19 +331,44 @@ process.l1tGlobalAnalyzer = cms.EDAnalyzer('L1TGlobalAnalyzer',
 )
 
 
+# dump records
+process.dumpGTRecord = cms.EDAnalyzer("l1t::GtRecordDump",
+                egInputTag    = cms.InputTag("gtStage2Digis","GT"),
+		muInputTag    = cms.InputTag("gtStage2Digis","GT"),
+		tauInputTag   = cms.InputTag(""),
+		jetInputTag   = cms.InputTag("gtStage2Digis","GT"),
+		etsumInputTag = cms.InputTag("gtStage2Digis","GT"),
+		uGtRecInputTag = cms.InputTag(""),
+		uGtAlgInputTag = cms.InputTag("emL1uGtFromGtInput"),
+		uGtExtInputTag = cms.InputTag(""),
+		bxOffset       = cms.int32(0),
+		minBx          = cms.int32(0),
+		maxBx          = cms.int32(0),
+		minBxVec       = cms.int32(0),
+		maxBxVec       = cms.int32(0),		
+		dumpGTRecord   = cms.bool(True),
+		dumpVectors    = cms.bool(True),
+		tvFileName     = cms.string( "TestVector.txt" )
+		 )
+		 
+
+
+
+
 # Path and EndPath definitions
 process.path = cms.Path(
-    process.stage2MPRaw
-    +process.stage2DemuxRaw
+#    process.stage2MPRaw
+     process.stage2DemuxRaw
     +process.stage2GTRaw
     +process.rawDataCollector
     +process.dumpRaw
     +process.caloStage2Digis
     +process.gtStage2Digis
     +process.emL1uGtFromGtInput
-    +process.emL1uGtFromDemuxOutput
-    +process.l1tStage2CaloAnalyzer
-    +process.l1tGlobalAnalyzer
+#    +process.emL1uGtFromDemuxOutput
+#    +process.l1tStage2CaloAnalyzer
+#    +process.l1tGlobalAnalyzer
+#    +process.dumpGTRecord
 )
 
 if (not options.doMP):

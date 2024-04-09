@@ -1,33 +1,34 @@
 #ifndef Validation_RPCRecHits_RPCRecHitValid_h
-#define Validaiton_RPCRecHits_RPCRecHitValid_h
+#define Validation_RPCRecHits_RPCRecHitValid_h
 
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 
+#include "DQMServices/Core/interface/DQMStore.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/RPCGeometry/interface/RPCGeometry.h"
 
-#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHitFwd.h"
-#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "SimGeneral/TrackingAnalysis/interface/SimHitTPAssociationProducer.h"
 #include "Validation/RPCRecHits/interface/RPCValidHistograms.h"
 
 #include <string>
 
-class RPCRecHitValid : public DQMEDAnalyzer
-{
+class RPCRecHitValid : public DQMEDAnalyzer {
 public:
-  RPCRecHitValid(const edm::ParameterSet& pset);
-  ~RPCRecHitValid() {};
+  RPCRecHitValid(const edm::ParameterSet &pset);
+  ~RPCRecHitValid() override{};
 
-  void analyze(const edm::Event& event, const edm::EventSetup& eventSetup);
+  void analyze(const edm::Event &event, const edm::EventSetup &eventSetup) override;
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
 
 private:
@@ -40,10 +41,13 @@ private:
   edm::EDGetTokenT<SimHits> simHitToken_;
   edm::EDGetTokenT<RecHits> recHitToken_;
   edm::EDGetTokenT<SimParticles> simParticleToken_;
-  edm::EDGetTokenT<SimHitAssoc>  simHitAssocToken_;
+  edm::EDGetTokenT<SimHitAssoc> simHitAssocToken_;
   edm::EDGetTokenT<reco::MuonCollection> muonToken_;
 
-  typedef MonitorElement* MEP;
+  edm::ESGetToken<RPCGeometry, MuonGeometryRecord> rpcGeomToken_;
+  edm::ESGetToken<RPCGeometry, MuonGeometryRecord> rpcGeomTokenInRun_;
+
+  typedef MonitorElement *MEP;
   RPCValidHistograms h_;
 
   MEP h_eventCount;
@@ -75,4 +79,4 @@ private:
   std::map<int, int> detIdToIndexMapBarrel_, detIdToIndexMapEndcap_;
 };
 
-#endif
+#endif  // Validation_RPCRecHits_RPCRecHitValid_h

@@ -6,52 +6,47 @@
 
 #include <vector>
 
-class EcalTBHodoscopeGeometry : public CaloSubdetectorGeometry
-{
+class EcalTBHodoscopeGeometry : public CaloSubdetectorGeometry {
+public:
+  typedef std::vector<PreshowerStrip> CellVec;
 
-   public:
+  typedef CaloCellGeometry::CCGFloat CCGFloat;
+  typedef CaloCellGeometry::Pt3D Pt3D;
+  typedef CaloCellGeometry::Pt3DVec Pt3DVec;
 
-      typedef std::vector<PreshowerStrip> CellVec ;
+  EcalTBHodoscopeGeometry();
+  ~EcalTBHodoscopeGeometry() override;
 
-      typedef CaloCellGeometry::CCGFloat CCGFloat ;
-      typedef CaloCellGeometry::Pt3D     Pt3D     ;
-      typedef CaloCellGeometry::Pt3DVec  Pt3DVec  ;
+  void newCell(const GlobalPoint& f1,
+               const GlobalPoint& f2,
+               const GlobalPoint& f3,
+               const CCGFloat* parm,
+               const DetId& detId) override;
 
-      EcalTBHodoscopeGeometry() ;
-      ~EcalTBHodoscopeGeometry() ;
+  static float getFibreLp(int plane, int fibre);
 
-      virtual void newCell( const GlobalPoint& f1 ,
-			    const GlobalPoint& f2 ,
-			    const GlobalPoint& f3 ,
-			    const CCGFloat*    parm ,
-			    const DetId&       detId   ) ;
+  static float getFibreRp(int plane, int fibre);
 
-      static float getFibreLp( int plane, int fibre ) ;
-      
-      static float getFibreRp( int plane, int fibre ) ;
-  
-      static std::vector<int> getFiredFibresInPlane( float xtr, int plane ) ;
+  static std::vector<int> getFiredFibresInPlane(float xtr, int plane);
 
-      static int getNPlanes() ;
-      
-      static int getNFibres() ;
+  static int getNPlanes();
 
-   protected:
+  static int getNFibres();
 
-      virtual const CaloCellGeometry* cellGeomPtr( uint32_t index ) const ;
-      
-   private:
-      
-      struct fibre_pos 
-      {
-	    float lp, rp ;
-      };
+protected:
+  // Modify the RawPtr class
+  const CaloCellGeometry* getGeometryRawPtr(uint32_t index) const override;
 
-      static const int nPlanes_=4;
-      static const int nFibres_=64;
-      static const fibre_pos fibrePos_[ nPlanes_ ][ nFibres_ ] ;
+private:
+  struct fibre_pos {
+    float lp, rp;
+  };
 
-      CellVec m_cellVec ;
+  static const int nPlanes_ = 4;
+  static const int nFibres_ = 64;
+  static const fibre_pos fibrePos_[nPlanes_][nFibres_];
+
+  CellVec m_cellVec;
 };
 
 #endif

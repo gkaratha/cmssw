@@ -15,43 +15,74 @@
 #include "RecoBTag/SecondaryVertex/interface/CandidateSimpleSecondaryVertexComputer.h"
 #include "RecoBTag/SecondaryVertex/interface/SimpleSecondaryVertexComputer.h"
 
-namespace { // C++ template pointer want "external" linkage, so here we go
-	extern const char ipTagInfos[] = "ipTagInfos";
-	extern const char svTagInfos[] = "svTagInfos";
-	extern const char muonTagInfos[] = "muonTagInfos";
-	extern const char elecTagInfos[] = "elecTagInfos";
-}
+namespace {  // C++ template pointer want "external" linkage, so here we go
+  extern const char ipTagInfos[] = "ipTagInfos";
+  extern const char svTagInfos[] = "svTagInfos";
+  extern const char muonTagInfos[] = "muonTagInfos";
+  extern const char elecTagInfos[] = "elecTagInfos";
+}  // namespace
 
 typedef GenericMVAJetTagComputerWrapper<CombinedSVComputer,
-	reco::TrackIPTagInfo,         ipTagInfos,
-	reco::SecondaryVertexTagInfo, svTagInfos> CombinedSVJetTagComputer;
+                                        reco::TrackIPTagInfo,
+                                        ipTagInfos,
+                                        reco::SecondaryVertexTagInfo,
+                                        svTagInfos>
+    CombinedSVJetTagComputer;
 
 typedef GenericMVAJetTagComputerWrapper<CombinedSVComputer,
-	reco::CandIPTagInfo,         ipTagInfos,
-	reco::CandSecondaryVertexTagInfo, svTagInfos> CandidateCombinedSVJetTagComputer;
+                                        reco::CandIPTagInfo,
+                                        ipTagInfos,
+                                        reco::CandSecondaryVertexTagInfo,
+                                        svTagInfos>
+    CandidateCombinedSVJetTagComputer;
 
 //this one is actually not fully non-candidate based anymore (no backward compatibility with old SL taginfos for the moment)
 typedef GenericMVAJetTagComputerWrapper<CombinedSVSoftLeptonComputer,
-	reco::TrackIPTagInfo,         ipTagInfos,
-	reco::SecondaryVertexTagInfo, svTagInfos,
-	reco::CandSoftLeptonTagInfo, muonTagInfos,
-	reco::CandSoftLeptonTagInfo, elecTagInfos> CombinedSVSoftLeptonJetTagComputer;
-		
+                                        reco::TrackIPTagInfo,
+                                        ipTagInfos,
+                                        reco::SecondaryVertexTagInfo,
+                                        svTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        muonTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        elecTagInfos>
+    CombinedSVSoftLeptonJetTagComputer;
+
 typedef GenericMVAJetTagComputerWrapper<CombinedSVSoftLeptonComputer,
-	reco::CandIPTagInfo,         ipTagInfos,
-	reco::CandSecondaryVertexTagInfo, svTagInfos,
-	reco::CandSoftLeptonTagInfo, muonTagInfos,
-	reco::CandSoftLeptonTagInfo, elecTagInfos> CandidateCombinedSVSoftLeptonJetTagComputer;
+                                        reco::CandIPTagInfo,
+                                        ipTagInfos,
+                                        reco::CandSecondaryVertexTagInfo,
+                                        svTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        muonTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        elecTagInfos>
+    CandidateCombinedSVSoftLeptonJetTagComputer;
 
 typedef GenericMVAJetTagComputerWrapper<GhostTrackComputer,
-	reco::TrackIPTagInfo,         ipTagInfos,
-	reco::SecondaryVertexTagInfo, svTagInfos> GhostTrackJetTagComputer;
+                                        reco::TrackIPTagInfo,
+                                        ipTagInfos,
+                                        reco::SecondaryVertexTagInfo,
+                                        svTagInfos>
+    GhostTrackJetTagComputer;
+
+typedef GenericMVAJetTagComputerWrapper<GhostTrackComputer,
+                                        reco::CandIPTagInfo,
+                                        ipTagInfos,
+                                        reco::CandSecondaryVertexTagInfo,
+                                        svTagInfos>
+    CandidateGhostTrackJetTagComputer;
 
 typedef GenericMVAJetTagComputerWrapper<CombinedSVSoftLeptonComputer,
-	reco::CandIPTagInfo,         ipTagInfos,
-	reco::CandSecondaryVertexTagInfo, svTagInfos,
-	reco::CandSoftLeptonTagInfo, muonTagInfos,
-	reco::CandSoftLeptonTagInfo, elecTagInfos> CandidateCombinedSVSoftLeptonCvsLJetTagComputer;
+                                        reco::CandIPTagInfo,
+                                        ipTagInfos,
+                                        reco::CandSecondaryVertexTagInfo,
+                                        svTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        muonTagInfos,
+                                        reco::CandSoftLeptonTagInfo,
+                                        elecTagInfos>
+    CandidateCombinedSVSoftLeptonJetTagComputer;
 
 typedef JetTagComputerESProducer<CandidateCombinedSVJetTagComputer> CandidateCombinedSecondaryVertexESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CandidateCombinedSecondaryVertexESProducer);
@@ -59,7 +90,8 @@ DEFINE_FWK_EVENTSETUP_MODULE(CandidateCombinedSecondaryVertexESProducer);
 typedef JetTagComputerESProducer<CombinedSVJetTagComputer> CombinedSecondaryVertexESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CombinedSecondaryVertexESProducer);
 
-typedef JetTagComputerESProducer<CandidateCombinedSVSoftLeptonJetTagComputer> CandidateCombinedSecondaryVertexSoftLeptonESProducer;
+typedef JetTagComputerESProducer<CandidateCombinedSVSoftLeptonJetTagComputer>
+    CandidateCombinedSecondaryVertexSoftLeptonESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CandidateCombinedSecondaryVertexSoftLeptonESProducer);
 
 typedef JetTagComputerESProducer<CombinedSVSoftLeptonJetTagComputer> CombinedSecondaryVertexSoftLeptonESProducer;
@@ -68,14 +100,19 @@ DEFINE_FWK_EVENTSETUP_MODULE(CombinedSecondaryVertexSoftLeptonESProducer);
 typedef JetTagComputerESProducer<GhostTrackJetTagComputer> GhostTrackESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(GhostTrackESProducer);
 
+typedef JetTagComputerESProducer<CandidateGhostTrackJetTagComputer> CandidateGhostTrackESProducer;
+DEFINE_FWK_EVENTSETUP_MODULE(CandidateGhostTrackESProducer);
+
 typedef JetTagComputerESProducer<CandidateSimpleSecondaryVertexComputer> CandidateSimpleSecondaryVertexESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CandidateSimpleSecondaryVertexESProducer);
 
 typedef JetTagComputerESProducer<SimpleSecondaryVertexComputer> SimpleSecondaryVertexESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(SimpleSecondaryVertexESProducer);
 
-typedef JetTagComputerESProducer<CandidateCombinedSVSoftLeptonJetTagComputer> CandidateCombinedSecondaryVertexSoftLeptonCvsLESProducer;
+typedef JetTagComputerESProducer<CandidateCombinedSVSoftLeptonJetTagComputer>
+    CandidateCombinedSecondaryVertexSoftLeptonCvsLESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CandidateCombinedSecondaryVertexSoftLeptonCvsLESProducer);
 
-typedef JetTagComputerESProducer<CandidateBoostedDoubleSecondaryVertexComputer> CandidateBoostedDoubleSecondaryVertexESProducer;
+typedef JetTagComputerESProducer<CandidateBoostedDoubleSecondaryVertexComputer>
+    CandidateBoostedDoubleSecondaryVertexESProducer;
 DEFINE_FWK_EVENTSETUP_MODULE(CandidateBoostedDoubleSecondaryVertexESProducer);

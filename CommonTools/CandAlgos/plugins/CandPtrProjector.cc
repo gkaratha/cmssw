@@ -1,72 +1,77 @@
-//
-//
-
-/**
-*/
-
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/global/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "DataFormats/Common/interface/RefToBaseVector.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/PtrVector.h"
+#include "DataFormats/Common/interface/RefToBaseVector.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
+class CandPtrProjector : public edm::global::EDProducer<> {
+public:
+  explicit CandPtrProjector(edm::ParameterSet const& iConfig);
+  void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override;
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-class CandPtrProjector : public edm::EDProducer{
-  public:
-    explicit CandPtrProjector(const edm::ParameterSet & iConfig);
-    ~CandPtrProjector();
-
-    virtual void produce(edm::Event & iEvent, const edm::EventSetup& iSetup) override;
-    virtual void endJob() override;
-
-  private:
-    edm::EDGetTokenT<edm::View<reco::Candidate> > candSrcToken_;
-    edm::EDGetTokenT<edm::View<reco::Candidate> > vetoSrcToken_;
+private:
+  edm::EDGetTokenT<edm::View<reco::Candidate>> candSrcToken_;
+  edm::EDGetTokenT<edm::View<reco::Candidate>> vetoSrcToken_;
+  bool useDeltaRforFootprint_;
+  bool extendVetoBySingleSourcePtr_;
 };
 
-CandPtrProjector::CandPtrProjector(const edm::ParameterSet & iConfig):
-  candSrcToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("src"))),
-  vetoSrcToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("veto")))
-{
-  produces<edm::PtrVector<reco::Candidate> >();
+CandPtrProjector::CandPtrProjector(edm::ParameterSet const& iConfig)
+    : candSrcToken_{consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("src"))},
+      vetoSrcToken_{consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("veto"))},
+      useDeltaRforFootprint_(iConfig.getParameter<bool>("useDeltaRforFootprint")),
+      extendVetoBySingleSourcePtr_(iConfig.getParameter<bool>("extendVetoBySingleSourcePtr")) {
+  produces<edm::PtrVector<reco::Candidate>>();
 }
 
-CandPtrProjector::~CandPtrProjector()
-{
-}
-
-void
-CandPtrProjector::produce(edm::Event & iEvent, const edm::EventSetup & iSetup)
-{
+void CandPtrProjector::produce(edm::StreamID, edm::Event& iEvent, edm::EventSetup const&) const {
   using namespace edm;
-  Handle<View<reco::Candidate> > cands;
-  iEvent.getByToken(candSrcToken_, cands);
-  Handle<View<reco::Candidate> > vetos;
-  iEvent.getByToken(vetoSrcToken_, vetos);
+  Handle<View<reco::Candidate>> vetoes;
+  iEvent.getByToken(vetoSrcToken_, vetoes);
 
-  std::auto_ptr<PtrVector<reco::Candidate> > result(new PtrVector<reco::Candidate>());
+  auto result = std::make_unique<PtrVector<reco::Candidate>>();
   std::set<reco::CandidatePtr> vetoedPtrs;
-  for(size_t i = 0; i< vetos->size();  ++i) {
-   for(size_t j=0,n=(*vetos)[i].numberOfSourceCandidatePtrs(); j<n;j++ )    {
-     vetoedPtrs.insert((*vetos)[i].sourceCandidatePtr(j));   
-  }
-  }
- for(size_t i = 0; i< cands->size();  ++i) {
-    reco::CandidatePtr c =  cands->ptrAt(i);
-    if(vetoedPtrs.find(c)==vetoedPtrs.end())
-    {
-      result->push_back(c);
+  for (auto const& veto : *vetoes) {
+    auto const n = veto.numberOfSourceCandidatePtrs();
+    for (size_t j{}; j < n; ++j) {
+      vetoedPtrs.insert(veto.sourceCandidatePtr(j));
     }
   }
-  iEvent.put(result);
+
+  Handle<View<reco::Candidate>> cands;
+  iEvent.getByToken(candSrcToken_, cands);
+  for (size_t i{}; i < cands->size(); ++i) {
+    auto const c = cands->ptrAt(i);
+    if (vetoedPtrs.find(c) == vetoedPtrs.cend()) {
+      bool addcand = true;
+      if ((extendVetoBySingleSourcePtr_) && (c->numberOfSourceCandidatePtrs() == 1))
+        addcand = (vetoedPtrs.find(c->sourceCandidatePtr(0)) == vetoedPtrs.cend());
+      if (useDeltaRforFootprint_)
+        for (const auto& it : vetoedPtrs)
+          if (it.isNonnull() && it.isAvailable() && reco::deltaR2(*it, *c) < 0.00000025) {
+            addcand = false;
+            break;
+          }
+      if (addcand)
+        result->push_back(c);
+    }
+  }
+  iEvent.put(std::move(result));
 }
 
-void CandPtrProjector::endJob()
-{
+void CandPtrProjector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("src");
+  desc.add<edm::InputTag>("veto");
+  desc.add<bool>("useDeltaRforFootprint", false);
+  desc.add<bool>("extendVetoBySingleSourcePtr", true);
+  descriptions.addWithDefaultLabel(desc);
 }
 
-#include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(CandPtrProjector);

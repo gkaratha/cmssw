@@ -10,39 +10,39 @@
  */
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
-#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/Common/interface/Ptr.h"
 
 namespace reco {
 
   class CaloRecHitCandidate : public LeafCandidate {
   public:
-    typedef edm::RefToBase<CaloRecHit> CaloRecHitRef;
+    typedef edm::Ptr<CaloRecHit> CaloRecHitRef;
     /// default constructor
-    CaloRecHitCandidate() : LeafCandidate() { }
+    CaloRecHitCandidate() : LeafCandidate() {}
     /// constructor from values
-    CaloRecHitCandidate( const LorentzVector & p4, Charge q = 0, const Point & vtx = Point( 0, 0, 0 ) ) :
-      LeafCandidate( q, p4, vtx ) { }
+    CaloRecHitCandidate(const LorentzVector& p4, Charge q = 0, const Point& vtx = Point(0, 0, 0))
+        : LeafCandidate(q, p4, vtx) {}
     /// constructor from values
-    CaloRecHitCandidate( const PolarLorentzVector & p4, Charge q = 0, const Point & vtx = Point( 0, 0, 0 ) ) :
-      LeafCandidate( q, p4, vtx ) { }
+    CaloRecHitCandidate(const PolarLorentzVector& p4, Charge q = 0, const Point& vtx = Point(0, 0, 0))
+        : LeafCandidate(q, p4, vtx) {}
     /// destructor
-    virtual ~CaloRecHitCandidate();
+    ~CaloRecHitCandidate() override;
     /// returns a clone of the candidate
-    virtual CaloRecHitCandidate * clone() const;
+    CaloRecHitCandidate* clone() const override;
     /// set CaloRecHit reference
-    void setCaloRecHit( const CaloRecHitRef & r ) { caloRecHit_ = r; }
+    void setCaloRecHit(const CaloRecHitRef& r) { caloRecHit_ = r; }
     /// reference to a CaloRecHit
     CaloRecHitRef caloRecHit() const { return caloRecHit_; }
 
   private:
     /// check overlap with another candidate
-    virtual bool overlap( const Candidate & ) const;
+    bool overlap(const Candidate&) const override;
     /// reference to a CaloRecHit
     CaloRecHitRef caloRecHit_;
   };
-    /// get default Track component
-  GET_DEFAULT_CANDIDATE_COMPONENT( CaloRecHitCandidate, edm::RefToBase<CaloRecHit>, caloRecHit );
+  /// get default Track component
+  GET_DEFAULT_CANDIDATE_COMPONENT(CaloRecHitCandidate, edm::Ptr<CaloRecHit>, caloRecHit);
 
-}
+}  // namespace reco
 
 #endif

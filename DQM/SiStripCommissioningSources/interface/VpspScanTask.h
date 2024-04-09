@@ -7,21 +7,16 @@
    @class VpspScanTask
 */
 class VpspScanTask : public CommissioningTask {
+public:
+  VpspScanTask(DQMStore*, const FedChannelConnection&);
+  ~VpspScanTask() override;
 
- public:
-  
-  VpspScanTask( DQMStore*, const FedChannelConnection& );
-  virtual ~VpspScanTask();
-  
- private:
+private:
+  void book() override;
+  void fill(const SiStripEventSummary&, const edm::DetSet<SiStripRawDigi>&) override;
+  void update() override;
 
-  virtual void book();
-  virtual void fill( const SiStripEventSummary&,
-		     const edm::DetSet<SiStripRawDigi>& );
-  virtual void update();
-  
   std::vector<HistoSet> vpsp_;
-  
 };
 
-#endif // DQM_SiStripCommissioningSources_VpspScanTask_H
+#endif  // DQM_SiStripCommissioningSources_VpspScanTask_H

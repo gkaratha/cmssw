@@ -2,7 +2,7 @@
 //
 // Package:     MVAComputer
 // Class  :     ProcMatrix
-// 
+//
 
 // Implementation:
 //     Variable processor to apply a matrix transformation to the input
@@ -13,102 +13,86 @@
 // Created:     Sat Apr 24 15:18 CEST 2007
 //
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "PhysicsTools/MVAComputer/interface/VarProcessor.h"
 #include "PhysicsTools/MVAComputer/interface/Calibration.h"
 
 using namespace PhysicsTools;
 
-namespace { // anonymous
+namespace {  // anonymous
 
-class ProcMatrix : public VarProcessor {
+  class ProcMatrix : public VarProcessor {
+  public:
+    typedef VarProcessor::Registry::Registry<ProcMatrix, Calibration::ProcMatrix> Registry;
+
+    ProcMatrix(const char *name, const Calibration::ProcMatrix *calib, const MVAComputer *computer);
+    ~ProcMatrix() override {}
+
+    void configure(ConfIterator iter, unsigned int n) override;
+    void eval(ValueIterator iter, unsigned int n) const override;
+    std::vector<double> deriv(ValueIterator iter, unsigned int n) const override;
+
+  private:
+    class Matrix {
     public:
-	typedef VarProcessor::Registry::Registry<ProcMatrix,
-					Calibration::ProcMatrix> Registry;
+      inline Matrix(const Calibration::Matrix *calib)
+          : rows(calib->rows), cols(calib->columns), coeffs(calib->elements) {}
 
-	ProcMatrix(const char *name,
-	           const Calibration::ProcMatrix *calib,
-	           const MVAComputer *computer);
-	virtual ~ProcMatrix() {}      
+      inline unsigned int getRows() const { return rows; }
+      inline unsigned int getCols() const { return cols; }
 
-	virtual void configure(ConfIterator iter, unsigned int n) override;
-	virtual void eval(ValueIterator iter, unsigned int n) const override;
-	virtual std::vector<double> deriv(ValueIterator iter,
-	                                  unsigned int n) const override;
+      inline double operator()(unsigned int row, unsigned int col) const { return coeffs[row * cols + col]; }
 
     private:
-	class Matrix {
-	    public:
-		inline Matrix(const Calibration::Matrix *calib) :
-			rows(calib->rows), cols(calib->columns),
-			coeffs(calib->elements) {}
+      unsigned int rows;
+      unsigned int cols;
+      std::vector<double> coeffs;
+    };
 
-		inline unsigned int getRows() const { return rows; }
-		inline unsigned int getCols() const { return cols; }
+    Matrix matrix;
+  };
 
-		inline double operator () (unsigned int row,
-		                           unsigned int col) const
-		{ return coeffs[row * cols + col]; }
+  ProcMatrix::Registry registry("ProcMatrix");
 
-	    private:
-		unsigned int		rows;
-		unsigned int		cols;
-		std::vector<double>	coeffs;
-	};
+  ProcMatrix::ProcMatrix(const char *name, const Calibration::ProcMatrix *calib, const MVAComputer *computer)
+      : VarProcessor(name, calib, computer), matrix(&calib->matrix) {}
 
-	Matrix	matrix;
-};
+  void ProcMatrix::configure(ConfIterator iter, unsigned int n) {
+    if (n != matrix.getCols())
+      return;
 
-static ProcMatrix::Registry registry("ProcMatrix");
+    for (unsigned int col = 0; col < matrix.getCols(); col++)
+      iter++(Variable::FLAG_NONE);
 
-ProcMatrix::ProcMatrix(const char *name,
-                       const Calibration::ProcMatrix *calib,
-                       const MVAComputer *computer) :
-	VarProcessor(name, calib, computer),
-	matrix(&calib->matrix)
-{
-}
+    for (unsigned int row = 0; row < matrix.getRows(); row++)
+      iter << Variable::FLAG_NONE;
+  }
 
-void ProcMatrix::configure(ConfIterator iter, unsigned int n)
-{
-	if (n != matrix.getCols())
-		return;
+  void ProcMatrix::eval(ValueIterator iter, unsigned int n) const {
+    double *sums = (double *)alloca(matrix.getRows() * sizeof(double));
+    for (unsigned int row = 0; row < matrix.getRows(); row++)
+      sums[row] = 0.0;
 
-	for(unsigned int col = 0; col < matrix.getCols(); col++)
-		iter++(Variable::FLAG_NONE);
+    for (unsigned int col = 0; col < matrix.getCols(); col++) {
+      double val = *iter++;
+      for (unsigned int row = 0; row < matrix.getRows(); row++)
+        sums[row] += matrix(row, col) * val;
+    }
 
-	for(unsigned int row = 0; row < matrix.getRows(); row++)
-		iter << Variable::FLAG_NONE;
-}
+    for (unsigned int row = 0; row < matrix.getRows(); row++)
+      iter(sums[row]);
+  }
 
-void ProcMatrix::eval(ValueIterator iter, unsigned int n) const
-{
-	double *sums = (double*)alloca(matrix.getRows() * sizeof(double));
-	for(unsigned int row = 0; row < matrix.getRows(); row++)
-		sums[row] = 0.0;
+  std::vector<double> ProcMatrix::deriv(ValueIterator iter, unsigned int n) const {
+    std::vector<double> result;
+    result.reserve(matrix.getRows() * matrix.getCols());
 
-	for(unsigned int col = 0; col < matrix.getCols(); col++) {
-		double val = *iter++;
-		for(unsigned int row = 0; row < matrix.getRows(); row++)
-			sums[row] += matrix(row, col) * val;
-	}
+    for (unsigned int row = 0; row < matrix.getRows(); row++)
+      for (unsigned int col = 0; col < matrix.getCols(); col++)
+        result.push_back(matrix(row, col));
 
-	for(unsigned int row = 0; row < matrix.getRows(); row++)
-		iter(sums[row]);
-}
+    return result;
+  }
 
-std::vector<double> ProcMatrix::deriv(ValueIterator iter,
-                                      unsigned int n) const
-{
-	std::vector<double> result;
-	result.reserve(matrix.getRows() * matrix.getCols());
-
-	for(unsigned int row = 0; row < matrix.getRows(); row++)
-		for(unsigned int col = 0; col < matrix.getCols(); col++)
-			result.push_back(matrix(row, col));
-
-	return result;
-}
-
-} // anonymous namespace
+}  // anonymous namespace

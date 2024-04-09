@@ -4,7 +4,7 @@
 //
 // Package:     L1Trigger
 // Class  :     L1SubsystemKeysOnlineProd
-// 
+//
 /**\class L1SubsystemKeysOnlineProd L1SubsystemKeysOnlineProd.h CondTools/L1Trigger/interface/L1SubsystemKeysOnlineProd.h
 
  Description: <one line class summary>
@@ -21,7 +21,6 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/ModuleFactory.h"
@@ -36,18 +35,19 @@
 // forward declarations
 
 class L1SubsystemKeysOnlineProd : public edm::ESProducer {
-   public:
-      L1SubsystemKeysOnlineProd(const edm::ParameterSet&);
-      ~L1SubsystemKeysOnlineProd();
+public:
+  L1SubsystemKeysOnlineProd(const edm::ParameterSet&);
+  ~L1SubsystemKeysOnlineProd() override;
 
-      typedef boost::shared_ptr<L1TriggerKey> ReturnType;
+  typedef std::unique_ptr<L1TriggerKey> ReturnType;
 
-      ReturnType produce(const L1TriggerKeyRcd&);
-   private:
-      // ----------member data ---------------------------
-      std::string m_tscKey ;
-      l1t::OMDSReader m_omdsReader ;
-      bool m_forceGeneration ;
+  ReturnType produce(const L1TriggerKeyRcd&);
+
+private:
+  // ----------member data ---------------------------
+  std::string m_tscKey;
+  l1t::OMDSReader m_omdsReader;
+  bool m_forceGeneration;
 };
 
 #endif

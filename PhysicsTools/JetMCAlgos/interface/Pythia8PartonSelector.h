@@ -7,15 +7,13 @@
 
 #include "PhysicsTools/JetMCAlgos/interface/BasePartonSelector.h"
 
+class Pythia8PartonSelector : public BasePartonSelector {
+public:
+  Pythia8PartonSelector();
+  ~Pythia8PartonSelector() override;
 
-class Pythia8PartonSelector : public BasePartonSelector
-{
-  public:
-    Pythia8PartonSelector();
-    virtual ~Pythia8PartonSelector();
-
-    void run(const edm::Handle<reco::GenParticleCollection> & particles,
-             std::auto_ptr<reco::GenParticleRefVector> & partons);
+  void run(const edm::Handle<reco::GenParticleCollection>& particles,
+           std::unique_ptr<reco::GenParticleRefVector>& partons) override;
 };
 
 #endif

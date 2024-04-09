@@ -8,22 +8,18 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "fastjet/tools/GridMedianBackgroundEstimator.hh"
 
-
 class FixedGridRhoProducerFastjet : public edm::stream::EDProducer<> {
-
- public:
+public:
   explicit FixedGridRhoProducerFastjet(const edm::ParameterSet& iConfig);
-  virtual ~FixedGridRhoProducerFastjet();
+  ~FixedGridRhoProducerFastjet() override;
 
- private:
-  virtual void produce(edm::Event&, const edm::EventSetup&);
+private:
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
   edm::InputTag pfCandidatesTag_;
   fastjet::GridMedianBackgroundEstimator bge_;
 
   edm::EDGetTokenT<edm::View<reco::Candidate> > input_pfcoll_token_;
-
 };
-
 
 #endif

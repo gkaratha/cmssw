@@ -22,12 +22,9 @@
 
 namespace l1t {
 
-
   class CaloParams {
-
   public:
-
-    enum { Version = 1 };
+    enum { Version = 2 };
 
     class Node {
     public:
@@ -38,11 +35,14 @@ namespace l1t {
       std::vector<unsigned> uparams_;
       std::vector<int> iparams_;
       std::vector<std::string> sparams_;
-      Node(){ type_="unspecified"; version_=1; }
+      Node() {
+        type_ = "unspecified";
+        version_ = 1;
+      }
       COND_SERIALIZABLE;
     };
 
-    class TowerParams{
+    class TowerParams {
     public:
       /* Towers */
 
@@ -82,11 +82,20 @@ namespace l1t {
       // turn encoding on/off
       bool doEncoding_;
 
-      TowerParams() : lsbH_(0), lsbE_(0), lsbSum_(0),
-		      nBitsH_(0), nBitsE_(0), nBitsSum_(0), nBitsRatio_(0),
-		      maskH_(0), maskE_(0), maskSum_(0), maskRatio_(0),
-		      doEncoding_(false)
-      { /* no-op */}
+      TowerParams()
+          : lsbH_(0),
+            lsbE_(0),
+            lsbSum_(0),
+            nBitsH_(0),
+            nBitsE_(0),
+            nBitsSum_(0),
+            nBitsRatio_(0),
+            maskH_(0),
+            maskE_(0),
+            maskSum_(0),
+            maskRatio_(0),
+            doEncoding_(false) { /* no-op */
+      }
 
       COND_SERIALIZABLE;
     };
@@ -128,14 +137,24 @@ namespace l1t {
       // veto region is seed tower +/- <=egIsoVetoNrTowersPhi
       unsigned isoVetoNrTowersPhi_;
 
-      EgParams() : lsb_(0), seedThreshold_(0), neighbourThreshold_(0), hcalThreshold_(0), maxHcalEt_(0), maxPtHOverE_(0),
-		   minPtJetIsolation_(0), maxPtJetIsolation_(0), minPtHOverEIsolation_(0), maxPtHOverEIsolation_(0),
-		   isoAreaNrTowersEta_(0), isoAreaNrTowersPhi_(0), isoVetoNrTowersPhi_(0)
-      { /* no-op */ }
+      EgParams()
+          : lsb_(0),
+            seedThreshold_(0),
+            neighbourThreshold_(0),
+            hcalThreshold_(0),
+            maxHcalEt_(0),
+            maxPtHOverE_(0),
+            minPtJetIsolation_(0),
+            maxPtJetIsolation_(0),
+            minPtHOverEIsolation_(0),
+            maxPtHOverEIsolation_(0),
+            isoAreaNrTowersEta_(0),
+            isoAreaNrTowersPhi_(0),
+            isoVetoNrTowersPhi_(0) { /* no-op */
+      }
 
       COND_SERIALIZABLE;
     };
-
 
     class TauParams {
     public:
@@ -173,11 +192,20 @@ namespace l1t {
       // veto region is seed tower +/- <=tauIsoVetoNrTowersPhi
       unsigned isoVetoNrTowersPhi_;
 
-      TauParams() : lsb_(0), seedThreshold_(0), neighbourThreshold_(0), maxPtTauVeto_(0),
-		    minPtJetIsolationB_(0), maxJetIsolationB_(0), maxJetIsolationA_(0),
-		    isoEtaMin_(0), isoEtaMax_(0),
-		    isoAreaNrTowersEta_(0), isoAreaNrTowersPhi_(0), isoVetoNrTowersPhi_(0)
-      { /* no-op */ }
+      TauParams()
+          : lsb_(0),
+            seedThreshold_(0),
+            neighbourThreshold_(0),
+            maxPtTauVeto_(0),
+            minPtJetIsolationB_(0),
+            maxJetIsolationB_(0),
+            maxJetIsolationA_(0),
+            isoEtaMin_(0),
+            isoEtaMax_(0),
+            isoAreaNrTowersEta_(0),
+            isoAreaNrTowersPhi_(0),
+            isoVetoNrTowersPhi_(0) { /* no-op */
+      }
 
       COND_SERIALIZABLE;
     };
@@ -193,23 +221,13 @@ namespace l1t {
       // Et threshold on neighbouring towers/regions
       double neighbourThreshold_;
 
-      JetParams() : lsb_(0), seedThreshold_(0), neighbourThreshold_(0) { /* no-op */ }
+      JetParams() : lsb_(0), seedThreshold_(0), neighbourThreshold_(0) { /* no-op */
+      }
 
       COND_SERIALIZABLE;
     };
 
-
-    // DO NOT ADD ENTRIES ANYWHERE BUT DIRECTLY BEFORE "NUM_CALOPARAMNODES"
-    enum { regionPUS=0,
-	   egTrimming=1, egMaxHOverE=2, egCompressShapes=3, egShapeId=4, egCalibration=5, egPUS=6, egIsolation=7,
-	   tauCalibration=8, tauPUS=9, tauIsolation=10,
-	   jetPUS=11, jetCalibration=12,
-	   hiCentrality=13, hiQ2=14,
-	   tauEtToHFRingEt=15,
-	   NUM_CALOPARAMNODES=16
-    };
-
-    CaloParams() { version_=Version; pnode_.resize(NUM_CALOPARAMNODES); }
+    CaloParams() : pnode_(0) { version_ = Version; }
     ~CaloParams() {}
 
   protected:
@@ -240,9 +258,8 @@ namespace l1t {
     // minimum eta for EtSums (index is particular EtSum.  ETT=1, HTT=2, MET=3, MHT=4, other values reserved).
     std::vector<double> etSumEtThreshold_;
 
-
     COND_SERIALIZABLE;
   };
 
-}// namespace
+}  // namespace l1t
 #endif

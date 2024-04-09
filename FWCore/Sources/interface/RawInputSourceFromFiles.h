@@ -17,12 +17,11 @@ namespace edm {
   class RawInputSourceFromFiles : public RawInputSource, private FromFiles {
   public:
     RawInputSourceFromFiles(ParameterSet const& pset, InputSourceDescription const& desc);
-    virtual ~RawInputSourceFromFiles();
+    ~RawInputSourceFromFiles() override;
 
-    using FromFiles::logicalFileNames;
-    using FromFiles::fileNames;
     using FromFiles::catalog;
-    
+    using FromFiles::logicalFileNames;
+
     static void fillDescription(ParameterSetDescription& desc);
 
   protected:
@@ -31,5 +30,5 @@ namespace edm {
   private:
     using FromFiles::fileIndex;
   };
-}
+}  // namespace edm
 #endif

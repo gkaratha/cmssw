@@ -24,23 +24,19 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class myEvtRandomEngine : public EvtRandomEngine  
-{
-
+class myEvtRandomEngine : public EvtRandomEngine {
 public:
-  
   myEvtRandomEngine(CLHEP::HepRandomEngine* xx);
 
-  virtual ~myEvtRandomEngine();
+  ~myEvtRandomEngine() override;
 
-  virtual double random();
+  double random() override;
 
   void setRandomEngine(CLHEP::HepRandomEngine* v) { the_engine = v; }
 
   CLHEP::HepRandomEngine* engine() const { return the_engine; }
 
 private:
-
   void throwNullPtr() const;
 
   CLHEP::HepRandomEngine* the_engine;

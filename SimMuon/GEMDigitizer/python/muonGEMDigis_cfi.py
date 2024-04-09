@@ -1,27 +1,16 @@
 import FWCore.ParameterSet.Config as cms
 
-# Module to create simulated GEM digis.
-simMuonGEMDigis = cms.EDProducer("GEMDigiProducer",
-    signalPropagationSpeed = cms.double(0.66),
-    cosmics = cms.bool(False),
-    timeResolution = cms.double(5),
-    timeJitter = cms.double(1.0),
-    averageShapingTime = cms.double(50.0),
-# clsParametrization = cms.vdouble(0.455091, 0.865613, 0.945891, 0.973286, 0.986234, 0.991686, 0.996865, 0.998501, 1.),
-    averageEfficiency = cms.double(0.98),
-    averageNoiseRate = cms.double(0.001), #intrinsic noise
-    bxwidth = cms.int32(25),
-    minBunch = cms.int32(-5), ## in terms of 25 ns
-    maxBunch = cms.int32(3),
-    mixLabel = cms.string('mix'),	# added by A.Sharma
-    inputCollection = cms.string('g4SimHitsMuonGEMHits'),
-    digiModelString = cms.string('Simple'),
-    digitizeOnlyMuons = cms.bool(False),
-    doBkgNoise = cms.bool(True), #False == No background simulation
-    doNoiseCLS = cms.bool(True),
-    fixedRollRadius = cms.bool(True), #Uses fixed radius in the center of the roll
-    simulateIntrinsicNoise = cms.bool(False),
-    simulateElectronBkg = cms.bool(True),	#False=simulate only neutral Bkg
-    simulateLowNeutralRate = cms.bool(False)	#True=neutral_Bkg at L=1x10^{34}, False at L=5x10^{34}cm^{-2}s^{-1}
-)
+from SimMuon.GEMDigitizer.simMuonGEMDigisDef_cfi import *
+simMuonGEMDigis = simMuonGEMDigisDef.clone()
 
+from Configuration.ProcessModifiers.premix_stage2_cff import premix_stage2
+premix_stage2.toModify(simMuonGEMDigis, mixLabel = "mixData")
+
+from Configuration.Eras.Modifier_run2_common_cff import run2_common
+run2_common.toModify( simMuonGEMDigis, instLumi = 1.5)
+
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toModify( simMuonGEMDigis, instLumi = 2.0)
+
+from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
+phase2_common.toModify( simMuonGEMDigis, instLumi = 5)

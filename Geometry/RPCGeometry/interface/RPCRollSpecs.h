@@ -15,26 +15,23 @@ class StripTopology;
 
 #include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 
-
 class RPCRollSpecs : public GeomDetType {
-
- public:
+public:
   typedef std::vector<float> RPCSpecs;
 
-  RPCRollSpecs( SubDetector rss, const std::string& name, const RPCSpecs& pars);
+  RPCRollSpecs(SubDetector rss, const std::string& name, const RPCSpecs& pars);
 
-  ~RPCRollSpecs();
+  ~RPCRollSpecs() override;
 
-  const Topology& topology() const;
+  const Topology& topology() const override;
 
   const StripTopology& specificTopology() const;
 
   const std::string& detName() const;
 
- private:
+private:
   StripTopology* _top;
   std::vector<float> _p;
   std::string _n;
-
 };
 #endif

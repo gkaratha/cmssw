@@ -13,15 +13,14 @@
 /* Buffer Size */
 #define BUFSIZE 200;
 
-
 class ODSRPConfig : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODSRPConfig();
-  ~ODSRPConfig();
+  ~ODSRPConfig() override;
 
   // User data methods
-  inline std::string getTable() { return "ECAL_SRP_CONFIGURATION"; }
+  inline std::string getTable() override { return "ECAL_SRP_CONFIGURATION"; }
 
   inline void setId(int id) { m_ID = id; }
   inline int getId() const { return m_ID; }
@@ -29,7 +28,7 @@ class ODSRPConfig : public IODConfig {
   inline void setDebugMode(int x) { m_debug = x; }
   inline int getDebugMode() const { return m_debug; }
 
-  inline void setDummyMode(int x) { m_dummy= x; }
+  inline void setDummyMode(int x) { m_dummy = x; }
   inline int getDummyMode() const { return m_dummy; }
 
   inline void setPatternDirectory(std::string x) { m_patdir = x; }
@@ -51,17 +50,16 @@ class ODSRPConfig : public IODConfig {
   inline unsigned char* getSRPClob() const { return m_srp_clob; }
   inline unsigned int getSRPClobSize() const { return m_size; }
 
-  void setParameters(const std::map<std::string,std::string>& my_keys_map);
-  
- private:
-  void prepareWrite()  throw(std::runtime_error);
-  void writeDB()       throw(std::runtime_error);
+  void setParameters(const std::map<std::string, std::string>& my_keys_map);
+
+private:
+  void prepareWrite() noexcept(false) override;
+  void writeDB() noexcept(false);
   void clear();
-  void fetchData(ODSRPConfig * result)     throw(std::runtime_error);
-  int fetchID()  throw(std::runtime_error);
+  void fetchData(ODSRPConfig* result) noexcept(false);
+  int fetchID() noexcept(false);
 
-
-  int fetchNextId() throw(std::runtime_error);
+  int fetchNextId() noexcept(false);
 
   // User data
   int m_ID;
@@ -73,7 +71,6 @@ class ODSRPConfig : public IODConfig {
   int m_auto, m_auto_srp;
   int m_bnch;
   unsigned int m_size;
-
 };
 
 #endif

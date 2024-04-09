@@ -9,13 +9,13 @@
 #include "OnlineDB/EcalCondDB/interface/ODTowersToByPassInfo.h"
 
 class ODTowersToByPassDat : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODTowersToByPassDat();
-  ~ODTowersToByPassDat();
+  ~ODTowersToByPassDat() override;
 
   // User data methods
-  inline std::string getTable() { return "TOWERS_TO_BYPASS_DAT"; }
+  inline std::string getTable() override { return "TOWERS_TO_BYPASS_DAT"; }
 
   inline void setId(int dac) { m_ID = dac; }
   inline int getId() const { return m_ID; }
@@ -35,29 +35,22 @@ class ODTowersToByPassDat : public IODConfig {
   inline void setStatus(int dac) { m_sta = dac; }
   inline int getStatus() const { return m_sta; }
 
+private:
+  void prepareWrite() noexcept(false) override;
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+  void writeDB(const ODTowersToByPassDat* item, ODTowersToByPassInfo* iov) noexcept(false);
 
-  void writeDB(const ODTowersToByPassDat* item, ODTowersToByPassInfo* iov )
-    throw(std::runtime_error);
+  void writeArrayDB(const std::vector<ODTowersToByPassDat>& data, ODTowersToByPassInfo* iov) noexcept(false);
 
-  void writeArrayDB(const std::vector< ODTowersToByPassDat >& data, ODTowersToByPassInfo* iov)
-    throw(std::runtime_error);
-
-
-  void fetchData(std::vector< ODTowersToByPassDat >* fillMap, ODTowersToByPassInfo* iov)
-     throw(std::runtime_error);
+  void fetchData(std::vector<ODTowersToByPassDat>* fillMap, ODTowersToByPassInfo* iov) noexcept(false);
 
   // User data
   int m_tr;
   int m_fed;
   int m_tt;
-  int m_time; 
+  int m_time;
   int m_sta;
   int m_ID;
- 
 };
 
 #endif

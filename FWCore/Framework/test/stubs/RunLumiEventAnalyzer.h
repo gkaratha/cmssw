@@ -2,8 +2,9 @@
 #define Integration_RunLumiEventAnalyzer_h
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 #include <vector>
 
@@ -13,9 +14,8 @@ namespace edm {
 
 namespace edmtest {
 
-  class RunLumiEventAnalyzer : public edm::EDAnalyzer {
+  class RunLumiEventAnalyzer : public edm::one::EDAnalyzer<edm::one::WatchRuns, edm::one::WatchLuminosityBlocks> {
   public:
-
     explicit RunLumiEventAnalyzer(edm::ParameterSet const& pset);
 
     virtual ~RunLumiEventAnalyzer() {}
@@ -26,13 +26,11 @@ namespace edmtest {
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& es);
     virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& es);
     virtual void endJob();
-    virtual void postForkReacquireResources(unsigned int iChildIndex, unsigned int iNumberOfChildren);
 
   private:
-
     std::vector<unsigned long long> expectedRunLumisEvents0_;
     std::vector<unsigned long long> expectedRunLumisEvents1_;
-    std::vector<unsigned long long> *expectedRunLumisEvents_;
+    edm::propagate_const<std::vector<unsigned long long>*> expectedRunLumisEvents_;
     int index_;
     bool verbose_;
     bool dumpTriggerResults_;
@@ -41,6 +39,6 @@ namespace edmtest {
     int expectedEndingIndex_;
     edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_;
   };
-}
+}  // namespace edmtest
 
 #endif

@@ -1,10 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
-dtSegmentTaskHLT = cms.EDAnalyzer("DTSegmentAnalysisTask",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+dtSegmentTaskHLT = DQMEDAnalyzer('DTSegmentAnalysisTask',
                                   # switch for verbosity
                                   debug = cms.untracked.bool(False),
                                   # label of 4D segments
-                                  recHits4DLabel = cms.string('hltDt4DSegments'),
+                                  recHits4DLabel = cms.untracked.string('hltDt4DSegments'),
                                   # skip segments with noisy cells (reads from DB)
                                   checkNoisyChannels = cms.untracked.bool(True),
                                   # switch off uneeded histograms
@@ -16,7 +17,7 @@ dtSegmentTaskHLT = cms.EDAnalyzer("DTSegmentAnalysisTask",
                                   # switch on/off sliding bins in time histos
                                   slideTimeBins = cms.untracked.bool(True),
                                   # top folder for the histograms in DQMStore
-                                  topHistoFolder = cms.untracked.string("HLT/HLTMonMuon/DT-Segments"),
+                                  topHistoFolder = cms.untracked.string('HLT/HLTMonMuon/DT-Segments'),
                                   # hlt DQM mode
                                   hltDQMMode = cms.untracked.bool(True)
                                   )

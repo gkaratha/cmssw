@@ -25,7 +25,7 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 
 #----------------------------------------------------------------
 
-process.MessageLogger.cout.placeholder = cms.untracked.bool(False)
+process.MessageLogger.cout.enable = cms.untracked.bool(True)
 process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
 process.MessageLogger.cout.default = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000)
@@ -34,7 +34,7 @@ process.MessageLogger.cout.FwkReport = cms.untracked.PSet(
     reportEvery = cms.untracked.int32(10000)
     )
 
-process.MessageLogger.cerr.placeholder = cms.untracked.bool(False)
+process.MessageLogger.cerr.enable = cms.untracked.bool(True)
 process.MessageLogger.cerr.threshold = cms.untracked.string("WARNING")
 process.MessageLogger.cerr.default = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000)
@@ -81,6 +81,8 @@ process.closeretrigger = cms.EDFilter('EventWithHistoryEDFilter',
                                                                                ),
                                       filterConfigurations = cms.untracked.VPSet(cms.PSet(dbxRange = cms.untracked.vint32(0,3)))
                                       )
+process.load("DPGAnalysis.SiStripTools.filters.FrameHeaderEvents_cfi")
+process.load("DPGAnalysis.SiStripTools.filters.LatencyPlusOneEvents_cfi")
 
 process.load("DPGAnalysis.SiStripTools.apvcyclephasemonitor_cfi")
 
@@ -90,11 +92,15 @@ process.eventtimedistribution.wantDBXvsBX = cms.untracked.bool(True)
 
 process.eventtimeretrigger = process.eventtimedistribution.clone()
 process.eventtimecloseretrigger = process.eventtimedistribution.clone()
+process.eventtimeframeheader = process.eventtimedistribution.clone()
+process.eventtimelatencyplusone = process.eventtimedistribution.clone()
 
 process.load("DPGAnalysis.SiStripTools.trackcount_cfi")
 process.trackcount.trackCollection = cms.InputTag('ctfWithMaterialTracksP5')
 process.trackcountretrigger = process.trackcount.clone()
 process.trackcountcloseretrigger = process.trackcount.clone()
+process.trackcountframeheader = process.trackcount.clone()
+process.trackcountlatencyplusone = process.trackcount.clone()
 
 process.TFileService = cms.Service('TFileService',
                                    fileName = cms.string('cosmicstracks.root')
@@ -102,8 +108,8 @@ process.TFileService = cms.Service('TFileService',
 
 #----GlobalTag ------------------------
 
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
 
 #
@@ -130,6 +136,22 @@ process.pcloseretrigger = cms.Path(process.consecutiveHEs
                                    + process.closeretrigger
                                    + process.eventtimecloseretrigger
                                    + process.trackcountcloseretrigger
+                              )
+process.pframeheader = cms.Path(process.consecutiveHEs
+                                + process.APVPhases
+                                + process.l1TSDebugger
+                                + process.apvcyclephasemonitor
+                                + process.frameHeaderEvents
+                                + process.eventtimeframeheader
+                                + process.trackcountframeheader
+                              )
+process.platencyplusone = cms.Path(process.consecutiveHEs
+                                + process.APVPhases
+                                + process.l1TSDebugger
+                                + process.apvcyclephasemonitor
+                                + process.latencyPlusOne
+                                + process.eventtimelatencyplusone
+                                + process.trackcountlatencyplusone
                               )
 
 

@@ -2,7 +2,7 @@
 //
 // Package:    MuonNumberingInitialization
 // Class:      MuonNumberingInitialization
-// 
+//
 /**\class MuonNumberingInitialization MuonNumberingInitialization.h Geometry/MuonNumberingInitialization/interface/MuonNumberingInitialization.h
 
  Description: <one line class summary>
@@ -17,69 +17,33 @@
 //
 
 #include <memory>
-#include <boost/shared_ptr.hpp>
 
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESTransientHandle.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "DetectorDescription/Core/interface/DDFilter.h"
-#include "DetectorDescription/Core/interface/DDFilteredView.h"
-#include "DetectorDescription/Core/interface/DDsvalues.h"
 #include "Geometry/MuonNumbering/interface/MuonDDDConstants.h"
 #include "Geometry/Records/interface/MuonNumberingRecord.h"
 
-class MuonNumberingInitialization : public edm::ESProducer
-{
+class MuonNumberingInitialization : public edm::ESProducer {
 public:
-  
-  MuonNumberingInitialization( const edm::ParameterSet& );
-  ~MuonNumberingInitialization();
+  MuonNumberingInitialization(const edm::ParameterSet&);
 
-  typedef std::auto_ptr<MuonDDDConstants> ReturnType;
+  using ReturnType = std::unique_ptr<MuonDDDConstants>;
 
-  ReturnType produce( const MuonNumberingRecord& );
-
-  void initializeMuonDDDConstants( const IdealGeometryRecord& igr );
+  ReturnType produce(const MuonNumberingRecord&);
 
 private:
-  
-  std::string label_;
-  MuonDDDConstants* muonDDDConst_;
+  const edm::ESGetToken<DDCompactView, IdealGeometryRecord> geomToken_;
 };
 
-MuonNumberingInitialization::MuonNumberingInitialization( const edm::ParameterSet& iConfig )
-  : muonDDDConst_( 0 )
-{
-  setWhatProduced( this, dependsOn( &MuonNumberingInitialization::initializeMuonDDDConstants ));
-}
+MuonNumberingInitialization::MuonNumberingInitialization(const edm::ParameterSet&)
+    : geomToken_{setWhatProduced(this).consumes()} {}
 
-MuonNumberingInitialization::~MuonNumberingInitialization()
-{}
+MuonNumberingInitialization::ReturnType MuonNumberingInitialization::produce(const MuonNumberingRecord& iRecord) {
+  edm::ESTransientHandle<DDCompactView> pDD = iRecord.getTransientHandle(geomToken_);
 
-MuonNumberingInitialization::ReturnType
-MuonNumberingInitialization::produce(const MuonNumberingRecord& iRecord)
-{
-  if ( muonDDDConst_ == 0 )
-  {
-    edm::LogError( "MuonNumberingInitialization" ) << "MuonNumberingInitialization::produceMuonDDDConstants has NOT been initialized!";
-    throw;
-  }
-  return std::auto_ptr<MuonDDDConstants> ( muonDDDConst_ ) ;
-}
-
-void
-MuonNumberingInitialization::initializeMuonDDDConstants( const IdealGeometryRecord& igr )
-{
-  edm::ESTransientHandle<DDCompactView> pDD;
-  igr.get( label_, pDD );
-
-  if( muonDDDConst_ != 0 ) {
-    delete muonDDDConst_;
-  }
-
-  muonDDDConst_ = new MuonDDDConstants( *pDD );
+  return std::make_unique<MuonDDDConstants>(*pDD);
 }
 
 DEFINE_FWK_EVENTSETUP_MODULE(MuonNumberingInitialization);

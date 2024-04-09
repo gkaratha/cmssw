@@ -24,37 +24,35 @@
 #include "RecoMET/METAlgorithms/interface/CaloSpecificAlgo.h"
 #include "RecoMET/METAlgorithms/interface/SignCaloSpecificAlgo.h"
 
-#include <string.h>
+#include <cstring>
 
 //____________________________________________________________________________||
-namespace cms
-{
+namespace cms {
 
-//____________________________________________________________________________||
+  //____________________________________________________________________________||
   CaloMETProducer::CaloMETProducer(const edm::ParameterSet& iConfig)
-    : inputToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("src")))
-    , calculateSignificance_(iConfig.getParameter<bool>("calculateSignificance"))
-    , resolutions_(0)
-    , globalThreshold_(iConfig.getParameter<double>("globalThreshold"))
-  {
+      : inputToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("src"))),
+        calculateSignificance_(iConfig.getParameter<bool>("calculateSignificance")),
+        resolutions_(nullptr),
+        globalThreshold_(iConfig.getParameter<double>("globalThreshold")) {
     noHF_ = iConfig.getParameter<bool>("noHF");
 
     std::string alias = iConfig.exists("alias") ? iConfig.getParameter<std::string>("alias") : "";
 
     produces<reco::CaloMETCollection>().setBranchAlias(alias);
 
-    if (calculateSignificance_) resolutions_ = new metsig::SignAlgoResolutions(iConfig);
+    if (calculateSignificance_)
+      resolutions_ = new metsig::SignAlgoResolutions(iConfig);
   }
 
-//____________________________________________________________________________||
-  CaloMETProducer::~CaloMETProducer()
-  {
-    if (resolutions_) delete resolutions_;
+  //____________________________________________________________________________||
+  CaloMETProducer::~CaloMETProducer() {
+    if (resolutions_)
+      delete resolutions_;
   }
 
-//____________________________________________________________________________||
-  void CaloMETProducer::produce(edm::Event& event, const edm::EventSetup& setup)
-  {
+  //____________________________________________________________________________||
+  void CaloMETProducer::produce(edm::Event& event, const edm::EventSetup& setup) {
     edm::Handle<edm::View<reco::Candidate> > input;
     event.getByToken(inputToken_, input);
 
@@ -73,14 +71,13 @@ namespace cms
 	calomet.setSignificanceMatrix(signcalospecalgo.getSignificanceMatrix());
       }
 */
-    std::auto_ptr<reco::CaloMETCollection> calometcoll;
-    calometcoll.reset(new reco::CaloMETCollection);
+    auto calometcoll = std::make_unique<reco::CaloMETCollection>();
     calometcoll->push_back(calomet);
-    event.put(calometcoll);
+    event.put(std::move(calometcoll));
   }
 
-//____________________________________________________________________________||
+  //____________________________________________________________________________||
   DEFINE_FWK_MODULE(CaloMETProducer);
-}
+}  // namespace cms
 
 //____________________________________________________________________________||

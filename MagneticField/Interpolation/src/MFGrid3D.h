@@ -16,55 +16,49 @@
 
 class dso_internal MFGrid3D : public MFGrid {
 public:
+  explicit MFGrid3D(const GloballyPositioned<float>& vol) : MFGrid(vol) {}
 
-  explicit MFGrid3D( const GloballyPositioned<float>& vol) : MFGrid(vol) {}
-
-
-  virtual Dimensions dimensions(void) const {
+  Dimensions dimensions(void) const override {
     Dimensions tmp;
     tmp.w = grid_.grida().nodes();
     tmp.h = grid_.gridb().nodes();
     tmp.d = grid_.gridc().nodes();
     return tmp;
   }
-    
+
   /// Position of node in local frame
-  virtual LocalPoint  nodePosition( int i, int j, int k) const {
-    return fromGridFrame( grid_.grida().node(i), grid_.gridb().node(j), grid_.gridc().node(k));
+  LocalPoint nodePosition(int i, int j, int k) const override {
+    return fromGridFrame(grid_.grida().node(i), grid_.gridb().node(j), grid_.gridc().node(k));
   }
 
   /// Field value at node
-  virtual LocalVector nodeValue( int i, int j, int k) const {
+  LocalVector nodeValue(int i, int j, int k) const override {
     /// must check range here: FIX ME !!!!
-    return MFGrid::LocalVector(grid_( i, j, k));
+    return MFGrid::LocalVector(grid_(i, j, k));
   }
 
-  virtual Indexes index( const LocalPoint& p) const {
+  Indexes index(const LocalPoint& p) const override {
     Indexes result;
     double a, b, c;
-    toGridFrame( p, a, b, c);
+    toGridFrame(p, a, b, c);
     result.i = grid_.grida().index(a);
     result.j = grid_.gridb().index(b);
     result.k = grid_.gridc().index(c);
     return result;
   }
 
-  virtual LocalVector valueInTesla( const LocalPoint& p) const;
+  LocalVector valueInTesla(const LocalPoint& p) const override;
 
   /// Interpolated field value at given point; does not check for exceptions
-  virtual LocalVector uncheckedValueInTesla( const LocalPoint& p) const = 0;
+  virtual LocalVector uncheckedValueInTesla(const LocalPoint& p) const = 0;
 
 protected:
-
-  using GridType =  Grid3D;
+  using GridType = Grid3D;
   using BVector = Grid3D::BVector;
 
-  GridType       grid_; // should become private...
+  GridType grid_;  // should become private...
 
-  void setGrid( const GridType& grid) {
-    grid_ = grid;
-  }
-
+  void setGrid(const GridType& grid) { grid_ = grid; }
 };
 
 #endif

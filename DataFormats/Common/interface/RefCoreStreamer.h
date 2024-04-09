@@ -3,7 +3,6 @@
 
 #include "TClassStreamer.h"
 #include "TClassRef.h"
-#include <cassert>
 
 class TBuffer;
 
@@ -11,28 +10,30 @@ namespace edm {
   class EDProductGetter;
   class RefCoreStreamer : public TClassStreamer {
   public:
-    explicit RefCoreStreamer() : cl_("edm::RefCore"){}
+    explicit RefCoreStreamer() : cl_("edm::RefCore") {}
 
-    void operator() (TBuffer &R__b, void *objp);
+    void operator()(TBuffer& R__b, void* objp) override;
 
-    TClassStreamer* Generate() const;
-    
+    TClassStreamer* Generate() const override;
+
   private:
     TClassRef cl_;
   };
 
   class RefCoreWithIndexStreamer : public TClassStreamer {
   public:
-    explicit RefCoreWithIndexStreamer() : cl_("edm::RefCoreWithIndex"){}
-    
-    void operator() (TBuffer &R__b, void *objp);
+    explicit RefCoreWithIndexStreamer() : cl_("edm::RefCoreWithIndex") {}
 
-    TClassStreamer* Generate() const;
+    void operator()(TBuffer& R__b, void* objp) override;
+
+    TClassStreamer* Generate() const override;
+
   private:
     TClassRef cl_;
   };
 
+  void setRefCoreStreamerInTClass();
   void setRefCoreStreamer(bool resetAll = false);
   EDProductGetter const* setRefCoreStreamer(EDProductGetter const* ep);
-}
+}  // namespace edm
 #endif

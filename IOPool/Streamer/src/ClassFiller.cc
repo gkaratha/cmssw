@@ -1,46 +1,31 @@
-#include "FWCore/Utilities/interface/Exception.h"
+#include "IOPool/Streamer/interface/ClassFiller.h"
 #include "FWCore/Utilities/interface/EDMException.h"
-#include "FWCore/Utilities/interface/Algorithms.h"
 #include "FWCore/Utilities/interface/DebugMacros.h"
-#include "FWCore/Utilities/interface/DictionaryTools.h"
+#include "FWCore/Reflection/interface/DictionaryTools.h"
 #include "FWCore/Utilities/interface/TypeID.h"
-#include "FWCore/Utilities/interface/TypeWithDict.h"
+#include "FWCore/Reflection/interface/TypeWithDict.h"
 
 #include "TClass.h"
 
-#include <string>
 #include <set>
 #include <algorithm>
 #include <iostream>
 
 namespace edm {
-  void loadType(TypeID const& type) {
-    checkClassDictionaries(type, true);
-    if (!missingTypes().empty()) {
-      TypeSet missing = missingTypes();
-      missingTypes().clear();
-      for_all(missing, loadType);
-    }
-  }
 
-  void loadCap(std::string const& name) {
+  bool loadCap(std::string const& name, std::vector<std::string>& missingDictionaries) {
     FDEBUG(1) << "Loading dictionary for " << name << "\n";
-    TypeWithDict typedict = TypeWithDict::byName(name);
-    if (!typedict) {
-      throw cms::Exception("DictionaryMissingClass") << "The dictionary of class '" << name << "' is missing!";
-    }
-    TClass* cl = TClass::GetClass(name.c_str());
-    loadType(TypeID(*cl->GetTypeInfo()));
+    TypeWithDict typeWithDict = TypeWithDict::byName(name);
+    return checkClassDictionaries(missingDictionaries, name, typeWithDict);
   }
 
   void doBuildRealData(std::string const& name) {
     FDEBUG(3) << "doing BuildRealData for " << name << "\n";
     TClass* ttest = TClass::GetClass(name.c_str());
-    if (ttest != 0) {
+    if (ttest != nullptr) {
       ttest->BuildRealData();
     } else {
-      throw edm::Exception(errors::Configuration)
-			<< "Could not find TClass for " << name << "\n";
+      throw edm::Exception(errors::Configuration) << "Could not find TClass for " << name << "\n";
     }
   }
   // ---------------------
@@ -48,32 +33,35 @@ namespace edm {
   void loadExtraClasses() {
     static bool done = false;
     if (done == false) {
-	loadCap(std::string("edm::StreamedProduct"));
-	loadCap(std::string("std::vector<edm::StreamedProduct>"));
-	loadCap(std::string("edm::SendEvent"));
-	loadCap(std::string("std::vector<edm::BranchDescription>"));
-	loadCap(std::string("edm::SendJobHeader"));
+      std::vector<std::string> missingDictionaries;
+      loadCap(std::string("edm::StreamedProduct"), missingDictionaries);
+      loadCap(std::string("std::vector<edm::StreamedProduct>"), missingDictionaries);
+      loadCap(std::string("edm::SendEvent"), missingDictionaries);
+      loadCap(std::string("std::vector<edm::BranchDescription>"), missingDictionaries);
+      loadCap(std::string("edm::SendJobHeader"), missingDictionaries);
+      if (!missingDictionaries.empty()) {
+        std::string context("Calling loadExtraClasses, checking dictionaries");
+        throwMissingDictionariesException(missingDictionaries, context);
+      }
     }
-    done=true;
+    done = true;
   }
 
   namespace {
     TClass* getRootClass(std::string const& name) {
-      TClass* tc = TClass::GetClass(name.c_str());    
-      
-      if(tc == 0) {
-	throw edm::Exception(errors::Configuration,"getRootClass")
-	  << "could not find TClass for " << name
-	  << "\n";
+      TClass* tc = TClass::GetClass(name.c_str());
+
+      if (tc == nullptr) {
+        throw edm::Exception(errors::Configuration, "getRootClass") << "could not find TClass for " << name << "\n";
       }
-      
+
       return tc;
     }
-  }
+  }  // namespace
 
   // ---------------------
   TClass* getTClass(std::type_info const& ti) {
     TypeID const type(ti);
     return getRootClass(type.className());
   }
-}
+}  // namespace edm

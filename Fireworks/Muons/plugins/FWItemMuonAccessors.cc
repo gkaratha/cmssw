@@ -11,7 +11,7 @@
 //
 
 // system include files
-#include <assert.h>
+#include <cassert>
 
 #include "TClass.h"
 
@@ -25,8 +25,9 @@
 
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 #include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h"
-//#include "DataFormats/GEMRecHit/interface/ME0RecHitCollection.h"
-//#include "DataFormats/GEMRecHit/interface/ME0SegmentCollection.h"
+#include "DataFormats/GEMRecHit/interface/GEMSegmentCollection.h"
+#include "DataFormats/GEMRecHit/interface/ME0RecHitCollection.h"
+#include "DataFormats/GEMRecHit/interface/ME0SegmentCollection.h"
 
 #include "DataFormats/DTDigi/interface/DTDigiCollection.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
@@ -40,17 +41,38 @@
 
 #include "Fireworks/Core/interface/FWItemRandomAccessor.h"
 
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<CSCRecHit2DCollection>,CSCRecHit2DCollection,"CSCRecHit2DCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<CSCSegmentCollection>,CSCSegmentCollection,"CSCSegmentCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecSegment2DCollection>,DTRecSegment2DCollection,"DTSegment2DCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecSegment4DCollection>,DTRecSegment4DCollection,"DTSegment4DCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecHitCollection>,DTRecHitCollection,"DTRecHitCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<RPCRecHitCollection>,RPCRecHitCollection,"RPCRecHitCollectionAccessor");
-REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<GEMRecHitCollection>,GEMRecHitCollection,"GEMRecHitCollectionAccessor");
-//REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<ME0RecHitCollection>,ME0RecHitCollection,"ME0RecHitCollectionAccessor");
-//REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<ME0SegmentCollection>,ME0SegmentCollection,"ME0SegmentCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<CSCRecHit2DCollection>,
+                                 CSCRecHit2DCollection,
+                                 "CSCRecHit2DCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<CSCSegmentCollection>,
+                                 CSCSegmentCollection,
+                                 "CSCSegmentCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecSegment2DCollection>,
+                                 DTRecSegment2DCollection,
+                                 "DTSegment2DCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecSegment4DCollection>,
+                                 DTRecSegment4DCollection,
+                                 "DTSegment4DCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<DTRecHitCollection>,
+                                 DTRecHitCollection,
+                                 "DTRecHitCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<RPCRecHitCollection>,
+                                 RPCRecHitCollection,
+                                 "RPCRecHitCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<GEMRecHitCollection>,
+                                 GEMRecHitCollection,
+                                 "GEMRecHitCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<GEMSegmentCollection>,
+                                 GEMSegmentCollection,
+                                 "GEMSegmentCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<ME0RecHitCollection>,
+                                 ME0RecHitCollection,
+                                 "ME0RecHitCollectionAccessor");
+REGISTER_TEMPLATE_FWITEMACCESSOR(FWItemRandomAccessor<ME0SegmentCollection>,
+                                 ME0SegmentCollection,
+                                 "ME0SegmentCollectionAccessor");
 
-typedef FWItemMuonDigiAccessor<DTDigiCollection,DTDigi> DTDigiAccessor;
+typedef FWItemMuonDigiAccessor<DTDigiCollection, DTDigi> DTDigiAccessor;
 REGISTER_TEMPLATE_FWITEMACCESSOR(DTDigiAccessor, DTDigiCollection, "DTDigiCollectionAccessor");
 
 typedef FWItemMuonDigiAccessor<CSCWireDigiCollection, CSCWireDigi> CSCWireDigiAccessor;
@@ -61,7 +83,6 @@ REGISTER_TEMPLATE_FWITEMACCESSOR(CSCStripDigiAccessor, CSCStripDigiCollection, "
 
 typedef FWItemMuonDigiAccessor<RPCDigiCollection, RPCDigi> RPCDigiAccessor;
 REGISTER_TEMPLATE_FWITEMACCESSOR(RPCDigiAccessor, RPCDigiCollection, "RPCDigiCollectionAccessor");
-
 
 typedef FWItemMuonDigiAccessor<CSCRPCDigiCollection, CSCRPCDigi> CSCRPCDigiAccessor;
 REGISTER_TEMPLATE_FWITEMACCESSOR(CSCRPCDigiAccessor, CSCRPCDigiCollection, "CSCRPCDigiCollectionAccessor");

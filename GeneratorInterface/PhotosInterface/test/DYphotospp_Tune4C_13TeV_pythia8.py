@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10000)
+    input = cms.untracked.int32(3000)
 )
 
 # Input source
@@ -67,13 +67,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:startup', '')
 
 process.generator = cms.EDFilter("Pythia8GeneratorFilter",
                                  ExternalDecays = cms.PSet(
-	Photospp355 = cms.untracked.PSet(
+	Photospp = cms.untracked.PSet(
 	parameterSets = cms.vstring("setExponentiation","setInfraredCutOff","setMomentumConservationThreshold"),
 	setExponentiation = cms.bool(True),
 	setInfraredCutOff = cms.double(0.00011),
 	setMomentumConservationThreshold = cms.double(20.0) # 0.5GeV
 	),
-	parameterSets = cms.vstring( "Photospp355")
+	parameterSets = cms.vstring( "Photospp")
 	),
 				 
     UseExternalGenerators = cms.untracked.bool(True),
@@ -100,7 +100,17 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
     )
 )
 
-process.ProductionFilterSequence = cms.Sequence(process.generator)
+process.genParticles = cms.EDProducer("GenParticleProducer",
+    saveBarCodes = cms.untracked.bool(True),
+    src = cms.InputTag("generator:unsmeared"),
+    abortOnUnknownPDGCode = cms.untracked.bool(False)
+)
+process.printTree1 = cms.EDAnalyzer("ParticleListDrawer",
+    src = cms.InputTag("genParticles"),
+    maxEventsToPrint  = cms.untracked.int32(10)
+)
+
+process.ProductionFilterSequence = cms.Sequence(process.generator*process.genParticles*process.printTree1)
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)

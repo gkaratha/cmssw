@@ -19,35 +19,32 @@
 
 #include <vector>
 
-class MuonSeedFinder: public MuonSeedVFinder
-{
+class MuonSeedFinder : public MuonSeedVFinder {
 public:
   /// Constructor
-  MuonSeedFinder(const edm::ParameterSet & pset);
+  MuonSeedFinder(const edm::ParameterSet &pset);
 
   /// Destructor
-  virtual ~MuonSeedFinder(){delete thePtExtractor;}
+  ~MuonSeedFinder() override { delete thePtExtractor; }
 
   // Operations
 
-  virtual void setBField(const MagneticField * field);
+  void setBField(const MagneticField *field) override;
 
-  void seeds(const MuonTransientTrackingRecHit::MuonRecHitContainer & hits,
-             std::vector<TrajectorySeed> & result);
+  void seeds(const MuonTransientTrackingRecHit::MuonRecHitContainer &hits,
+             std::vector<TrajectorySeed> &result) override;
 
 private:
-  
   float computePt(MuonTransientTrackingRecHit::ConstMuonRecHitPointer muon, const MagneticField *field) const;
 
   void analyze() const;
   // put a parameterSet instead of
   // static SimpleConfigurable<float> theMinMomentum;
   float theMinMomentum;
-  const MagneticField * theField;
+  const MagneticField *theField;
 
   MuonDTSeedFromRecHits theBarrel;
   MuonOverlapSeedFromRecHits theOverlap;
   MuonCSCSeedFromRecHits theEndcap;
-
 };
 #endif

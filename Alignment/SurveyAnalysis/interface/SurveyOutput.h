@@ -14,25 +14,20 @@
 
 #include "TFile.h"
 
+#include "Alignment/CommonAlignment/interface/Utilities.h"
+
 class Alignable;
 
-class SurveyOutput
-{
-  public:
-
-  SurveyOutput(
-	       const std::vector<Alignable*>&,
-	       const std::string& fileName
-	       );
+class SurveyOutput {
+public:
+  SurveyOutput(const align::Alignables&, const std::string& fileName);
 
   /// write out variables
-  void write(
-	     unsigned int iter // iteration number
-	     );
+  void write(unsigned int iter  // iteration number
+  );
 
-  private:
-
-  const std::vector<Alignable*>& theAlignables;
+private:
+  const align::Alignables& theAlignables;
 
   TFile theFile;
 };

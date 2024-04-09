@@ -8,15 +8,17 @@ es_prefer_l1GtTriggerMaskTechTrig = cms.ESPrefer("L1GtTriggerMaskTechTrigTrivial
 import copy
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 hltL1SingleMuOpen = copy.deepcopy(hltHighLevel)
-hltL1SingleMuOpen.HLTPaths = ['HLT_L1SingleMuOpen_AntiBPTX_v*']
+hltL1SingleMuOpen.HLTPaths = ['HLT_L1SingleMuOpen*']
+#hltL1SingleMuOpen.HLTPaths = ['HLT_L1SingleMuOpen_AntiBPTX_v*']
 hltDtCalibTest = copy.deepcopy(hltHighLevel)
-hltDtCalibTest.HLTPaths = ['HLT_Mu40_v*', 'HLT_IsoMu*', 'HLT_Mu13_Mu8_v*', 'HLT_Mu17_Mu8_v*']
+hltDtCalibTest.HLTPaths = ['HLT_Mu50_v*', 'HLT_IsoMu*', 'HLT_Mu13_Mu8_v*', 'HLT_Mu17_Mu8_v*']
 hltDTCalibration = copy.deepcopy(hltHighLevel)
 hltDTCalibration.HLTPaths = ['HLT_DTCalibration_v*']
 
 ALCARECODtCalibHIHLTFilter = copy.deepcopy(hltHighLevel)
-ALCARECODtCalibHIHLTFilter.throw = False
-ALCARECODtCalibHIHLTFilter.eventSetupPathsKey = 'MuAlcaDtCalibHI'
+
+ALCARECODtCalibHIHLTFilter.HLTPaths = ['HLT_HIL2SingleMu*']
+
 
 from HLTrigger.HLTfilters.hltLevel1GTSeed_cfi import *
 l1tech = hltLevel1GTSeed.clone()
@@ -107,7 +109,8 @@ offlineSelectionALCARECOPt15 = cms.Sequence(muonSelectionPt15)
 offlineSelectionPt5 = cms.Sequence(scrapingEvtFilter + primaryVertexFilter + muonSelectionPt5)
 offlineSelectionALCARECOPt5 = cms.Sequence(muonSelectionPt5)
 offlineSelectionCosmicsPt5 = cms.Sequence(hltL1SingleMuOpen + goodCosmicTracksPt5)
-offlineSelectionHIPt5 = cms.Sequence(ALCARECODtCalibHIHLTFilter + primaryVertexFilterHI + muonSelectionPt5)
+offlineSelectionHIPt5 = cms.Sequence(ALCARECODtCalibHIHLTFilter + primaryVertexFilter + muonSelectionPt5)
+
 offlineSelectionHIALCARECOPt5 = cms.Sequence(primaryVertexFilterHI + muonSelectionPt5)
 offlineSelectionHIRAWPt5 = cms.Sequence(ALCARECODtCalibHIHLTFilter)
 

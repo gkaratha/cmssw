@@ -12,14 +12,14 @@
 typedef int subrun_t;
 
 class MonRunIOV : public IIOV {
- public:
+public:
   friend class EcalCondDBInterface;
 
   MonRunIOV();
-  ~MonRunIOV();
+  ~MonRunIOV() override;
 
   void setID(int id);
-  int getID(){ return m_ID;} ;
+  int getID() { return m_ID; };
 
   // Methods for user data
   void setMonRunTag(const MonRunTag& tag);
@@ -34,22 +34,18 @@ class MonRunIOV : public IIOV {
   Tm getSubRunEnd() const;
 
   // Methods from IUniqueDBObject
-  int fetchID() throw(std::runtime_error);
-  void setByID(int id) throw(std::runtime_error);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
-  inline bool operator==(const MonRunIOV &m) const
-    {
-      return ( m_monRunTag   == m.m_monRunTag &&
-	       m_runIOV      == m.m_runIOV &&
-	       m_subRunNum   == m.m_subRunNum &&
-	       m_subRunStart == m.m_subRunStart &&
-	       m_subRunEnd   == m.m_subRunEnd );
-    }
+  inline bool operator==(const MonRunIOV& m) const {
+    return (m_monRunTag == m.m_monRunTag && m_runIOV == m.m_runIOV && m_subRunNum == m.m_subRunNum &&
+            m_subRunStart == m.m_subRunStart && m_subRunEnd == m.m_subRunEnd);
+  }
 
-  inline bool operator!=(const MonRunIOV &m) const { return !(*this == m); }
+  inline bool operator!=(const MonRunIOV& m) const { return !(*this == m); }
 
- private:
+private:
   // User data for this IOV
   MonRunTag m_monRunTag;
   RunIOV m_runIOV;
@@ -57,10 +53,10 @@ class MonRunIOV : public IIOV {
   Tm m_subRunStart;
   Tm m_subRunEnd;
 
-  int writeDB() throw(std::runtime_error);
-  void fetchParentIDs(int* monRunTagID, int* runIOVID) throw(std::runtime_error);
+  int writeDB() noexcept(false);
+  void fetchParentIDs(int* monRunTagID, int* runIOVID) noexcept(false);
 
-  void setByRun(MonRunTag* montag, RunIOV* runiov, subrun_t subrun) throw(std::runtime_error);
+  void setByRun(MonRunTag* montag, RunIOV* runiov, subrun_t subrun) noexcept(false);
 };
 
 #endif

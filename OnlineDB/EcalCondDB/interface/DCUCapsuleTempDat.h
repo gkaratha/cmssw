@@ -10,33 +10,28 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class DCUCapsuleTempDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   DCUCapsuleTempDat();
-  ~DCUCapsuleTempDat();
+  ~DCUCapsuleTempDat() override;
 
   // User data methods
-  inline std::string getTable() { return "DCU_CAPSULE_TEMP_DAT"; }
+  inline std::string getTable() override { return "DCU_CAPSULE_TEMP_DAT"; }
 
   inline void setCapsuleTemp(float temp) { m_capsuleTemp = temp; }
   inline float getCapsuleTemp() const { return m_capsuleTemp; }
-  
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
 
-  void writeDB(const EcalLogicID* ecid, const DCUCapsuleTempDat* item, DCUIOV* iov)
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeArrayDB(const std::map< EcalLogicID, DCUCapsuleTempDat>* data, DCUIOV* iov)
-  throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const DCUCapsuleTempDat* item, DCUIOV* iov) noexcept(false);
 
-  void fetchData(std::map< EcalLogicID, DCUCapsuleTempDat >* fillVec, DCUIOV* iov)
-     throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, DCUCapsuleTempDat>* data, DCUIOV* iov) noexcept(false);
+
+  void fetchData(std::map<EcalLogicID, DCUCapsuleTempDat>* fillVec, DCUIOV* iov) noexcept(false);
 
   // User data
   float m_capsuleTemp;
-  
 };
 
 #endif

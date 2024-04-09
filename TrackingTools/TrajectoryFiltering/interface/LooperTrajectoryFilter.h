@@ -1,57 +1,60 @@
 #ifndef LooperTrajectoryFilter_H
 #define LooperTrajectoryFilter_H
 
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "TrackingTools/TrajectoryFiltering/interface/TrajectoryFilter.h"
 
 class LooperTrajectoryFilter final : public TrajectoryFilter {
 public:
+  explicit LooperTrajectoryFilter(int minNumberOfHitsForLoopers = 13,
+                                  int minNumberOfHitsPerLoop = 4,
+                                  int extraNumberOfHitsBeforeTheFirstLoop = 4)
+      : theMinNumberOfHitsForLoopers(minNumberOfHitsForLoopers),
+        theMinNumberOfHitsPerLoop(minNumberOfHitsPerLoop),
+        theExtraNumberOfHitsBeforeTheFirstLoop(extraNumberOfHitsBeforeTheFirstLoop) {}
 
-  explicit LooperTrajectoryFilter( int minNumberOfHits=13, 
-				   int minNumberOfHitsPerLoop=4,
-				   int extraNumberOfHitsBeforeTheFirstLoop=4): 
-  theMinNumberOfHits(minNumberOfHits), 
-  theMinNumberOfHitsPerLoop(minNumberOfHitsPerLoop),
-  theExtraNumberOfHitsBeforeTheFirstLoop(extraNumberOfHitsBeforeTheFirstLoop){}
-  
-  explicit LooperTrajectoryFilter( const edm::ParameterSet & pset, edm::ConsumesCollector& iC){
-    theMinNumberOfHits = pset.existsAs<int>("minNumberOfHits") ? 
-      pset.getParameter<int>("minNumberOfHits") : 13; 
-    theMinNumberOfHitsPerLoop= pset.existsAs<int>("minNumberOfHitsPerLoop") ? 
-      pset.getParameter<int>("minNumberOfHitsPerLoop") : 4; 
-    theExtraNumberOfHitsBeforeTheFirstLoop= pset.existsAs<int>("extraNumberOfHitsBeforeTheFirstLoop") ? 
-      pset.getParameter<int>("extraNumberOfHitsBeforeTheFirstLoop") : 4; 
-
+  explicit LooperTrajectoryFilter(const edm::ParameterSet& pset, edm::ConsumesCollector& iC) {
+    theMinNumberOfHitsForLoopers = pset.getParameter<int>("minNumberOfHitsForLoopers");
+    theMinNumberOfHitsPerLoop = pset.getParameter<int>("minNumberOfHitsPerLoop");
+    theExtraNumberOfHitsBeforeTheFirstLoop = pset.getParameter<int>("extraNumberOfHitsBeforeTheFirstLoop");
   }
 
-  virtual bool qualityFilter( const Trajectory& traj) const { return QF<Trajectory>(traj); }
-  virtual bool qualityFilter( const TempTrajectory& traj) const { return QF<TempTrajectory>(traj);  }
+  static void fillPSetDescription(edm::ParameterSetDescription& iDesc) {
+    iDesc.add<int>("minNumberOfHitsForLoopers", 13);
+    iDesc.add<int>("minNumberOfHitsPerLoop", 4);
+    iDesc.add<int>("extraNumberOfHitsBeforeTheFirstLoop", 4);
+  }
 
-  virtual bool toBeContinued( TempTrajectory& traj) const { return TBC<TempTrajectory>(traj);}
-  virtual bool toBeContinued( Trajectory& traj) const{ return TBC<Trajectory>(traj);}
+  bool qualityFilter(const Trajectory& traj) const override { return QF<Trajectory>(traj); }
+  bool qualityFilter(const TempTrajectory& traj) const override { return QF<TempTrajectory>(traj); }
 
-  virtual std::string name() const{return "LooperTrajectoryFilter";}
+  bool toBeContinued(TempTrajectory& traj) const override { return TBC<TempTrajectory>(traj); }
+  bool toBeContinued(Trajectory& traj) const override { return TBC<Trajectory>(traj); }
+
+  std::string name() const override { return "LooperTrajectoryFilter"; }
 
 protected:
-
-  template<class T> bool QF(const T & traj) const{
-    if ( traj.isLooper() && (traj.foundHits() < theMinNumberOfHits) ) return false;
-    else return true;
+  template <class T>
+  bool QF(const T& traj) const {
+    if (traj.isLooper() && (traj.foundHits() < theMinNumberOfHitsForLoopers))
+      return false;
+    else
+      return true;
   }
 
-
-  template<class T> bool TBC(T& traj) const {
-    bool ret = !(traj.isLooper() &&
-                 ( (traj.nLoops()*theMinNumberOfHitsPerLoop + theExtraNumberOfHitsBeforeTheFirstLoop)>traj.foundHits()));
+  template <class T>
+  bool TBC(T& traj) const {
+    bool ret =
+        !(traj.isLooper() &&
+          ((traj.nLoops() * theMinNumberOfHitsPerLoop + theExtraNumberOfHitsBeforeTheFirstLoop) > traj.foundHits()));
     if (!ret)
       traj.setStopReason(StopReason::LOOPER);
     return ret;
   }
 
-  int theMinNumberOfHits;
+  int theMinNumberOfHitsForLoopers;
   int theMinNumberOfHitsPerLoop;
   int theExtraNumberOfHitsBeforeTheFirstLoop;
-
-
 };
 
 #endif

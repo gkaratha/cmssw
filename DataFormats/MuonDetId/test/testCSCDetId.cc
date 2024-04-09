@@ -13,10 +13,9 @@
 #include <iostream>
 using namespace std;
 
-class testCSCDetId: public CppUnit::TestFixture
-{
+class testCSCDetId : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(testCSCDetId);
-  
+
   CPPUNIT_TEST(testOne);
   CPPUNIT_TEST(testFail);
   CPPUNIT_TEST(testStatic);
@@ -24,18 +23,20 @@ class testCSCDetId: public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp(){}
-  void tearDown(){}
+  void setUp() {}
+  void tearDown() {}
   void testOne();
   void testFail();
   void testStatic();
+
+private:
+  void testValid(CSCDetId&);
 };
 
 ///registration of the test so that the runner can find it
 CPPUNIT_TEST_SUITE_REGISTRATION(testCSCDetId);
 
-void testCSCDetId::testOne(){
-
+void testCSCDetId::testOne() {
   /*
     std::cout << "\ntestCSCDetId: testOne starting... " << std::endl;
   
@@ -46,77 +47,54 @@ void testCSCDetId::testOne(){
     std::cout << "max station = " << CSCDetId::maxStationId() << std::endl;
   */
 
-  unsigned short rings[]={4,2,2,2};
-  unsigned short chambers[]={36,36,36,36, 18,36, 18,36, 18, 36};
+  unsigned short rings[] = {4, 2, 2, 2};
+  unsigned short chambers[] = {36, 36, 36, 36, 18, 36, 18, 36, 18, 36};
 
-  for (int endcap=CSCDetId::minEndcapId(); endcap<=CSCDetId::maxEndcapId(); ++endcap)
-    for (int station=CSCDetId::minStationId(); station <= CSCDetId::maxStationId() ; ++station)
-      for (int ring=CSCDetId::minRingId(); ring<=rings[station-1]; ++ring) {
-        unsigned short itype = CSCDetId::iChamberType( station, ring );
-        unsigned short nchambers = chambers[itype-1];
-	for (int chamber=CSCDetId::minChamberId(); chamber<=nchambers; ++chamber)
-	  for (int layer=CSCDetId::minLayerId(); layer<=CSCDetId::maxLayerId(); ++layer){
-
-	    CSCDetId detid(endcap, station, ring, chamber, layer);
-	    //                std::cout << "detid = " << detid.rawId() << "  " << hex << detid.rawId() << 
-	    //	    	      "  " << oct << detid.rawId() << dec << std::endl;
-	    //	    	    std::cout << "\ndetid.endcap()= " << detid.endcap() << " endcap = " << endcap << std::endl;
-	    CPPUNIT_ASSERT(detid.endcap() == endcap);
-	    //	    	    std::cout << "\ndetid.station()= " << detid.station() << " station = " << station << std::endl;
+  for (int endcap = CSCDetId::minEndcapId(); endcap <= CSCDetId::maxEndcapId(); ++endcap)
+    for (int station = CSCDetId::minStationId(); station <= CSCDetId::maxStationId(); ++station)
+      for (int ring = CSCDetId::minRingId(); ring <= rings[station - 1]; ++ring) {
+        unsigned short itype = CSCDetId::iChamberType(station, ring);
+        unsigned short nchambers = chambers[itype - 1];
+        for (int chamber = CSCDetId::minChamberId(); chamber <= nchambers; ++chamber)
+          for (int layer = CSCDetId::minLayerId(); layer <= CSCDetId::maxLayerId(); ++layer) {
+            CSCDetId detid(endcap, station, ring, chamber, layer);
+            //                std::cout << "detid = " << detid.rawId() << "  " << hex << detid.rawId() <<
+            //	    	      "  " << oct << detid.rawId() << dec << std::endl;
+            //	    	    std::cout << "\ndetid.endcap()= " << detid.endcap() << " endcap = " << endcap << std::endl;
+            CPPUNIT_ASSERT(detid.endcap() == endcap);
+            //	    	    std::cout << "\ndetid.station()= " << detid.station() << " station = " << station << std::endl;
             CPPUNIT_ASSERT(detid.station() == station);
             CPPUNIT_ASSERT(detid.ring() == ring);
-	    CPPUNIT_ASSERT(detid.chamber() == chamber);
+            CPPUNIT_ASSERT(detid.chamber() == chamber);
             CPPUNIT_ASSERT(detid.layer() == layer);
 
-	    // check chamber type number	    
-	    //            std::cout << "E" << endcap << " S" << station << " R" << ring << " C" << chamber <<
-	    //	      " L" << layer << "   chamber type=" << detid.iChamberType() << std::endl;
-            CPPUNIT_ASSERT(detid.iChamberType() == CSCDetId::iChamberType( station, ring ) );
+            // check chamber type number
+            //            std::cout << "E" << endcap << " S" << station << " R" << ring << " C" << chamber <<
+            //	      " L" << layer << "   chamber type=" << detid.iChamberType() << std::endl;
+            CPPUNIT_ASSERT(detid.iChamberType() == CSCDetId::iChamberType(station, ring));
 
-	    // test constructor from id
-	    int myId = detid.rawId();
-	    CSCDetId anotherId(myId);
-	    CPPUNIT_ASSERT(detid==anotherId);
-	  }
+            // test constructor from id
+            int myId = detid.rawId();
+            CSCDetId anotherId(myId);
+            CPPUNIT_ASSERT(detid == anotherId);
+          }
       }
 }
 
-
-void testCSCDetId::testFail(){
-  
-  // std::cout << "\ntestCSCDetId: testFail starting... " << std::endl;
-
+void testCSCDetId::testFail() {
   // construct using an invalid input index
-  try {
-    // Invalid layer
-    CSCDetId detid(3,1,1,1,7);
-#ifdef EDM_ML_DEBUG
-    CPPUNIT_ASSERT("Failed to throw required exception" == 0); 
-#endif
-    detid.rawId(); // avoid compiler warning
-  } catch (cms::Exception& e) {
-    //    std::cout << "\ntestCSCDetId: testFail exception caught " << std::endl;
-    // OK
-  } catch (...) {
-    CPPUNIT_ASSERT("Threw wrong kind of exception" == 0);
-  }
-  
+  // Invalid layer
+  std::cout << "\nConstruct CSCDetId using an invalid input index\n";
+  CSCDetId detid1(3, 1, 1, 1, 7);
+  testValid(detid1);
+
   // contruct using an invalid input id
-  try {
-    CSCDetId detid(3211);
-#ifdef EDM_ML_DEBUG
-    CPPUNIT_ASSERT("Failed to throw required exception" == 0);
-#endif
-    detid.rawId(); // avoid compiler warning
-  } catch (cms::Exception& e) {
-    // OK
-    //    std::cout << "\ntestCSCDetId: testFail exception caught " << std::endl;
-  } catch (...) {
-    CPPUNIT_ASSERT("Threw wrong kind of exception" == 0);
-  }
+  std::cout << "\nConstruct CSCDetId using an invalid input id\n";
+  CSCDetId detid2(3211);
+  testValid(detid2);
 }
 
-void testCSCDetId::testStatic(){
+void testCSCDetId::testStatic() {
   int ie = 2;
   int is = 3;
   int ir = 2;
@@ -125,7 +103,7 @@ void testCSCDetId::testStatic(){
 
   int id1 = CSCDetId::rawIdMaker(2, 3, 2, 10, 3);
   int id2 = CSCDetId::rawIdMaker(ie, is, ir, ic, il);
-  int id3 = CSCDetId::rawIdMaker(ie, is, ir, ic, 0 ); // all layers i.e. chamber id
+  int id3 = CSCDetId::rawIdMaker(ie, is, ir, ic, 0);  // all layers i.e. chamber id
 
   //  std::cout << "\nE" << ie << " S" << is << " R" << ir << " C" << ic
   //       << " L" << il << " has rawId = " << id2 << " (dec) = "
@@ -135,11 +113,36 @@ void testCSCDetId::testStatic(){
   //       << " L0" << " has rawId = " << id3 << " = "
   //       << hex << id3 << " (hex) " << oct << id3 << " (oct)" << dec << std::endl;
 
-  CPPUNIT_ASSERT(id1 == id2 );
-  CPPUNIT_ASSERT(CSCDetId::endcap(id2)  == ie );
-  CPPUNIT_ASSERT(CSCDetId::station(id2) == is );
-  CPPUNIT_ASSERT(CSCDetId::ring(id2)    == ir );
-  CPPUNIT_ASSERT(CSCDetId::chamber(id2) == ic );
-  CPPUNIT_ASSERT(CSCDetId::layer(id2)   == il );
-  CPPUNIT_ASSERT(CSCDetId::chamber(id3) == ic );
+  CPPUNIT_ASSERT(id1 == id2);
+  CPPUNIT_ASSERT(CSCDetId::endcap(id2) == ie);
+  CPPUNIT_ASSERT(CSCDetId::station(id2) == is);
+  CPPUNIT_ASSERT(CSCDetId::ring(id2) == ir);
+  CPPUNIT_ASSERT(CSCDetId::chamber(id2) == ic);
+  CPPUNIT_ASSERT(CSCDetId::layer(id2) == il);
+  CPPUNIT_ASSERT(CSCDetId::chamber(id3) == ic);
+}
+
+void testCSCDetId::testValid(CSCDetId& detId) {
+  if (detId.det() != DetId::Muon || detId.subdetId() != MuonSubdetId::CSC) {
+    std::cout << "Invalid CSCDetId:"
+              << " det: " << detId.det() << " subdet: " << detId.subdetId() << " is not a valid CSC id\n";
+  }
+  int iendcap = detId.endcap();
+  int istation = detId.station();
+  int iring = detId.ring();
+  int ichamber = detId.chamber();
+  int ilayer = detId.layer();
+  if (iendcap < detId.minEndcapId() || iendcap > detId.maxEndcapId() || istation < detId.minStationId() ||
+      istation > detId.maxStationId() || iring < detId.minRingId() || iring > detId.maxRingId() ||
+      ichamber < detId.minChamberId() || ichamber > detId.maxChamberId() || ilayer < detId.minLayerId() ||
+      ilayer > detId.maxLayerId()) {
+    std::cout << "Invalid CSCDetId:"
+              << " Invalid parameters: "
+              << " E:" << iendcap << "(" << detId.minEndcapId() << ":" << detId.maxEndcapId() << ")"
+              << " S:" << istation << "(" << detId.minStationId() << ":" << detId.maxStationId() << ")"
+              << " R:" << iring << "(" << detId.minRingId() << ":" << detId.maxRingId() << ")"
+              << " C:" << ichamber << "(" << detId.minChamberId() << ":" << detId.maxChamberId() << ")"
+              << " L:" << ilayer << "(" << detId.minLayerId() << ":" << detId.maxLayerId() << ")"
+              << "\n";
+  }
 }

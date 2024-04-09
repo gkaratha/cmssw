@@ -23,15 +23,14 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 
 #include <iosfwd>
+#include <string_view>
 
 namespace edm {
 
   class ProcessContext;
 
   class StreamContext {
-
   public:
-
     enum class Transition {
       kBeginStream,
       kBeginRun,
@@ -43,20 +42,22 @@ namespace edm {
       kInvalid
     };
 
-    StreamContext(StreamID const& streamID,
-                  ProcessContext const* processContext);
-    
+    StreamContext(StreamID const& streamID, ProcessContext const* processContext);
+
     StreamContext(StreamID const& streamID,
                   Transition transition,
                   EventID const& eventID,
                   RunIndex const& runIndex,
-                  LuminosityBlockIndex const& luminosityBlockIndex, 
-                  Timestamp const & timestamp,
+                  LuminosityBlockIndex const& luminosityBlockIndex,
+                  Timestamp const& timestamp,
                   ProcessContext const* processContext);
 
     StreamID const& streamID() const { return streamID_; }
     Transition transition() const { return transition_; }
-    EventID const& eventID() const { return eventID_; } // event#==0 is a lumi, event#==0&lumi#==0 is a run
+    bool isAtEndTransition() const {
+      return transition() == Transition::kEndLuminosityBlock or transition() == Transition::kEndRun;
+    }
+    EventID const& eventID() const { return eventID_; }  // event#==0 is a lumi, event#==0&lumi#==0 is a run
     RunIndex const& runIndex() const { return runIndex_; }
     LuminosityBlockIndex const& luminosityBlockIndex() const { return luminosityBlockIndex_; }
     Timestamp const& timestamp() const { return timestamp_; }
@@ -71,13 +72,16 @@ namespace edm {
   private:
     StreamID streamID_;
     Transition transition_;
-    EventID eventID_; // event#==0 is a lumi, event#==0&lumi#==0 is a run
+    EventID eventID_;  // event#==0 is a lumi, event#==0&lumi#==0 is a run
     RunIndex runIndex_;
-    LuminosityBlockIndex luminosityBlockIndex_; 
+    LuminosityBlockIndex luminosityBlockIndex_;
     Timestamp timestamp_;
     ProcessContext const* processContext_;
   };
 
+  void exceptionContext(std::ostream&, StreamContext const&);
   std::ostream& operator<<(std::ostream&, StreamContext const&);
-}
+
+  std::string_view transitionName(StreamContext::Transition);
+}  // namespace edm
 #endif

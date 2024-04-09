@@ -1,10 +1,10 @@
-#ifndef CONFIGCODE_RBCBOARDSPECSIO_H 
+#ifndef CONFIGCODE_RBCBOARDSPECSIO_H
 #define CONFIGCODE_RBCBOARDSPECSIO_H 1
 
 // Include files
 #include "CondFormats/RPCObjects/interface/RBCBoardSpecs.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <ios>
@@ -16,20 +16,18 @@
  *  @date   2008-12-16
  */
 class RBCBoardSpecsIO : public RBCBoardSpecs {
-public: 
+public:
   /// Standard constructor
-  RBCBoardSpecsIO( );
+  RBCBoardSpecsIO();
 
-  virtual ~RBCBoardSpecsIO( ); ///< Destructor
-  
-  friend std::istream& operator>>(std::istream &, RBCBoardConfig &);
-  
+  ~RBCBoardSpecsIO() override;  ///< Destructor
+
+  friend std::istream &operator>>(std::istream &, RBCBoardConfig &);
+
 protected:
-  
 private:
-  
 };
 
-std::istream& operator>>(std::istream &, RBCBoardSpecsIO::RBCBoardConfig &);
+std::istream &operator>>(std::istream &, RBCBoardSpecsIO::RBCBoardConfig &);
 
-#endif // CONFIGCODE_RBCBOARDSPECSIO_H
+#endif  // CONFIGCODE_RBCBOARDSPECSIO_H

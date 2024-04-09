@@ -15,25 +15,25 @@ layerInfo = cms.PSet(
       maxRing = cms.int32(7)
       )
 )
-layerList = cms.vstring('TOB6+TOB5',
-                        'TOB6+TOB4', 
-                        'TOB6+TOB3',
-                        'TOB5+TOB4',
-                        'TOB5+TOB3',
-                        'TOB4+TOB3',
-                        'TEC1_neg+TOB6',
-                        'TEC1_neg+TOB5',
-                        'TEC1_neg+TOB4',
-                        'TEC1_pos+TOB6',
-                        'TEC1_pos+TOB5',
-                        'TEC1_pos+TOB4'                                   
-                        )
+layerList = ['TOB6+TOB5',
+             'TOB6+TOB4', 
+             'TOB6+TOB3',
+             'TOB5+TOB4',
+             'TOB5+TOB3',
+             'TOB4+TOB3',
+             'TEC1_neg+TOB6',
+             'TEC1_neg+TOB5',
+             'TEC1_neg+TOB4',
+             'TEC1_pos+TOB6',
+             'TEC1_pos+TOB5',
+             'TEC1_pos+TOB4'                                   
+             ]
 from RecoTracker.TkSeedGenerator.SeedFromConsecutiveHitsCreator_cfi import SeedFromConsecutiveHitsCreator as _SeedFromConsecutiveHitsCreator
-CosmicSeedCreator = _SeedFromConsecutiveHitsCreator.clone()
-CosmicSeedCreator.ComponentName = cms.string('CosmicSeedCreator')
-# extra parameter specific to CosmicSeedCreator
-CosmicSeedCreator.maxseeds = cms.int32(10000)
- 
+CosmicSeedCreator = _SeedFromConsecutiveHitsCreator.clone(
+    ComponentName = 'CosmicSeedCreator',
+    # extra parameter specific to CosmicSeedCreator
+    maxseeds      = cms.int32(10000)
+)
 
 regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProducer",
    RegionFactoryPSet = cms.PSet(                                 
@@ -70,7 +70,7 @@ regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProdu
     ), 
 
     ClusterCheckPSet = cms.PSet (
-      MaxNumberOfCosmicClusters = cms.uint32(10000),
+      MaxNumberOfStripClusters = cms.uint32(10000),
       ClusterCollectionLabel = cms.InputTag( "siStripClusters" ),
       MaxNumberOfPixelClusters = cms.uint32(10000),
       PixelClusterCollectionLabel = cms.InputTag("siPixelClusters"),
@@ -83,3 +83,14 @@ regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProdu
           
 )
 
+# FIXME: in the phase2 customization, these lines were ported from SLHC,
+# probably they need to be reviewed by cosmics experts
+#regionalCosmicTrackerSeedingLayers.layerList  = cms.vstring('BPix9+BPix8')  # Optimize later
+#regionalCosmicTrackerSeedingLayers.BPix = cms.PSet(
+#    HitProducer = cms.string('siPixelRecHits'),
+#    hitErrorRZ = cms.double(0.006),
+#    useErrorsFromParam = cms.bool(True),
+#    TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelPairs'),
+#    skipClusters = cms.InputTag("pixelPairStepClusters"),
+#    hitErrorRPhi = cms.double(0.0027)
+#)

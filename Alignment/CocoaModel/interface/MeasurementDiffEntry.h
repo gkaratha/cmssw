@@ -3,8 +3,8 @@
 // CAT: Model
 //
 // Class for measurements
-// 
-// History: v1.0 
+//
+// History: v1.0
 // Authors:
 //   Pedro Arce
 
@@ -15,24 +15,21 @@
 #include "Alignment/CocoaModel/interface/Measurement.h"
 #include "Alignment/CocoaUtilities/interface/CocoaGlobals.h"
 
-class MeasurementDiffEntry : public Measurement
-{ 
+class MeasurementDiffEntry : public Measurement {
 public:
-  MeasurementDiffEntry( const ALIint measdim, ALIstring& type, ALIstring& name )
-    : Measurement( measdim, type, name ){};
-  MeasurementDiffEntry(){ };   
-  ~MeasurementDiffEntry(){ };
+  MeasurementDiffEntry(const ALIint measdim, ALIstring& type, ALIstring& name) : Measurement(measdim, type, name){};
+  MeasurementDiffEntry(){};
+  ~MeasurementDiffEntry() override{};
 
-  // separate OptO names and Entry names 
-  virtual void buildOptONamesList( const std::vector<ALIstring>& wl );
-    
+  // separate OptO names and Entry names
+  void buildOptONamesList(const std::vector<ALIstring>& wl) override;
+
   // Get simulated value (called every time a parameter is displaced)
-  virtual void calculateSimulatedValue( ALIbool firstTime );
+  void calculateSimulatedValue(ALIbool firstTime) override;
 
- private:
+private:
   ALIstring theEntryNameFirst;
   ALIstring theEntryNameSecond;
 };
 
 #endif
-

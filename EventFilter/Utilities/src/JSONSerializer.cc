@@ -7,13 +7,12 @@
 
 #include "EventFilter/Utilities/interface/JSONSerializer.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace jsoncollector;
 
-bool JSONSerializer::serialize(JsonSerializable* pObj, std::string & output)
-{
-  assert(pObj!=nullptr);
+bool JSONSerializer::serialize(JsonSerializable* pObj, std::string& output) {
+  assert(pObj != nullptr);
 
   Json::Value serializeRoot;
   pObj->serialize(serializeRoot);
@@ -24,9 +23,8 @@ bool JSONSerializer::serialize(JsonSerializable* pObj, std::string & output)
   return true;
 }
 
-bool JSONSerializer::deserialize(JsonSerializable* pObj, std::string & input)
-{
-  assert(pObj!=nullptr);
+bool JSONSerializer::deserialize(JsonSerializable* pObj, std::string& input) {
+  assert(pObj != nullptr);
 
   Json::Value deserializeRoot;
   Json::Reader reader;
@@ -38,4 +36,3 @@ bool JSONSerializer::deserialize(JsonSerializable* pObj, std::string & input)
 
   return true;
 }
-

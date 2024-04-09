@@ -17,30 +17,25 @@
 #include "FWCore/ServiceRegistry/interface/PlaceInPathContext.h"
 #include "FWCore/ServiceRegistry/interface/ModuleCallingContext.h"
 
-HLTStreamFilter::HLTStreamFilter(const edm::ParameterSet & config) :
-  EDFilter(),
-  saveTags_(config.getParameter<bool>("saveTags"))
-{
+HLTStreamFilter::HLTStreamFilter(const edm::ParameterSet& config)
+    : EDFilter(), saveTags_(config.getParameter<bool>("saveTags")) {
   // register common HLTStreamFilter products
   produces<trigger::TriggerFilterObjectWithRefs>();
 }
 
-void
-HLTStreamFilter::makeHLTFilterDescription(edm::ParameterSetDescription& desc) {
-  desc.add<bool>("saveTags",false);
-}
+void HLTStreamFilter::makeHLTFilterDescription(edm::ParameterSetDescription& desc) { desc.add<bool>("saveTags", true); }
 
-HLTStreamFilter::~HLTStreamFilter()
-{ }
+HLTStreamFilter::~HLTStreamFilter() = default;
 
-bool HLTStreamFilter::filter(edm::Event & event, const edm::EventSetup & setup) {
-  std::auto_ptr<trigger::TriggerFilterObjectWithRefs> filterproduct( new trigger::TriggerFilterObjectWithRefs(path(event), module(event)) );
+bool HLTStreamFilter::filter(edm::Event& event, const edm::EventSetup& setup) {
+  std::unique_ptr<trigger::TriggerFilterObjectWithRefs> filterproduct(
+      new trigger::TriggerFilterObjectWithRefs(path(event), module(event)));
 
   // compute the result of the HLTStreamFilter implementation
-  bool result = hltFilter(event, setup, * filterproduct);
+  bool result = hltFilter(event, setup, *filterproduct);
 
   // put filter object into the Event
-  event.put(filterproduct);
+  event.put(std::move(filterproduct));
 
   // retunr the result of the HLTStreamFilter
   return result;
@@ -54,7 +49,7 @@ int HLTStreamFilter::module(edm::Event const& event) const {
   return static_cast<int>(event.moduleCallingContext()->placeInPathContext()->placeInPath());
 }
 
-std::pair<int,int> HLTStreamFilter::pmid(edm::Event const& event) const {
+std::pair<int, int> HLTStreamFilter::pmid(edm::Event const& event) const {
   edm::PlaceInPathContext const* placeInPathContext = event.moduleCallingContext()->placeInPathContext();
   return std::make_pair(static_cast<int>(placeInPathContext->pathContext()->pathID()),
                         static_cast<int>(placeInPathContext->placeInPath()));
@@ -64,6 +59,4 @@ const std::string* HLTStreamFilter::pathName(edm::Event const& event) const {
   return &event.moduleCallingContext()->placeInPathContext()->pathContext()->pathName();
 }
 
-const std::string* HLTStreamFilter::moduleLabel() const {
-  return &moduleDescription().moduleLabel();
-}
+const std::string* HLTStreamFilter::moduleLabel() const { return &moduleDescription().moduleLabel(); }

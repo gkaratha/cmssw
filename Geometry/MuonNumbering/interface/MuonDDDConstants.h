@@ -12,23 +12,22 @@
  *
  */
 
-#include<string>
-#include<map>
-#include<iostream>
+#include <string>
+#include <map>
+#include <iostream>
 
 class DDCompactView;
 
 class MuonDDDConstants {
- public:
+public:
+  MuonDDDConstants(const DDCompactView& cpv);
 
-  MuonDDDConstants( const DDCompactView& cpv );
-  ~MuonDDDConstants();
+  int getValue(const std::string& name) const;
+  void addValue(const std::string& name, const int& value);
 
-  int getValue ( const std::string& name ) const;
-  void addValue( const std::string& name, const int& value );
-      
- private:
-  MuonDDDConstants();
+  MuonDDDConstants() = delete;
+
+private:
   std::map<std::string, int> namesAndValues_;
 };
 

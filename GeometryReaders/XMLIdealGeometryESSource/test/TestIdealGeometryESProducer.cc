@@ -2,7 +2,7 @@
 //
 // Package:    TestIdealGeometryESProducer
 // Class:      TestIdealGeometryESProducer
-// 
+//
 /**\class TestIdealGeometryESProducer TestIdealGeometryESProducer.cc test/TestIdealGeometryESProducer/src/TestIdealGeometryESProducer.cc
 
  Description: <one line class summary>
@@ -16,15 +16,12 @@
 //
 //
 
-
-// system include files
 #include <memory>
 #include <iostream>
 #include <fstream>
 
-// user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -43,71 +40,33 @@
 #include "CondFormats/Common/interface/FileBlob.h"
 #include "Geometry/Records/interface/GeometryFileRcd.h"
 
-
-//
-// class decleration
-//
-
-class TestIdealGeometryESProducer : public edm::EDAnalyzer {
+class TestIdealGeometryESProducer : public edm::one::EDAnalyzer<> {
 public:
-  explicit TestIdealGeometryESProducer( const edm::ParameterSet& );
-  ~TestIdealGeometryESProducer();
+  explicit TestIdealGeometryESProducer(const edm::ParameterSet&);
+  ~TestIdealGeometryESProducer() override;
 
-  
-  virtual void analyze( const edm::Event&, const edm::EventSetup& );
+  void beginJob() override {}
+  void analyze(edm::Event const&, edm::EventSetup const&) override;
+  void endJob() override {}
+
 private:
-  // ----------member data ---------------------------
+  const edm::ESGetToken<DDCompactView, IdealGeometryRecord> ddToken_;
 };
 
-//
-// constants, enums and typedefs
-//
+TestIdealGeometryESProducer::TestIdealGeometryESProducer(const edm::ParameterSet& iConfig)
+    : ddToken_(esConsumes<DDCompactView, IdealGeometryRecord>()) {}
 
-//
-// static data member definitions
-//
+TestIdealGeometryESProducer::~TestIdealGeometryESProducer() {}
 
-//
-// constructors and destructor
-//
-TestIdealGeometryESProducer::TestIdealGeometryESProducer( const edm::ParameterSet& iConfig ) 
-// :   label_(iConfig.getUntrackedParameter<std::string>("label","")),
-//   isMagField_(iConfig.getUntrackedParameter<bool>("isMagField",false))
-{
-//   dumpHistory_=iConfig.getUntrackedParameter<bool>("dumpGeoHistory");
-//   dumpPosInfo_=iConfig.getUntrackedParameter<bool>("dumpPosInfo");
-//   dumpSpecs_=iConfig.getUntrackedParameter<bool>("dumpSpecs");
-//   if ( isMagField_ ) {
-//     label_ = "magfield";
-//   }
+void TestIdealGeometryESProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  using namespace edm;
+
+  std::cout << "Here I am " << std::endl;
+  edm::ESTransientHandle<DDCompactView> pDD = iSetup.getTransientHandle(ddToken_);
+
+  GeometryInfoDump gidump;
+  gidump.dumpInfo(true, true, true, *pDD);
+  std::cout << "finished" << std::endl;
 }
 
-
-TestIdealGeometryESProducer::~TestIdealGeometryESProducer()
-{
- 
-}
-
-
-//
-// member functions
-//
-
-// ------------ method called to produce the data  ------------
-void
-TestIdealGeometryESProducer::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup )
-{
-   using namespace edm;
-
-   std::cout << "Here I am " << std::endl;
-   edm::ESTransientHandle<DDCompactView> pDD;
-   iSetup.get<IdealGeometryRecord>().get(pDD);
-
-   GeometryInfoDump gidump;
-   gidump.dumpInfo( true, true, true, *pDD );
-   std::cout << "finished" << std::endl;
-}
-
-
-//define this as a plug-in
 DEFINE_FWK_MODULE(TestIdealGeometryESProducer);

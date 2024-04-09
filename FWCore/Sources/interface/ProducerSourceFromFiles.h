@@ -17,23 +17,19 @@ namespace edm {
   class ProducerSourceFromFiles : public ProducerSourceBase, private FromFiles {
   public:
     ProducerSourceFromFiles(ParameterSet const& pset, InputSourceDescription const& desc, bool realData);
-    virtual ~ProducerSourceFromFiles();
+    ~ProducerSourceFromFiles() override;
 
-    using FromFiles::logicalFileNames;
-    using FromFiles::fileNames;
     using FromFiles::catalog;
+    using FromFiles::fileNames;
+    using FromFiles::logicalFileNames;
 
-    virtual bool noFiles() const override {
-      return fileNames().empty();
-    }
-    
     static void fillDescription(ParameterSetDescription& desc);
 
   protected:
     using FromFiles::incrementFileIndex;
 
   private:
-    using FromFiles::fileIndex;
+    size_t fileIndex() const override;
   };
-}
+}  // namespace edm
 #endif

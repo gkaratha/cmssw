@@ -16,8 +16,7 @@
 #include "PixelThresholdClusterizer.h"
 
 // Geometry
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
 
 // Data Formats
 #include "DataFormats/Common/interface/DetSetVector.h"
@@ -32,6 +31,7 @@
 // Framework
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 // STL
 #include <vector>
@@ -42,167 +42,171 @@
 // MessageLogger
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+//---------------------------------------------------------------------------
+//!  Constructor: set the ParameterSet and defer all thinking to setupClusterizer().
+//---------------------------------------------------------------------------
+SiPixelClusterProducer::SiPixelClusterProducer(edm::ParameterSet const& conf)
+    : tPutPixelClusters(produces<SiPixelClusterCollectionNew>()),
+      clusterMode_(conf.getParameter<std::string>("ClusterMode")),
+      maxTotalClusters_(conf.getParameter<int32_t>("maxNumberOfClusters")) {
+  if (clusterMode_ == "PixelThresholdReclusterizer")
+    tPixelClusters = consumes<SiPixelClusterCollectionNew>(conf.getParameter<edm::InputTag>("src"));
+  else
+    tPixelDigi = consumes<edm::DetSetVector<PixelDigi>>(conf.getParameter<edm::InputTag>("src"));
 
-  //---------------------------------------------------------------------------
-  //!  Constructor: set the ParameterSet and defer all thinking to setupClusterizer().
-  //---------------------------------------------------------------------------
-  SiPixelClusterProducer::SiPixelClusterProducer(edm::ParameterSet const& conf) 
-    : 
-    conf_(conf),
-    theSiPixelGainCalibration_(0), 
-    clusterMode_("None"),     // bogus
-    clusterizer_(0),          // the default, in case we fail to make one
-    readyToCluster_(false),   // since we obviously aren't
-    src_( conf.getParameter<edm::InputTag>( "src" ) ),
-    maxTotalClusters_( conf.getParameter<int32_t>( "maxNumberOfClusters" ) )
-  {
-    tPixelDigi = consumes<edm::DetSetVector<PixelDigi>>(src_);
-    //--- Declare to the EDM what kind of collections we will be making.
-    produces<SiPixelClusterCollectionNew>(); 
+  trackerTopoToken_ = esConsumes<TrackerTopology, TrackerTopologyRcd>();
+  trackerGeomToken_ = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>();
 
-    std::string payloadType = conf.getParameter<std::string>( "payloadType" );
+  const auto& payloadType = conf.getParameter<std::string>("payloadType");
 
-    if (strcmp(payloadType.c_str(), "HLT") == 0)
-       theSiPixelGainCalibration_ = new SiPixelGainCalibrationForHLTService(conf);
-    else if (strcmp(payloadType.c_str(), "Offline") == 0)
-       theSiPixelGainCalibration_ = new SiPixelGainCalibrationOfflineService(conf);
-    else if (strcmp(payloadType.c_str(), "Full") == 0)
-       theSiPixelGainCalibration_ = new SiPixelGainCalibrationService(conf);
+  if (payloadType == "HLT")
+    theSiPixelGainCalibration_ = std::make_unique<SiPixelGainCalibrationForHLTService>(conf, consumesCollector());
+  else if (payloadType == "Offline")
+    theSiPixelGainCalibration_ = std::make_unique<SiPixelGainCalibrationOfflineService>(conf, consumesCollector());
+  else if (payloadType == "Full")
+    theSiPixelGainCalibration_ = std::make_unique<SiPixelGainCalibrationService>(conf, consumesCollector());
+  else if (payloadType == "None")
+    theSiPixelGainCalibration_ = nullptr;
 
-    //--- Make the algorithm(s) according to what the user specified
-    //--- in the ParameterSet.
-    setupClusterizer();
+  //--- Make the algorithm(s) according to what the user specified
+  //--- in the ParameterSet.
+  setupClusterizer(conf);
+}
 
-  }
+// Destructor
+SiPixelClusterProducer::~SiPixelClusterProducer() = default;
 
-  // Destructor
-  SiPixelClusterProducer::~SiPixelClusterProducer() { 
-    delete clusterizer_;
-    delete theSiPixelGainCalibration_;
-  }  
+void SiPixelClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
 
-  
-  //---------------------------------------------------------------------------
-  //! The "Event" entrypoint: gets called by framework for every event
-  //---------------------------------------------------------------------------
-  void SiPixelClusterProducer::produce(edm::Event& e, const edm::EventSetup& es)
-  {
+  desc.add<edm::InputTag>("src", edm::InputTag("siPixelDigis"));
+  desc.add<std::string>("ClusterMode", "PixelThresholdClusterizer");
+  desc.add<int>("maxNumberOfClusters", -1)->setComment("-1 means no limit");
+  desc.add<std::string>("payloadType", "Offline")
+      ->setComment("Options: HLT - column granularity, Offline - gain:col/ped:pix, None: no gain calibrations");
 
-    //Setup gain calibration service
-    theSiPixelGainCalibration_->setESObjects( es );
+  PixelThresholdClusterizer::fillPSetDescription(desc);
+  SiPixelGainCalibrationServiceBase::fillPSetDescription(desc);  // no-op, but in principle the structures are there...
 
-   // Step A.1: get input data
-    //edm::Handle<PixelDigiCollection> pixDigis;
-    edm::Handle< edm::DetSetVector<PixelDigi> >  input;
-    e.getByToken(tPixelDigi, input);
+  descriptions.add("SiPixelClusterizerDefault", desc);
+}
 
-    // Step A.2: get event setup
-    edm::ESHandle<TrackerGeometry> geom;
-    es.get<TrackerDigiGeometryRecord>().get( geom );
+//---------------------------------------------------------------------------
+//! The "Event" entrypoint: gets called by framework for every event
+//---------------------------------------------------------------------------
+void SiPixelClusterProducer::produce(edm::Event& e, const edm::EventSetup& es) {
+  //Setup gain calibration service
+  if (theSiPixelGainCalibration_.get())
+    theSiPixelGainCalibration_->setESObjects(es);
 
-    // Step B: create the final output collection
-    std::auto_ptr<SiPixelClusterCollectionNew> output( new SiPixelClusterCollectionNew() );
-    //FIXME: put a reserve() here
+  // Step A.1: get input data
+  edm::Handle<SiPixelClusterCollectionNew> inputClusters;
+  edm::Handle<edm::DetSetVector<PixelDigi>> inputDigi;
+  if (clusterMode_ == "PixelThresholdReclusterizer")
+    e.getByToken(tPixelClusters, inputClusters);
+  else
+    e.getByToken(tPixelDigi, inputDigi);
 
-    // Step C: Iterate over DetIds and invoke the pixel clusterizer algorithm
-    // on each DetUnit
-    run(*input, geom, *output );
+  // Step A.2: get event setup
+  edm::ESHandle<TrackerGeometry> geom = es.getHandle(trackerGeomToken_);
 
-    // Step D: write output to file
-    output->shrink_to_fit();
-    e.put( output );
+  edm::ESHandle<TrackerTopology> trackerTopologyHandle = es.getHandle(trackerTopoToken_);
+  tTopo_ = trackerTopologyHandle.product();
 
-  }
+  // Step B: create the final output collection
+  auto output = std::make_unique<SiPixelClusterCollectionNew>();
+  //FIXME: put a reserve() here
 
-  //---------------------------------------------------------------------------
-  //!  Set up the specific algorithm we are going to use.  
-  //!  TO DO: in the future, we should allow for a different algorithm for 
-  //!  each detector subset (e.g. barrel vs forward, per layer, etc).
-  //---------------------------------------------------------------------------
-  void SiPixelClusterProducer::setupClusterizer()  {
-    clusterMode_ = 
-      conf_.getUntrackedParameter<std::string>("ClusterMode","PixelThresholdClusterizer");
+  // Step C: Iterate over DetIds and invoke the pixel clusterizer algorithm
+  // on each DetUnit
+  if (clusterMode_ == "PixelThresholdReclusterizer")
+    run(*inputClusters, geom, *output);
+  else
+    run(*inputDigi, geom, *output);
 
-    if ( clusterMode_ == "PixelThresholdClusterizer" ) {
-      clusterizer_ = new PixelThresholdClusterizer(conf_);
-      clusterizer_->setSiPixelGainCalibrationService(theSiPixelGainCalibration_);
-      readyToCluster_ = true;
-    } 
-    else {
-      edm::LogError("SiPixelClusterProducer") << "[SiPixelClusterProducer]:"
-		<<" choice " << clusterMode_ << " is invalid.\n"
-		<< "Possible choices:\n" 
-		<< "    PixelThresholdClusterizer";
-      readyToCluster_ = false;
+  // Step D: write output to file
+  output->shrink_to_fit();
+
+  // set sequential identifier
+  for (auto clusters : *output) {
+    uint16_t id = 0;
+    for (auto& cluster : clusters) {
+      cluster.setOriginalId(id++);
     }
   }
+  e.put(tPutPixelClusters, std::move(output));
+}
 
-  //---------------------------------------------------------------------------
-  //!  Iterate over DetUnits, and invoke the PixelClusterizer on each.
-  //---------------------------------------------------------------------------
-  void SiPixelClusterProducer::run(const edm::DetSetVector<PixelDigi>   & input, 
-				   edm::ESHandle<TrackerGeometry>       & geom,
-                                   edmNew::DetSetVector<SiPixelCluster> & output) {
-    if ( ! readyToCluster_ ) {
-      edm::LogError("SiPixelClusterProducer")
-		<<" at least one clusterizer is not ready -- can't run!" ;
-      // TO DO: throw an exception here?  The user may want to know...
-      return;   // clusterizer is invalid, bail out
+//---------------------------------------------------------------------------
+//!  Set up the specific algorithm we are going to use.
+//!  TO DO: in the future, we should allow for a different algorithm for
+//!  each detector subset (e.g. barrel vs forward, per layer, etc).
+//---------------------------------------------------------------------------
+void SiPixelClusterProducer::setupClusterizer(const edm::ParameterSet& conf) {
+  if (clusterMode_ == "PixelThresholdReclusterizer" || clusterMode_ == "PixelThresholdClusterizer") {
+    clusterizer_ = std::make_unique<PixelThresholdClusterizer>(conf);
+    if (theSiPixelGainCalibration_.get()) {
+      clusterizer_->setSiPixelGainCalibrationService(theSiPixelGainCalibration_.get());
     }
+  } else {
+    throw cms::Exception("Configuration") << "[SiPixelClusterProducer]:"
+                                          << " choice " << clusterMode_ << " is invalid.\n"
+                                          << "Possible choices:\n"
+                                          << "    PixelThresholdClusterizer";
+  }
+}
 
-    int numberOfDetUnits = 0;
-    int numberOfClusters = 0;
- 
-    // Iterate on detector units
-    edm::DetSetVector<PixelDigi>::const_iterator DSViter = input.begin();
-    for( ; DSViter != input.end(); DSViter++) {
-      ++numberOfDetUnits;
+//---------------------------------------------------------------------------
+//!  Iterate over DetUnits, and invoke the PixelClusterizer on each.
+//---------------------------------------------------------------------------
+template <typename T>
+void SiPixelClusterProducer::run(const T& input,
+                                 const edm::ESHandle<TrackerGeometry>& geom,
+                                 edmNew::DetSetVector<SiPixelCluster>& output) {
+  int numberOfClusters = 0;
 
-      //  LogDebug takes very long time, get rid off.
-      //LogDebug("SiStripClusterizer") << "[SiPixelClusterProducer::run] DetID" << DSViter->id;
+  // Iterate on detector units
+  for (auto const& dsv : input) {
+    //  LogDebug takes very long time, get rid off.
+    //LogDebug("SiStripClusterizer") << "[SiPixelClusterProducer::run] DetID" << dsv.id;
 
-      std::vector<short> badChannels; 
-      DetId detIdObject(DSViter->detId());
-      
-      // Comment: At the moment the clusterizer depends on geometry
-      // to access information as the pixel topology (number of columns
-      // and rows in a detector module). 
-      // In the future the geometry service will be replaced with
-      // a ES service.
-      const GeomDetUnit      * geoUnit = geom->idToDetUnit( detIdObject );
-      const PixelGeomDetUnit * pixDet  = dynamic_cast<const PixelGeomDetUnit*>(geoUnit);
-      if (! pixDet) {
-	// Fatal error!  TO DO: throw an exception!
-	assert(0);
-      }
-      // Produce clusters for this DetUnit and store them in 
+    std::vector<short> badChannels;
+    DetId detIdObject(dsv.detId());
+
+    // Comment: At the moment the clusterizer depends on geometry
+    // to access information as the pixel topology (number of columns
+    // and rows in a detector module).
+    // In the future the geometry service will be replaced with
+    // a ES service.
+    const GeomDetUnit* geoUnit = geom->idToDetUnit(detIdObject);
+    const PixelGeomDetUnit* pixDet = dynamic_cast<const PixelGeomDetUnit*>(geoUnit);
+    if (!pixDet) {
+      // Fatal error!  TO DO: throw an exception!
+      assert(0);
+    }
+    {
+      // Produce clusters for this DetUnit and store them in
       // a DetSet
-      edmNew::DetSetVector<SiPixelCluster>::FastFiller spc(output, DSViter->detId());
-      clusterizer_->clusterizeDetUnit(*DSViter, pixDet, badChannels, spc);
-      if ( spc.empty() ) {
+      edmNew::DetSetVector<SiPixelCluster>::FastFiller spc(output, dsv.detId());
+      clusterizer_->clusterizeDetUnit(dsv, pixDet, tTopo_, badChannels, spc);
+      if (spc.empty()) {
         spc.abort();
       } else {
-	numberOfClusters += spc.size();
+        numberOfClusters += spc.size();
       }
+    }  // spc is not deleted and detsetvector updated
+    if ((maxTotalClusters_ >= 0) && (numberOfClusters > maxTotalClusters_)) {
+      edm::LogError("TooManyClusters")
+          << "Limit on the number of clusters exceeded. An empty cluster collection will be produced instead.\n";
+      edmNew::DetSetVector<SiPixelCluster> empty;
+      empty.swap(output);
+      break;
+    }
+  }  // end of DetUnit loop
+}
 
-      if ((maxTotalClusters_ >= 0) && (numberOfClusters > maxTotalClusters_)) {
-        edm::LogError("TooManyClusters") <<  "Limit on the number of clusters exceeded. An empty cluster collection will be produced instead.\n";
-        edmNew::DetSetVector<SiPixelCluster> empty;
-        empty.swap(output);
-        break;
-      }
-    } // end of DetUnit loop
-    
-    //LogDebug ("SiPixelClusterProducer") << " Executing " 
-    //      << clusterMode_ << " resulted in " << numberOfClusters
-    //				    << " SiPixelClusters in " << numberOfDetUnits << " DetUnits."; 
-  }
-
-
-
-
+#include "PixelThresholdClusterizer.icc"
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 DEFINE_FWK_MODULE(SiPixelClusterProducer);
-

@@ -2,7 +2,7 @@
 //
 // Package:     MVAComputer
 // Class  :     ProcCount
-// 
+//
 
 // Implementation:
 //     Variable processor that returns the number of input variable instances
@@ -18,44 +18,35 @@
 
 using namespace PhysicsTools;
 
-namespace { // anonymous
+namespace {  // anonymous
 
-class ProcCount : public VarProcessor {
-    public:
-	typedef VarProcessor::Registry::Registry<ProcCount,
-					Calibration::ProcCount> Registry;
+  class ProcCount : public VarProcessor {
+  public:
+    typedef VarProcessor::Registry::Registry<ProcCount, Calibration::ProcCount> Registry;
 
-	ProcCount(const char *name,
-	          const Calibration::ProcCount *calib,
-	          const MVAComputer *computer);
-	virtual ~ProcCount() {}
+    ProcCount(const char *name, const Calibration::ProcCount *calib, const MVAComputer *computer);
+    ~ProcCount() override {}
 
-	virtual void configure(ConfIterator iter, unsigned int n) override;
-	virtual void eval(ValueIterator iter, unsigned int n) const override;
-};
+    void configure(ConfIterator iter, unsigned int n) override;
+    void eval(ValueIterator iter, unsigned int n) const override;
+  };
 
-static ProcCount::Registry registry("ProcCount");
+  ProcCount::Registry registry("ProcCount");
 
-ProcCount::ProcCount(const char *name,
-                          const Calibration::ProcCount *calib,
-                          const MVAComputer *computer) :
-	VarProcessor(name, calib, computer)
-{
-}
+  ProcCount::ProcCount(const char *name, const Calibration::ProcCount *calib, const MVAComputer *computer)
+      : VarProcessor(name, calib, computer) {}
 
-void ProcCount::configure(ConfIterator iter, unsigned int n)
-{
-	while(iter)
-		iter++(Variable::FLAG_ALL) << Variable::FLAG_NONE;
-}
+  void ProcCount::configure(ConfIterator iter, unsigned int n) {
+    while (iter)
+      iter++(Variable::FLAG_ALL) << Variable::FLAG_NONE;
+  }
 
-void ProcCount::eval(ValueIterator iter, unsigned int n) const
-{
-	while(iter) {
-		unsigned int count = iter.size();
-		iter(count);
-		iter++;
-	}
-}
+  void ProcCount::eval(ValueIterator iter, unsigned int n) const {
+    while (iter) {
+      unsigned int count = iter.size();
+      iter(count);
+      iter++;
+    }
+  }
 
-} // anonymous namespace
+}  // anonymous namespace

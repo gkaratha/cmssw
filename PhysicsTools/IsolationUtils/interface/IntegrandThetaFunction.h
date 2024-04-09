@@ -5,7 +5,7 @@
 //
 // Package:    IntegrandThetaFunction
 // Class:      IntegrandThetaFunction
-// 
+//
 /**\class IntegrandThetaFunction IntegrandThetaFunction.cc PhysicsTools/IsolationUtils/src/IntegrandThetaFunction.cc
 
  Description: auxialiary class for fixed area isolation cone computation
@@ -30,33 +30,32 @@ class IntegralOverPhiFunction;
 // class declaration
 //
 
-class IntegrandThetaFunction : public ROOT::Math::ParamFunction<ROOT::Math::IParametricGradFunctionOneDim>
-{
- public:
+class IntegrandThetaFunction : public ROOT::Math::ParamFunction<ROOT::Math::IParametricGradFunctionOneDim> {
+public:
   IntegrandThetaFunction();
   IntegrandThetaFunction(const IntegrandThetaFunction& bluePrint);
-  ~IntegrandThetaFunction();
+  ~IntegrandThetaFunction() override;
 
   IntegrandThetaFunction& operator=(const IntegrandThetaFunction& bluePrint);
-  
+
   void SetParameterTheta0(double theta0);
   void SetParameterPhi0(double phi0);
   void SetParameterAlpha(double alpha);
 
-  virtual ROOT::Math::IGenFunction* Clone () const { return new IntegrandThetaFunction(*this); }
+  ROOT::Math::IGenFunction* Clone() const override { return new IntegrandThetaFunction(*this); }
 
- private:
-  void SetParameters(double* param);
+private:
+  void SetParameters(double const* param) override;
 
-  double DoEval(double x) const;
-  virtual double DoEvalPar(double, const double*) const;
+  double DoEval(double x) const override;
+  double DoEvalPar(double, const double*) const override;
   double DoDerivative(double x) const;
-  virtual double DoParameterDerivative(double, const double*, unsigned int) const;
+  double DoParameterDerivative(double, const double*, unsigned int) const override;
   void DoParameterGradient(double x, double* paramGradient) const;
 
-  mutable double theta0_; // polar angle of cone axis
-  mutable double phi0_; // azimuth angle of cone axis
-  mutable double alpha_; // opening angle of cone (measured from cone axis)
+  mutable double theta0_;  // polar angle of cone axis
+  mutable double phi0_;    // azimuth angle of cone axis
+  mutable double alpha_;   // opening angle of cone (measured from cone axis)
 
   mutable IntegralOverPhiFunction* fPhi_;
 

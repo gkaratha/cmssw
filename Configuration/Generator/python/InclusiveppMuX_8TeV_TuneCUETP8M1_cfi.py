@@ -2,14 +2,17 @@ import FWCore.ParameterSet.Config as cms
 from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
 
-generator = cms.EDFilter("Pythia8GeneratorFilter",
+generator = cms.EDFilter("Pythia8ConcurrentGeneratorFilter",
                          pythiaHepMCVerbosity = cms.untracked.bool(False),
                          maxEventsToPrint = cms.untracked.int32(0),
                          pythiaPylistVerbosity = cms.untracked.int32(1),
                          filterEfficiency = cms.untracked.double(0.002305),
                          comEnergy = cms.double(8000.0),
                          crossSection = cms.untracked.double(51560000000.),
-                         reweightGen = cms.PSet(),
+                         reweightGen = cms.PSet(
+        pTRef = cms.double(15.0),
+        power = cms.double(4.5)
+        ),
                          PythiaParameters = cms.PSet(
         pythia8CommonSettingsBlock,
         pythia8CUEP8M1SettingsBlock,

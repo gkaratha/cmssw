@@ -1,18 +1,16 @@
 import FWCore.ParameterSet.Config as cms
-
 import RecoTracker.SpecialSeedGenerators.CombinatorialSeedGeneratorForCosmics_cfi
-
 def makeSimpleCosmicSeedLayers(*layers):
     layerList = cms.vstring()
     if 'ALL' in layers: 
         layers = [ 'TOB', 'TEC', 'TOBTEC', 'TECSKIP' ]
     if 'TOB' in layers:
-        layerList += ['TOB4+TOB5+TOB6',
-                      'TOB3+TOB5+TOB6',
-                      'TOB3+TOB4+TOB5',
-                      'TOB3+TOB4+TOB6',
-                      'TOB2+TOB4+TOB5',
-                      'TOB2+TOB3+TOB5']
+        layerList += ['MTOB4+MTOB5+MTOB6',
+                      'MTOB3+MTOB5+MTOB6',
+                      'MTOB3+MTOB4+MTOB5',
+                      'MTOB3+MTOB4+MTOB6',
+                      'TOB2+MTOB4+MTOB5',
+                      'TOB2+MTOB3+MTOB5']
     if 'TEC' in layers:
         TECwheelTriplets = [ (i,i+1,i+2) for i in range(7,0,-1)]
         layerList += [ 'TEC%d_pos+TEC%d_pos+TEC%d_pos' % ls for ls in TECwheelTriplets ]
@@ -22,22 +20,23 @@ def makeSimpleCosmicSeedLayers(*layers):
         layerList += [ 'TEC%d_pos+TEC%d_pos+TEC%d_pos' % ls for ls in TECwheelTriplets ]
         layerList += [ 'TEC%d_neg+TEC%d_neg+TEC%d_neg' % ls for ls in TECwheelTriplets ]
     if 'TOBTEC' in layers:
-        layerList += [ 'TOB6+TEC1_pos+TEC2_pos',
-                       'TOB6+TEC1_neg+TEC2_neg',
-                       'TOB6+TOB5+TEC1_pos',
-                       'TOB6+TOB5+TEC1_neg' ]
+        layerList += [ 'MTOB6+TEC1_pos+TEC2_pos',
+                       'MTOB6+TEC1_neg+TEC2_neg',
+                       'MTOB6+MTOB5+TEC1_pos',
+                       'MTOB6+MTOB5+TEC1_neg' ]
     #print "SEEDING LAYER LIST = ", layerList
     return layerList
 
-layerInfo = RecoTracker.SpecialSeedGenerators.CombinatorialSeedGeneratorForCosmics_cfi.layerInfo.clone()
-layerInfo.TEC.useSimpleRphiHitsCleaner = False
+layerInfo = RecoTracker.SpecialSeedGenerators.CombinatorialSeedGeneratorForCosmics_cfi.layerInfo.clone(
+    TEC = dict(useSimpleRphiHitsCleaner = False)
+)
 layerList = makeSimpleCosmicSeedLayers('ALL'),
 
 simpleCosmicBONSeeds = cms.EDProducer("SimpleCosmicBONSeeder",
     TTRHBuilder = cms.string('WithTrackAngle'),
     ClusterCheckPSet = cms.PSet(
             doClusterCheck = cms.bool(True),
-            MaxNumberOfCosmicClusters = cms.uint32(300),
+            MaxNumberOfStripClusters = cms.uint32(300),
             ClusterCollectionLabel = cms.InputTag("siStripClusters"),
             DontCountDetsAboveNClusters = cms.uint32(20),  # if N > 0, ignore in total the dets with more than N clusters
             MaxNumberOfPixelClusters = cms.uint32(300),

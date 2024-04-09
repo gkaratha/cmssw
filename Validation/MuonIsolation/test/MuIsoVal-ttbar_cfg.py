@@ -17,7 +17,7 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi")
 
-process.load("Geometry.CommonDetUnit.globalTrackingGeometry_cfi")
+process.load("Geometry.CommonTopologies.globalTrackingGeometry_cfi")
 
 process.load("TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAny_cfi")
 
@@ -32,13 +32,14 @@ process.source = cms.Source("PoolSource",
 
 process.DQMStore = cms.Service("DQMStore")
 
-process.analyzer_incMuon = cms.EDAnalyzer("MuIsoValidation",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+process.analyzer_incMuon = DQMEDAnalyzer('MuIsoValidation',
     Global_Muon_Label = cms.untracked.InputTag("muons"),
     requireCombinedMuon = cms.untracked.bool(False),
     rootfilename = cms.untracked.string('ttbar-validation.root'),
 )
 
-process.analyzer_combinedMuon = cms.EDAnalyzer("MuIsoValidation",
+process.analyzer_combinedMuon = DQMEDAnalyzer('MuIsoValidation',
     Global_Muon_Label = cms.untracked.InputTag("muons"),
     requireCombinedMuon = cms.untracked.bool(True),
     rootfilename = cms.untracked.string('ttbar-validation.root'),

@@ -1,14 +1,14 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("NavigationSchoolAnalyze")
+# set the geometry and the GlobalTag
 
-# process.load("Configuration.StandardSequences.Geometry_cff")
+process = cms.Process("NavigationSchoolAnalyzer")
+process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:com10_8E33v2', '')
-# process.load("Configuration.StandardSequences.MagneticField_cff")
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
 process.load("RecoTracker.TkNavigation.NavigationSchoolESProducer_cff")
 
 #process.MessageLogger = cms.Service("MessageLogger",
@@ -19,6 +19,10 @@ process.load("RecoTracker.TkNavigation.NavigationSchoolESProducer_cff")
 #    indentation = cms.untracked.string('$$')
 #)
 
+
+#This has to be modified in order to read the tracker + MTD structure
+process.TrackerRecoGeometryESProducer = cms.ESProducer("TrackerRecoGeometryESProducer")
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
@@ -26,13 +30,10 @@ process.source = cms.Source("EmptySource")
 
 process.navigationSchoolAnalyzer = cms.EDAnalyzer("NavigationSchoolAnalyzer",
 #    navigationSchoolName = cms.string('BeamHaloNavigationSchool')
-    navigationSchoolName = cms.string('CosmicNavigationSchool')
-#    navigationSchoolName = cms.string('SimpleNavigationSchool')
+#    navigationSchoolName = cms.string('CosmicNavigationSchool')
+    navigationSchoolName = cms.string('SimpleNavigationSchool')
 )
 
 process.muonNavigationTest = cms.EDAnalyzer("MuonNavigationTest")
 
-
 process.p = cms.Path(process.navigationSchoolAnalyzer+process.muonNavigationTest)
-
-

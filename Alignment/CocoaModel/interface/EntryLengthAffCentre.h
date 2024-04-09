@@ -3,8 +3,8 @@
 //CAT: Model
 //
 //   class for the three entries that make the affine frame centre
-// 
-//   History: v1.0 
+//
+//   History: v1.0
 //   Pedro Arce
 
 #ifndef _ENTRYLengthAffCentre_HH
@@ -12,20 +12,17 @@
 
 #include "Alignment/CocoaModel/interface/EntryLength.h"
 
-
-class EntryLengthAffCentre : public EntryLength
-{
+class EntryLengthAffCentre : public EntryLength {
 public:
-  EntryLengthAffCentre( const ALIstring& type );
-  ~EntryLengthAffCentre(){};
+  EntryLengthAffCentre(const ALIstring& type);
+  ~EntryLengthAffCentre() override{};
 
-  virtual void FillName( const ALIstring& name );
-  virtual void displace( ALIdouble disp );
-  virtual void displaceOriginal( ALIdouble disp );
-  virtual void displaceOriginalOriginal( ALIdouble disp );
-  virtual ALIdouble valueInGlobalReferenceFrame() const;
-  virtual ALIdouble valueDisplaced() const;
-
+  virtual void FillName(const ALIstring& name);
+  void displace(ALIdouble disp) override;
+  void displaceOriginal(ALIdouble disp) override;
+  void displaceOriginalOriginal(ALIdouble disp) override;
+  ALIdouble valueInGlobalReferenceFrame() const override;
+  ALIdouble valueDisplaced() const override;
 };
 
 #endif

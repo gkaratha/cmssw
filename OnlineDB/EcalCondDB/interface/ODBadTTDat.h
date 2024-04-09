@@ -8,13 +8,13 @@
 #include "OnlineDB/EcalCondDB/interface/ODBadTTInfo.h"
 
 class ODBadTTDat : public IODConfig {
- public:
+public:
   friend class EcalCondDBInterface;
   ODBadTTDat();
-  ~ODBadTTDat();
+  ~ODBadTTDat() override;
 
   // User data methods
-  inline std::string getTable() { return "BAD_TT_DAT"; }
+  inline std::string getTable() override { return "BAD_TT_DAT"; }
 
   inline void setId(int dac) { m_ID = dac; }
   inline int getId() const { return m_ID; }
@@ -31,23 +31,17 @@ class ODBadTTDat : public IODConfig {
   inline void setTTId(int dac) { m_tt = dac; }
   inline int getTTId() const { return m_tt; }
 
-
   inline void setStatus(int dac) { m_t1 = dac; }
   inline int getStatus() const { return m_t1; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const ODBadTTDat* item, ODBadTTInfo* iov )
-    throw(std::runtime_error);
+  void writeDB(const ODBadTTDat* item, ODBadTTInfo* iov) noexcept(false);
 
-  void writeArrayDB(const std::vector< ODBadTTDat >& data, ODBadTTInfo* iov)
-    throw(std::runtime_error);
+  void writeArrayDB(const std::vector<ODBadTTDat>& data, ODBadTTInfo* iov) noexcept(false);
 
-
-  void fetchData(std::vector< ODBadTTDat >* fillMap, ODBadTTInfo* iov)
-     throw(std::runtime_error);
+  void fetchData(std::vector<ODBadTTDat>* fillMap, ODBadTTInfo* iov) noexcept(false);
 
   // User data
   int m_sm;
@@ -55,7 +49,6 @@ class ODBadTTDat : public IODConfig {
   int m_tt;
   int m_t1;
   int m_ID;
- 
 };
 
 #endif

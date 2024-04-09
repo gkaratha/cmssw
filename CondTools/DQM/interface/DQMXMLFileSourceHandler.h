@@ -9,12 +9,13 @@
 
 namespace popcon {
   class DQMXMLFileSourceHandler : public popcon::PopConSourceHandler<FileBlob> {
-   public:
-    DQMXMLFileSourceHandler(const edm::ParameterSet & pset);
-    ~DQMXMLFileSourceHandler();
-    void getNewObjects();
-    std::string id() const;
-   private:
+  public:
+    DQMXMLFileSourceHandler(const edm::ParameterSet& pset);
+    ~DQMXMLFileSourceHandler() override;
+    void getNewObjects() override;
+    std::string id() const override;
+
+  private:
     std::string m_name;
     std::string m_file;
     bool m_zip;
@@ -22,6 +23,6 @@ namespace popcon {
     unsigned long long m_since;
     bool m_debugMode;
   };
-}
+}  // namespace popcon
 
 #endif

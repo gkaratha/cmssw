@@ -27,42 +27,30 @@
 //---------------
 #include <string>
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class DTTPGParametersHandler: public popcon::PopConSourceHandler<DTTPGParameters> {
-
- public:
-
+class DTTPGParametersHandler : public popcon::PopConSourceHandler<DTTPGParameters> {
+public:
   /** Constructor
    */
-  DTTPGParametersHandler( const edm::ParameterSet& ps );
+  DTTPGParametersHandler(const edm::ParameterSet& ps);
 
   /** Destructor
    */
-  virtual ~DTTPGParametersHandler();
+  ~DTTPGParametersHandler() override;
 
   /** Operations
    */
-  /// 
-  void getNewObjects();
-  std::string id() const;
+  ///
+  void getNewObjects() override;
+  std::string id() const override;
 
- private:
-
+private:
   std::string dataTag;
   std::string fileName;
   unsigned int runNumber;
-
 };
 
-
-#endif // DTTPGParametersHandler_H
-
-
-
-
-
-
+#endif  // DTTPGParametersHandler_H

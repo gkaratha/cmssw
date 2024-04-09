@@ -3,11 +3,14 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("CALIB")
 
 process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring(''),
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
         threshold = cms.untracked.string('INFO')
     ),
-    destinations = cms.untracked.vstring('cout')
+    debugModules = cms.untracked.vstring('')
 )
 
 process.source = cms.Source("EmptyIOVSource",
@@ -23,7 +26,8 @@ process.maxEvents = cms.untracked.PSet(
 
 #Populate ES
 process.load("CalibTracker.SiStripESProducers.fake.SiStripBadModuleConfigurableFakeESSource_cfi")
-process.SiStripBadModuleGenerator.BadComponentList = cms.untracked.VPSet(   cms.PSet(
+from CalibTracker.SiStripESProducers.fake.SiStripBadModuleConfigurableFakeESSource_cfi import siStripBadModuleConfigurableFakeESSource
+siStripBadModuleConfigurableFakeESSource.BadComponentList = cms.untracked.VPSet(   cms.PSet(
 ### To mask TOB:
 ##     SubDet = cms.string('TOB'),
 ##     layer = cms.uint32(3),    ## SELECTION: layer = 1..6, 0(ALL)	       
@@ -137,15 +141,17 @@ process.siStripQualityESProducer.ListOfRecordToMerge = cms.VPSet(
      )
 
 #### Add these lines to produce a tracker map
-process.load("DQMServices.Core.DQMStore_cfg")
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+# load TrackerTopology (needed for TkDetMap and TkHistoMap)
+process.load("Configuration.Geometry.GeometryExtended2017_cff")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 ####
 
-process.reader = cms.EDAnalyzer("SiStripQualityStatistics",
-                              dataLabel = cms.untracked.string(""),
-                              TkMapFileName = cms.untracked.string("TkMapBadComponents_byHand.png")
-                              )
+from CalibTracker.SiStripQuality.siStripQualityStatistics_cfi import siStripQualityStatistics
+process.reader = siStripQualityStatistics.clone(
+        TkMapFileName = cms.untracked.string("TkMapBadComponents_byHand.png")
+        )
 
 process.siStripBadModuleDummyDBWriter.record=process.PoolDBOutputService.toPut[0].record
 process.p = cms.Path(process.reader*process.siStripBadModuleDummyDBWriter)

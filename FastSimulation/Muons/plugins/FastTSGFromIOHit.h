@@ -14,7 +14,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/TrajectorySeed/interface/TrajectorySeed.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
-
+#include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include <vector>
 
 class RectangularEtaPhiTrackingRegion;
@@ -22,30 +23,31 @@ class TrackingRegion;
 class SimTrack;
 
 class FastTSGFromIOHit : public TrackerSeedGenerator {
-
 public:
   /// constructor
-  FastTSGFromIOHit(const edm::ParameterSet &pset,edm::ConsumesCollector& iC);
+  FastTSGFromIOHit(const edm::ParameterSet& pset, edm::ConsumesCollector& iC);
 
   /// destructor
-  virtual ~FastTSGFromIOHit();
+  ~FastTSGFromIOHit() override;
 
   /// generate seed(s) for a track
-  void  trackerSeeds(const TrackCand&, const TrackingRegion&, std::vector<TrajectorySeed>&);
-    
- private:
+  void trackerSeeds(const TrackCand&,
+                    const TrackingRegion&,
+                    const TrackerTopology* tTopo,
+                    std::vector<TrajectorySeed>&) override;
+
+private:
   bool clean(reco::TrackRef muRef,
-  	     const RectangularEtaPhiTrackingRegion& region,
-  	     const BasicTrajectorySeed* aSeed,
-  	     const SimTrack& theSimTrack); 
+             const RectangularEtaPhiTrackingRegion& region,
+             const BasicTrajectorySeed* aSeed,
+             const SimTrack& theSimTrack);
 
 private:
   std::string theCategory;
-  edm::ParameterSet theConfig;
-  edm::InputTag theSimTrackCollectionLabel;
-  std::vector<edm::InputTag> theSeedCollectionLabels;
-  double thePtCut;
 
+  edm::EDGetTokenT<edm::SimTrackContainer> simTracksTk;
+  std::vector<edm::EDGetTokenT<TrajectorySeedCollection> > seedsTks;
+  double thePtCut;
 };
 
-#endif 
+#endif

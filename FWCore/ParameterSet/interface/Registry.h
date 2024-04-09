@@ -14,7 +14,7 @@
 
 #include <iosfwd>
 #include <map>
-#include "tbb/concurrent_unordered_map.h"
+#include "oneapi/tbb/concurrent_unordered_map.h"
 
 #include "DataFormats/Provenance/interface/ParameterSetID.h"
 #include "DataFormats/Provenance/interface/ParameterSetBlob.h"
@@ -26,7 +26,7 @@ namespace edm {
     class Registry {
     public:
       typedef edm::ParameterSetID key_type;
-      typedef edm::ParameterSet   value_type;
+      typedef edm::ParameterSet value_type;
 
       static Registry* instance();
 
@@ -49,34 +49,24 @@ namespace edm {
       /// same.  Return 'true' if we really added the new
       /// value_type object, and 'false' if the
       /// value_type object was already present.
-      bool insertMapped(value_type const& v);
+      bool insertMapped(value_type const& v, bool forceUpdate = false);
 
       ///Not thread safe
       void clear();
 
       struct key_hash {
-        std::size_t operator()(key_type const& iKey) const{
-          return iKey.smallHash();
-        }
+        std::size_t operator()(key_type const& iKey) const { return iKey.smallHash(); }
       };
-      typedef tbb::concurrent_unordered_map<key_type,value_type,key_hash> map_type;
+      typedef oneapi::tbb::concurrent_unordered_map<key_type, value_type, key_hash> map_type;
       typedef map_type::const_iterator const_iterator;
 
-      const_iterator begin() const {
-        return m_map.begin();
-      }
+      const_iterator begin() const { return m_map.begin(); }
 
-      const_iterator end() const {
-        return m_map.end();
-      }
+      const_iterator end() const { return m_map.end(); }
 
-      bool empty() const {
-        return m_map.empty();
-      }
+      bool empty() const { return m_map.empty(); }
 
-      size_t size() const {
-        return m_map.size();
-      }
+      size_t size() const { return m_map.size(); }
 
       /// Fill the given map with the persistent form of each
       /// ParameterSet in the registry.

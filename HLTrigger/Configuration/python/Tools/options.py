@@ -1,20 +1,16 @@
 # available "type"s and relative global tags
 globalTag = {
-  'Fake': 'auto:run1_mc_Fake',
-  'FULL': 'auto:run2_mc_FULL',
-  'GRun': 'auto:run2_mc_GRun',       # used as default
-  '25ns14e33_v4': 'auto:run2_mc_25ns14e33_v4',
-  '25ns14e33_v3': 'auto:run2_mc_25ns14e33_v3',
-  '50ns_5e33_v3': 'auto:run2_mc_50ns_5e33_v3',
-  '25ns14e33_v1': 'auto:run2_mc_25ns14e33_v1',
-  '50ns_5e33_v1': 'auto:run2_mc_50ns_5e33_v1',
-  '50nsGRun': 'auto:run2_mc_50nsGRun',
-  '50ns' : 'auto:run2_mc_50nsGRun',
-  'HIon' : 'auto:run2_mc_HIon',
-  'PIon' : 'auto:run2_mc_PIon',
-  'LowPU': 'auto:run2_mc_LowPU',
-  '25nsLowPU': 'auto:run2_mc_25nsLowPU',
-  'data' : 'auto:run1_hlt',
+  'Fake' : 'auto:run1_mc_Fake',
+  'Fake1': 'auto:run2_mc_Fake1',
+  'Fake2': 'auto:run2_mc_Fake2',
+  'FULL' : 'auto:run3_mc_FULL',
+  'GRun' : 'auto:run3_mc_GRun',       # used as default
+  'HIon' : 'auto:run3_mc_HIon',
+  'PIon' : 'auto:run3_mc_PIon',
+  'PRef' : 'auto:run3_mc_PRef',
+  'Special' : 'auto:run3_mc_GRun',    # same as GRun
+  'data' : 'auto:run3_hlt_relval',
+  '2024v10' : 'auto:run3_mc_2024v10',
 }
 
 
@@ -22,16 +18,16 @@ globalTag = {
 class ConnectionL1TMenu(object):
   def __init__(self, value):
     self.override = None
-    self.connect  = None
+    self.snapshotTime = None
 
     # extract the override tag and the connection string
     if value:
       if ',' in value:
         self.override = value.split(',')[0]
-        self.connect  = value.split(',')[1]
+        self.snapshotTime = value.split(',')[1]
       else:
         self.override = value
-        self.connect  = None
+        self.smapshotTime = None
 
 
 # type used to store a reference to an L1 menu
@@ -52,9 +48,9 @@ class ConnectionL1TMenuXml(object):
 
 # type used to store a reference to an HLT configuration
 class ConnectionHLTMenu(object):
-  valid_versions  = 'v1', 'v2'
-  valid_databases = 'online', 'offline', 'adg'
-  compatibility   = { 'hltdev': ('v1', 'offline'), 'orcoff': ('v2', 'adg') }
+  valid_versions  = 'v1', 'v2', 'v3', 'v3-beta', 'v3-test'
+  valid_databases = 'online', 'run3', 'adg','dev','run2'
+  compatibility   = { 'hltdev': ('v3', 'run3'), 'orcoff': ('v3', 'adg') }
 
   def __init__(self, value):
     self.version    = None
@@ -66,9 +62,9 @@ class ConnectionHLTMenu(object):
       return
 
     if not ':' in value:
-      # default to 'v1/offline'
-      self.version    = 'v1'
-      self.database   = 'offline'
+      # default to 'v3/run3'
+      self.version    = 'v3'
+      self.database   = 'run3'
       self.name       = value
       return
 
@@ -79,7 +75,7 @@ class ConnectionHLTMenu(object):
     (db, name) = tokens
     # check if the menu should be automatically determined based on the run number
     if db == 'run':
-      self.version  = 'v2'
+      self.version  = 'v3'
       self.database = 'adg'
       self.run      = name
     # check for backward compatibility names
@@ -101,14 +97,11 @@ class ConnectionHLTMenu(object):
         self.database = db
         self.name     = name
       else:
-        # use the default version for the given database
+        # use the confdb v3 by default
         if db not in self.valid_databases:
           raise Exception('Invalid HLT database "%s", valid values are "%s"' % (db, '", "'.join(self.valid_databases)))
         self.database = db
-        if db == 'offline' :
-          self.version  = 'v1'
-        else:
-          self.version  = 'v2'
+        self.version  = 'v3'
         self.name     = name
 
 # options marked with a (*) only apply when creating a whole process configuration
@@ -116,16 +109,16 @@ class HLTProcessOptions(object):
   def __init__(self):
     self.menu       = None        #     hlt menu
     self.name       = 'HLTX'      # (*) if set, override the process name
-    self.type       = 'GRun'      #     defines global options for 'GRun', 'HIon', 'PIon' or 'online' menus
+    self.type       = 'GRun'      #     defines global options for 'GRun', 'HIon', 'PIon', 'PRef' or 'online' menus
     self.data       = True        #     run on data (true) or mc (false)
-    self.online     = False       # (*) run online (true) or offline (false)
     self.globaltag  = None        # (*) if set, override the GlobalTag
     self.l1         = None        # (*) if set, override the L1 menu
     self.l1Xml      = None        # (*) if set, override the L1 menu Xml
-    self.l1skim     = False       # (*) if set, add snippet to process L1 skim files done with new L1, ignoring old L1
     self.emulator   = None        # (*) if set, run (part of) the L1 emulator instead of taking the L1 results from the data
     self.prescale   = None        # (*) if set, force the use of a specific prescale column. If set to "none", unprescale all paths
     self.open       = False       #     if set, cms.ignore all filters, making all paths run on and accept all events
+    self.eras       = None        #     if set, select the defined Eras into the HLT configuration
+    self.customise  = None        #     if set, apply the user-defined customization functions using the format HLTrigger/Configuration/customizeHLTTrackingForPhaseI2017.customizeHLTForPFTrackingPhaseI2017
     self.errortype  = False       #     if set, change all HLTTriggerTypeFilter EDFilters to accept only error events (SelectedTriggerType = 0)
     self.profiling  = False       #     if set, instrument the menu for profiling measurements
     self.timing     = False       #     if set, instrument the menu for timing measurements (implies profiling)
@@ -136,33 +129,40 @@ class HLTProcessOptions(object):
     self.output     = 'all'       # (*) output 'all', 'minimal' or 'none' output modules
     self.fragment   = False       #     prepare a configuration fragment (true) or a whole process (false)
     self.hilton     = False       #     prepare a configuration for running with hilton-like modules
-
+    self.setup      = None        #     if set, downlad the setup_cff from the specified configuration and load it.
+    self.proxy      = False       #     use a socks proxy to connect
+    self.proxy_host = 'localhost' #     host of the proxy server
+    self.proxy_port = '8080'      #     port of the proxy server
+    self.tunnel     = False       #     use a direct tunnel on localhost to connect
+    self.tunnel_port = '10121'    #     port to connect to on localhost when tunneling
 
   # convert HLT and L1 menus to a dedicated object representation on the fly
   def __setattr__(self, name, value):
-    if name is 'menu' and type(value) is not ConnectionHLTMenu:
+    if name == 'menu' and not isinstance(value, ConnectionHLTMenu):
       # format 'menu' as needed
       object.__setattr__(self, name, ConnectionHLTMenu(value))
-    elif name is 'l1' and type(value) is not ConnectionL1TMenu:
+    elif name == 'l1' and not isinstance(value, ConnectionL1TMenu):
       # format '--l1' as needed
       object.__setattr__(self, name, ConnectionL1TMenu(value))
-    elif name is 'l1Xml' and type(value) is not ConnectionL1TMenuXml:
+    elif name == 'l1Xml' and not isinstance(value, ConnectionL1TMenuXml):
       # format '--l1Xml' as needed
       object.__setattr__(self, name, ConnectionL1TMenuXml(value))
-    elif name is 'open' and value:
+    elif name == 'open' and value:
       # '--open' implies '--unprescale'
       object.__setattr__(self, 'open',      True)
       object.__setattr__(self, 'prescale',  "none")
-    elif name is 'prescale' and value is not None:
+    elif name == 'prescale' and value is not None:
       # '--open' overrides '--prescale', set the prescale value only if '--open' is not set
       if not self.open:
         object.__setattr__(self, 'prescale', value)
-    elif name is 'profiling' and value:
+    elif name == 'profiling' and value:
       # '--profiling'
       object.__setattr__(self, 'profiling', True)
-    elif name is 'timing' and value:
+    elif name == 'timing' and value:
       # '--timing' implies '--profiling'
       object.__setattr__(self, 'timing',    True)
       object.__setattr__(self, 'profiling', True)
+    elif name == 'setup' and value and value.find(":")!=-1:
+      raise Exception('you can not specify a converter/database in the setup option.\nIt takes the converter database specified by the primary config.\nPlease remove the text upto and including the ":" in\n  {} '.format(value))      
     else:
       object.__setattr__(self, name, value)

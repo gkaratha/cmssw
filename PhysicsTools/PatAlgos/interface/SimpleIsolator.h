@@ -3,24 +3,25 @@
 
 #include "PhysicsTools/PatAlgos/interface/BaseIsolator.h"
 
-namespace pat { namespace helper {
-class SimpleIsolator : public BaseIsolator {
+namespace pat {
+  namespace helper {
+    class SimpleIsolator : public BaseIsolator {
     public:
-        typedef edm::ValueMap<double> IsoValueMap;
-        SimpleIsolator() {}
-        SimpleIsolator(const edm::ParameterSet &conf, edm::ConsumesCollector & iC, bool withCut) ;
-        virtual ~SimpleIsolator() {}
-        virtual void beginEvent(const edm::Event &event, const edm::EventSetup &eventSetup) ;
-        virtual void endEvent() ;
+      typedef edm::ValueMap<double> IsoValueMap;
+      SimpleIsolator() {}
+      SimpleIsolator(const edm::ParameterSet &conf, edm::ConsumesCollector &iC, bool withCut);
+      ~SimpleIsolator() override {}
+      void beginEvent(const edm::Event &event, const edm::EventSetup &eventSetup) override;
+      void endEvent() override;
 
-        virtual std::string description() const { return input_.encode(); }
+      std::string description() const override { return input_.encode(); }
+
     protected:
-        edm::Handle<IsoValueMap> handle_;
-        edm::EDGetTokenT<IsoValueMap> inputDoubleToken_;
-        virtual float getValue(const edm::ProductID &id, size_t index) const {
-            return handle_->get(id, index);
-        }
-}; // class SimpleIsolator
-} } // namespaces
+      edm::Handle<IsoValueMap> handle_;
+      edm::EDGetTokenT<IsoValueMap> inputDoubleToken_;
+      float getValue(const edm::ProductID &id, size_t index) const override { return handle_->get(id, index); }
+    };  // class SimpleIsolator
+  }     // namespace helper
+}  // namespace pat
 
 #endif

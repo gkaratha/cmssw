@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 # L1 Emulator sequence running on unpacked data
-#    each emulator run on the unpacked data of the previous (in the hardware chain) subsystem 
+#    each emulator run on the unpacked data of the previous (in the hardware chain) subsystem
 #
 #    Order if using the standard sequence
 #    RawToDigi,ValL1Emulator
@@ -23,6 +23,7 @@ from SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff import *
 valHcalTriggerPrimitiveDigis = SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cfi.simHcalTriggerPrimitiveDigis.clone()
 #
 valHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(cms.InputTag('hcalDigis'),cms.InputTag('hcalDigis'))
+valHcalTriggerPrimitiveDigis.inputUpgradeLabel = cms.VInputTag(cms.InputTag('hcalDigis'),cms.InputTag('hcalDigis'))
 #
 # do not generate new LUTs when running on data, read them from DB
 HcalTPGCoderULUT.LUTGenerationMode = cms.bool(False)
@@ -37,7 +38,7 @@ valHcalTTPDigis = SimCalorimetry.HcalTrigPrimProducers.hcalTTPDigis_cfi.simHcalT
 #
 valHcalTTPDigis.HFDigiCollection = cms.InputTag('hcalDigis')
 
-   
+
 # RCT emulator
 import L1Trigger.RegionalCaloTrigger.rctDigis_cfi
 valRctDigis = L1Trigger.RegionalCaloTrigger.rctDigis_cfi.rctDigis.clone()
@@ -57,17 +58,23 @@ valGctDigis.postSamples = cms.uint32(0)
 
 from L1Trigger.L1TCalorimeter.caloConfigStage1PP_cfi import *
 # Stage1Layer2 emulator
-from L1Trigger.L1TCalorimeter.simRctUpgradeFormatDigis_cfi import *
-simRctUpgradeFormatDigis.regionTag = cms.InputTag("gctDigis")
-simRctUpgradeFormatDigis.emTag = cms.InputTag("gctDigis")
-from L1Trigger.L1TCalorimeter.simCaloStage1Digis_cfi import *
-from L1Trigger.L1TCalorimeter.simCaloStage1LegacyFormatDigis_cfi import *
+import L1Trigger.L1TCalorimeter.simRctUpgradeFormatDigis_cfi
+valRctUpgradeFormatDigis = L1Trigger.L1TCalorimeter.simRctUpgradeFormatDigis_cfi.simRctUpgradeFormatDigis.clone(
+    regionTag = cms.InputTag("gctDigis"),
+    emTag = cms.InputTag("gctDigis")
+    )
+import L1Trigger.L1TCalorimeter.simCaloStage1Digis_cfi
+valCaloStage1Digis = L1Trigger.L1TCalorimeter.simCaloStage1Digis_cfi.simCaloStage1Digis.clone(
+    CaloRegions = "valRctUpgradeFormatDigis",
+    CaloEmCands = "valRctUpgradeFormatDigis"
+)
+import L1Trigger.L1TCalorimeter.simCaloStage1LegacyFormatDigis_cfi
 valCaloStage1LegacyFormatDigis = L1Trigger.L1TCalorimeter.simCaloStage1LegacyFormatDigis_cfi.simCaloStage1LegacyFormatDigis.clone()
-valCaloStage1LegacyFormatDigis.InputCollection = cms.InputTag("simCaloStage1Digis")
-valCaloStage1LegacyFormatDigis.InputRlxTauCollection = cms.InputTag("simCaloStage1Digis:rlxTaus")
-valCaloStage1LegacyFormatDigis.InputIsoTauCollection = cms.InputTag("simCaloStage1Digis:isoTaus")
-valCaloStage1LegacyFormatDigis.InputHFSumsCollection = cms.InputTag("simCaloStage1Digis:HFRingSums")
-valCaloStage1LegacyFormatDigis.InputHFCountsCollection = cms.InputTag("simCaloStage1Digis:HFBitCounts")
+valCaloStage1LegacyFormatDigis.InputCollection = cms.InputTag("valCaloStage1Digis")
+valCaloStage1LegacyFormatDigis.InputRlxTauCollection = cms.InputTag("valCaloStage1Digis:rlxTaus")
+valCaloStage1LegacyFormatDigis.InputIsoTauCollection = cms.InputTag("valCaloStage1Digis:isoTaus")
+valCaloStage1LegacyFormatDigis.InputHFSumsCollection = cms.InputTag("valCaloStage1Digis:HFRingSums")
+valCaloStage1LegacyFormatDigis.InputHFCountsCollection = cms.InputTag("valCaloStage1Digis:HFBitCounts")
 valCaloStage1LegacyFormatDigis.bxMin = cms.int32(0)
 valCaloStage1LegacyFormatDigis.bxMax = cms.int32(0)
 
@@ -78,6 +85,8 @@ from L1Trigger.DTTrigger.dtTriggerPrimitiveDigis_cfi import *
 valDtTriggerPrimitiveDigis = L1Trigger.DTTrigger.dtTriggerPrimitiveDigis_cfi.dtTriggerPrimitiveDigis.clone()
 
 
+# Lookup tables for the CSC TP emulator
+from CalibMuon.CSCCalibration.CSCL1TPLookupTableEP_cff import *
 # CSC TP emulator
 from L1Trigger.CSCTriggerPrimitives.cscTriggerPrimitiveDigis_cfi import *
 valCscTriggerPrimitiveDigis = L1Trigger.CSCTriggerPrimitives.cscTriggerPrimitiveDigis_cfi.cscTriggerPrimitiveDigis.clone()
@@ -88,7 +97,7 @@ valCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag('muonCSCDigis',
                                                                'MuonCSCWireDigi')
 valCscTriggerPrimitiveDigis.gangedME1a = cms.untracked.bool(False)
 
-# CSC Track Finder - digi track generation 
+# CSC Track Finder - digi track generation
 # currently used also by DT TF to generate CSCTF stubs
 import L1Trigger.CSCTrackFinder.csctfTrackDigis_cfi
 valCsctfTrackDigis = L1Trigger.CSCTrackFinder.csctfTrackDigis_cfi.csctfTrackDigis.clone()
@@ -121,7 +130,7 @@ valRpcTriggerDigis = L1Trigger.RPCTrigger.rpcTriggerDigis_cff.rpcTriggerDigis.cl
 valRpcTriggerDigis.label = 'muonRPCDigis'
 
 
-# Global Muon Trigger emulator - input from common GMT/GT unpacker (gtDigis) 
+# Global Muon Trigger emulator - input from common GMT/GT unpacker (gtDigis)
 import L1Trigger.GlobalMuonTrigger.gmtDigis_cfi
 valGmtDigis = L1Trigger.GlobalMuonTrigger.gmtDigis_cfi.gmtDigis.clone()
 #
@@ -131,7 +140,7 @@ valGmtDigis.RPCbCandidates = cms.InputTag('l1GtUnpack','RPCb')
 valGmtDigis.RPCfCandidates = cms.InputTag('l1GtUnpack','RPCf')
 valGmtDigis.MipIsoData = 'caloStage1Digis'
 
-# producers for technical triggers 
+# producers for technical triggers
 #
 
 
@@ -157,7 +166,7 @@ valGtDigis.TechnicalTriggersInputTags = cms.VInputTag(
                                                     cms.InputTag('valRpcTechTrigDigis'),
                                                     cms.InputTag('valHcalTechTrigDigis')                                         )
 
-# Global Trigger emulator for Stage1 
+# Global Trigger emulator for Stage1
 import L1Trigger.GlobalTrigger.gtDigis_cfi
 valStage1GtDigis = L1Trigger.GlobalTrigger.gtDigis_cfi.gtDigis.clone()
 valStage1GtDigis.GmtInputTag = 'l1GtUnpack'
@@ -166,23 +175,19 @@ valStage1GtDigis.TechnicalTriggersInputTags = cms.VInputTag(
                                                     cms.InputTag('valRpcTechTrigDigis'),
                                                     cms.InputTag('valHcalTechTrigDigis')                                         )
 
-# L1 Trigger sequences
-ValL1MuTriggerPrimitives = cms.Sequence(valCscTriggerPrimitiveDigis+valDtTriggerPrimitiveDigis)
-ValL1MuTrackFinders = cms.Sequence(valCsctfTrackDigis*valCsctfDigis*valDttfDigis)
+# L1 Trigger tasks
+ValL1MuTriggerPrimitives = cms.Task(valCscTriggerPrimitiveDigis,valDtTriggerPrimitiveDigis)
+ValL1MuTrackFinders = cms.Task(valCsctfTrackDigis,valCsctfDigis,valDttfDigis)
 
-ValL1TechnicalTriggers = cms.Sequence(valRpcTechTrigDigis+valHcalTechTrigDigis)
+ValL1TechnicalTriggers = cms.Task(valRpcTechTrigDigis,valHcalTechTrigDigis)
 
-ValL1Emulator = cms.Sequence(
+ValL1Emulator = cms.Task(
     valEcalTriggerPrimitiveDigis
-    *valHcalTriggerPrimitiveDigis
-    *valHcalTTPDigis
-    *valRctDigis
-    *valGctDigis
-    *ValL1MuTriggerPrimitives*ValL1MuTrackFinders*valRpcTriggerDigis*valGmtDigis
-    *ValL1TechnicalTriggers
-    *valGtDigis)
-
-
-
-
-
+    ,valHcalTriggerPrimitiveDigis
+    ,valHcalTTPDigis
+    ,valRctDigis
+    ,valGctDigis
+    ,ValL1MuTriggerPrimitives,ValL1MuTrackFinders,valRpcTriggerDigis,valGmtDigis
+    ,ValL1TechnicalTriggers
+    ,valGtDigis
+)

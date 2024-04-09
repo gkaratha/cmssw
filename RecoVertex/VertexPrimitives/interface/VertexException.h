@@ -4,19 +4,15 @@
 #ifndef Vertex_Exceptions_H
 #define Vertex_Exceptions_H
 
-#include <exception>
+#include "FWCore/Utilities/interface/Exception.h"
 #include <string>
 
 /// Common base class
 
-class VertexException : public std::exception {
+class VertexException : public cms::Exception {
 public:
-  VertexException() throw() {}
-  VertexException( const std::string& message) throw() : theMessage(message) {}
-  virtual ~VertexException() throw() {}
-  virtual const char* what() const throw() { return theMessage.c_str();}
-private:
-  std::string theMessage;
+  VertexException() : cms::Exception("VertexException") {}
+  explicit VertexException(const std::string& message) : cms::Exception("VertexException", message) {}
 };
 
 #endif

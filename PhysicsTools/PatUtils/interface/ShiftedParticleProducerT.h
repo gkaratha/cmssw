@@ -19,6 +19,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Utilities/interface/isFinite.h"
 
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -27,25 +28,22 @@
 #include <vector>
 
 template <typename T>
-class ShiftedParticleProducerT : public edm::stream::EDProducer<>
-{
+class ShiftedParticleProducerT : public edm::stream::EDProducer<> {
   typedef std::vector<T> ParticleCollection;
 
- public:
-
+public:
   explicit ShiftedParticleProducerT(const edm::ParameterSet& cfg)
-    : moduleLabel_(cfg.getParameter<std::string>("@module_label"))
-  {
+      : moduleLabel_(cfg.getParameter<std::string>("@module_label")) {
     srcToken_ = consumes<ParticleCollection>(cfg.getParameter<edm::InputTag>("src"));
 
     shiftBy_ = cfg.getParameter<double>("shiftBy");
 
-    if ( cfg.exists("binning") ) {
+    if (cfg.exists("binning")) {
       typedef std::vector<edm::ParameterSet> vParameterSet;
       vParameterSet cfgBinning = cfg.getParameter<vParameterSet>("binning");
-      for ( vParameterSet::const_iterator cfgBinningEntry = cfgBinning.begin();
-	    cfgBinningEntry != cfgBinning.end(); ++cfgBinningEntry ) {
-	binning_.push_back(new binningEntryType(*cfgBinningEntry));
+      for (vParameterSet::const_iterator cfgBinningEntry = cfgBinning.begin(); cfgBinningEntry != cfgBinning.end();
+           ++cfgBinningEntry) {
+        binning_.push_back(new binningEntryType(*cfgBinningEntry));
       }
     } else {
       double uncertainty = cfg.getParameter<double>("uncertainty");
@@ -54,39 +52,38 @@ class ShiftedParticleProducerT : public edm::stream::EDProducer<>
 
     produces<ParticleCollection>();
   }
-  ~ShiftedParticleProducerT()
-  {
-    for ( typename std::vector<binningEntryType*>::const_iterator it = binning_.begin();
-	  it != binning_.end(); ++it ) {
+  ~ShiftedParticleProducerT() override {
+    for (typename std::vector<binningEntryType*>::const_iterator it = binning_.begin(); it != binning_.end(); ++it) {
       delete (*it);
     }
   }
 
- private:
-
-  void produce(edm::Event& evt, const edm::EventSetup& es)
-  {
+private:
+  void produce(edm::Event& evt, const edm::EventSetup& es) override {
     edm::Handle<ParticleCollection> originalParticles;
     evt.getByToken(srcToken_, originalParticles);
 
-    std::auto_ptr<ParticleCollection> shiftedParticles(new ParticleCollection);
+    auto shiftedParticles = std::make_unique<ParticleCollection>();
 
-    for ( typename ParticleCollection::const_iterator originalParticle = originalParticles->begin();
-	  originalParticle != originalParticles->end(); ++originalParticle ) {
-
+    for (typename ParticleCollection::const_iterator originalParticle = originalParticles->begin();
+         originalParticle != originalParticles->end();
+         ++originalParticle) {
       double uncertainty = 0.;
-      for ( typename std::vector<binningEntryType*>::iterator binningEntry = binning_.begin();
-	    binningEntry != binning_.end(); ++binningEntry ) {
-	if ( (!(*binningEntry)->binSelection_) || (*(*binningEntry)->binSelection_)(*originalParticle) ) {
-	  uncertainty = (*binningEntry)->binUncertainty_;
-	  break;
-	}
+      for (typename std::vector<binningEntryType*>::iterator binningEntry = binning_.begin();
+           binningEntry != binning_.end();
+           ++binningEntry) {
+        if ((!(*binningEntry)->binSelection_) || (*(*binningEntry)->binSelection_)(*originalParticle)) {
+          uncertainty = (*binningEntry)->binUncertainty_;
+          break;
+        }
       }
 
-      double shift = shiftBy_*uncertainty;
+      double shift = shiftBy_ * uncertainty;
 
       reco::Candidate::LorentzVector shiftedParticleP4 = originalParticle->p4();
-      shiftedParticleP4 *= (1. + shift);
+      //leave 0*nan = 0
+      if (!(edm::isNotFinite(shift) && shiftedParticleP4.mag2() == 0))
+        shiftedParticleP4 *= (1. + shift);
 
       T shiftedParticle(*originalParticle);
       shiftedParticle.setP4(shiftedParticleP4);
@@ -94,37 +91,25 @@ class ShiftedParticleProducerT : public edm::stream::EDProducer<>
       shiftedParticles->push_back(shiftedParticle);
     }
 
-    evt.put(shiftedParticles);
+    evt.put(std::move(shiftedParticles));
   }
 
   std::string moduleLabel_;
 
   edm::EDGetTokenT<ParticleCollection> srcToken_;
 
-  struct binningEntryType
-  {
-    binningEntryType(double uncertainty)
-      : binSelection_(0),
-        binUncertainty_(uncertainty)
-    {}
+  struct binningEntryType {
+    binningEntryType(double uncertainty) : binSelection_(nullptr), binUncertainty_(uncertainty) {}
     binningEntryType(const edm::ParameterSet& cfg)
-    : binSelection_(new StringCutObjectSelector<T>(cfg.getParameter<std::string>("binSelection"))),
-      binUncertainty_(cfg.getParameter<double>("binUncertainty"))
-    {}
-    ~binningEntryType()
-    {
-      delete binSelection_;
-    }
+        : binSelection_(new StringCutObjectSelector<T>(cfg.getParameter<std::string>("binSelection"))),
+          binUncertainty_(cfg.getParameter<double>("binUncertainty")) {}
+    ~binningEntryType() { delete binSelection_; }
     StringCutObjectSelector<T>* binSelection_;
     double binUncertainty_;
   };
   std::vector<binningEntryType*> binning_;
 
-  double shiftBy_; // set to +1.0/-1.0 for up/down variation of energy scale
+  double shiftBy_;  // set to +1.0/-1.0 for up/down variation of energy scale
 };
 
 #endif
-
-
-
-

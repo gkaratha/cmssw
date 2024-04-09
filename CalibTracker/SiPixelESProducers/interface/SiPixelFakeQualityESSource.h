@@ -4,7 +4,7 @@
 //
 // Package:    SiPixelFakeQualityESSource
 // Class:      SiPixelFakeQualityESSource
-// 
+//
 /**\class SiPixelFakeQualityESSource SiPixelFakeQualityESSource.h CalibTracker/SiPixelGainESProducer/src/SiPixelFakeQualityESSource.cc
 
  Description: <one line class summary>
@@ -18,10 +18,8 @@
 //
 //
 
-
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -34,26 +32,21 @@
 // class decleration
 //
 
-class SiPixelFakeQualityESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder  {
-
- public:
+class SiPixelFakeQualityESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
+public:
   SiPixelFakeQualityESSource(const edm::ParameterSet &);
-  ~SiPixelFakeQualityESSource();
-  
-  //      typedef edm::ESProducts<> ReturnType;
-  
-  virtual std::auto_ptr<SiPixelQuality>  produce(const SiPixelQualityFromDbRcd &);
-  
- protected:
-  
-  virtual void setIntervalFor( const edm::eventsetup::EventSetupRecordKey&,
-			       const edm::IOVSyncValue&,
-			       edm::ValidityInterval& );
-  
-  
- private:
-  
-  edm::FileInPath fp_;
+  ~SiPixelFakeQualityESSource() override;
 
+  //      typedef edm::ESProducts<> ReturnType;
+
+  virtual std::unique_ptr<SiPixelQuality> produce(const SiPixelQualityFromDbRcd &);
+
+protected:
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,
+                      const edm::IOVSyncValue &,
+                      edm::ValidityInterval &) override;
+
+private:
+  edm::FileInPath fp_;
 };
 #endif

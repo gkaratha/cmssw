@@ -17,7 +17,6 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 #include <vector>
 
@@ -33,36 +32,24 @@
 // forward declarations
 
 // constructor(s)
-L1GtTriggerMaskTechTrigTrivialProducer::L1GtTriggerMaskTechTrigTrivialProducer(
-        const edm::ParameterSet& parSet)
-{
-    // tell the framework what data is being produced
-    setWhatProduced(this,
-            &L1GtTriggerMaskTechTrigTrivialProducer::produceTriggerMask);
+L1GtTriggerMaskTechTrigTrivialProducer::L1GtTriggerMaskTechTrigTrivialProducer(const edm::ParameterSet& parSet) {
+  // tell the framework what data is being produced
+  setWhatProduced(this, &L1GtTriggerMaskTechTrigTrivialProducer::produceTriggerMask);
 
-    // now do what ever other initialization is needed
+  // now do what ever other initialization is needed
 
-    m_triggerMask =
-            parSet.getParameter<std::vector<unsigned int> >("TriggerMask");
-
+  m_triggerMask = parSet.getParameter<std::vector<unsigned int> >("TriggerMask");
 }
 
 // destructor
-L1GtTriggerMaskTechTrigTrivialProducer::~L1GtTriggerMaskTechTrigTrivialProducer()
-{
-
-    // empty
-
+L1GtTriggerMaskTechTrigTrivialProducer::~L1GtTriggerMaskTechTrigTrivialProducer() {
+  // empty
 }
 
 // member functions
 
 // method called to produce the data
-boost::shared_ptr<L1GtTriggerMask> L1GtTriggerMaskTechTrigTrivialProducer::produceTriggerMask(
-        const L1GtTriggerMaskTechTrigRcd& iRecord)
-{
-    boost::shared_ptr<L1GtTriggerMask> pL1GtTriggerMask = boost::shared_ptr<L1GtTriggerMask>(
-            new L1GtTriggerMask(m_triggerMask) );
-
-    return pL1GtTriggerMask ;
+std::unique_ptr<L1GtTriggerMask> L1GtTriggerMaskTechTrigTrivialProducer::produceTriggerMask(
+    const L1GtTriggerMaskTechTrigRcd& iRecord) {
+  return std::make_unique<L1GtTriggerMask>(m_triggerMask);
 }

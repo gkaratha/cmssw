@@ -7,6 +7,7 @@
 #################################################################
 
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 process = cms.Process("RPCDQMClientTest")
 
@@ -50,14 +51,15 @@ process.rpcEventSummary.PrescaleFactor = 1
 process.load("DQM.RPCMonitorClient.RPCMon_SS_Dbx_Global_cfi")
 
 ################# Quality Tests ############################
-process.qTesterRPC = cms.EDAnalyzer("QualityTester",
+from DQMServices.Core.DQMQualityTester import DQMQualityTester
+process.qTesterRPC = DQMQualityTester(
     qtList = cms.untracked.FileInPath('DQM/RPCMonitorClient/test/RPCQualityTests.xml'),
     prescaleFactor = cms.untracked.int32(1)
 )
 
 
 ################# Open Root file and provide MEs ############
-process.ReadMeFromFile = cms.EDAnalyzer("ReadMeFromFile",
+process.ReadMeFromFile = DQMEDHarvester("ReadMeFromFile",
 #InputFile = cms.untracked.string('/afs/cern.ch/user/d/dlomidze/scratch0/CMSSW_3_0_0_pre3/src/DQM/RPCMonitorClient/python/DQM_V0001_RPC_R000069800.root')
 InputFile = cms.untracked.string('rfio:/castor/cern.ch/user/d/dlomidze/RPC/GlobalRuns/CosmicsCommissioning08-PromptReco-v2RECO/70664/root/Merge_tot.root')
 #InputFile = cms.untracked.string('rfio:/castor/cern.ch/user/d/dlomidze/DQM_150.000_RPCEvents.root')                                       
@@ -67,18 +69,17 @@ InputFile = cms.untracked.string('rfio:/castor/cern.ch/user/d/dlomidze/RPC/Globa
 
 
 ################# RPC Client Modules #######################
-process.RPCDeadChannelTest = cms.EDAnalyzer("RPCDeadChannelTest")
-process.RPCOccupancyTest = cms.EDAnalyzer("RPCOccupancyTest")
-process.RPCClusterSizeTest = cms.EDAnalyzer("RPCClusterSizeTest")
-process.RPCChamberQuality = cms.EDAnalyzer("RPCChamberQuality")
-#process.RPCDCSDataSimulator = cms.EDAnalyzer("RPCDCSDataSimulator")
-process.RPCMultiplicityTest = cms.EDAnalyzer("RPCMultiplicityTest")
-process.RPCOccupancyChipTest = cms.EDAnalyzer("RPCOccupancyChipTest");
-process.RPCNoisyStripTest = cms.EDAnalyzer("RPCNoisyStripTest");
+process.RPCDeadChannelTest = DQMEDHarvester("RPCDeadChannelTest")
+process.RPCOccupancyTest = DQMEDHarvester("RPCOccupancyTest")
+process.RPCClusterSizeTest = DQMEDHarvester("RPCClusterSizeTest")
+#process.RPCDCSDataSimulator = DQMEDHarvester("RPCDCSDataSimulator")
+process.RPCMultiplicityTest = DQMEDHarvester("RPCMultiplicityTest")
+process.RPCOccupancyChipTest = DQMEDHarvester("RPCOccupancyChipTest");
+process.RPCNoisyStripTest = DQMEDHarvester("RPCNoisyStripTest");
 
-#process.p = cms.Path(process.ReadMeFromFile*process.qTesterRPC*process.RPCClusterSizeTest*process.RPCDeadChannelTest*process.RPCOccupancyTest*process.RPCDCSDataSimulator*process.RPCMultiplicityTest*process.RPCChamberQuality*process.dqmSaver)
+#process.p = cms.Path(process.ReadMeFromFile*process.qTesterRPC*process.RPCClusterSizeTest*process.RPCDeadChannelTest*process.RPCOccupancyTest*process.RPCDCSDataSimulator*process.RPCMultiplicityTest*process.dqmSaver)
 
-process.p = cms.Path(process.ReadMeFromFile*process.qTesterRPC*process.RPCClusterSizeTest*process.RPCDeadChannelTest*process.RPCOccupancyTest*process.RPCMultiplicityTest*process.RPCOccupancyChipTest*process.RPCNoisyStripTest*process.RPCChamberQuality*process.dqmSaver)
+process.p = cms.Path(process.ReadMeFromFile*process.qTesterRPC*process.RPCClusterSizeTest*process.RPCDeadChannelTest*process.RPCOccupancyTest*process.RPCMultiplicityTest*process.RPCOccupancyChipTest*process.RPCNoisyStripTest*process.dqmSaver)
 
 
 

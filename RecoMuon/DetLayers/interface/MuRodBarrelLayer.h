@@ -16,47 +16,40 @@ class GeomDet;
 
 class MuRodBarrelLayer : public RodBarrelLayer {
 public:
-
   /// Constructor, takes ownership of pointers
   MuRodBarrelLayer(std::vector<const DetRod*>& rods);
 
-  virtual ~MuRodBarrelLayer();
+  ~MuRodBarrelLayer() override;
 
   // GeometricSearchDet interface
 
-  virtual const std::vector<const GeomDet*>& basicComponents() const {return theBasicComps;}
+  const std::vector<const GeomDet*>& basicComponents() const override { return theBasicComps; }
 
-  virtual const std::vector<const GeometricSearchDet*>& components() const;  
+  const std::vector<const GeometricSearchDet*>& components() const override;
 
-  virtual std::vector<DetWithState> 
-  compatibleDets( const TrajectoryStateOnSurface& startingState,
-		  const Propagator& prop, 
-		  const MeasurementEstimator& est) const;
-  
-  virtual std::vector<DetGroup> 
-  groupedCompatibleDets( const TrajectoryStateOnSurface& startingState,
-			 const Propagator& prop,
-			 const MeasurementEstimator& est) const;
+  std::vector<DetWithState> compatibleDets(const TrajectoryStateOnSurface& startingState,
+                                           const Propagator& prop,
+                                           const MeasurementEstimator& est) const override;
 
+  std::vector<DetGroup> groupedCompatibleDets(const TrajectoryStateOnSurface& startingState,
+                                              const Propagator& prop,
+                                              const MeasurementEstimator& est) const override;
 
   // DetLayer interface
-  virtual SubDetector subDetector() const;
+  SubDetector subDetector() const override;
 
   // Extension of the interface
 
   /// Return the vector of rods.
-  virtual const std::vector<const DetRod*>& rods() const {return theRods;}
-
+  virtual const std::vector<const DetRod*>& rods() const { return theRods; }
 
 private:
-
-  float xError(const TrajectoryStateOnSurface& tsos,
-	       const MeasurementEstimator& est) const;
+  float xError(const TrajectoryStateOnSurface& tsos, const MeasurementEstimator& est) const;
 
   std::vector<const DetRod*> theRods;
-  std::vector <const GeometricSearchDet*> theComponents; // duplication of the above
-  std::vector<const GeomDet*> theBasicComps; // All chambers
-  BaseBinFinder<double> * theBinFinder;
+  std::vector<const GeometricSearchDet*> theComponents;  // duplication of the above
+  std::vector<const GeomDet*> theBasicComps;             // All chambers
+  BaseBinFinder<double>* theBinFinder;
   bool isOverlapping;
 };
 

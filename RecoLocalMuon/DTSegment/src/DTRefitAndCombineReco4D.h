@@ -20,9 +20,10 @@
 namespace edm {
   class ParameterSet;
   class EventSetup;
-}
+}  // namespace edm
 class DTSegmentUpdator;
 //class DTSegmentCleaner;
+class MuonGeometryRecord;
 
 // C++ Headers
 #include <vector>
@@ -30,38 +31,36 @@ class DTSegmentUpdator;
 
 #include "Geometry/DTGeometry/interface/DTGeometry.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
+#include "FWCore/Framework/interface/FrameworkfwdMostUsed.h"
 
-// ====================================================================== 
+// ======================================================================
 //#include "DataFormats/DTRecHit/interface/DTRecSegment2DPhi.h"
 
-// Class DTRefitAndCombineReco4D Interface 
+// Class DTRefitAndCombineReco4D Interface
 
 class DTRefitAndCombineReco4D : public DTRecSegment4DBaseAlgo {
-
- public:
-
+public:
   /// Constructor
-  DTRefitAndCombineReco4D(const edm::ParameterSet& pset) ;
-  
+  DTRefitAndCombineReco4D(const edm::ParameterSet &pset, edm::ConsumesCollector cc);
+
   /// Destructor
-  virtual ~DTRefitAndCombineReco4D(){};
-    
-  /// Operations  
-  virtual edm::OwnVector<DTRecSegment4D>
-    reconstruct();
-    
-  virtual std::string algoName() const { return theAlgoName; }
-    
-  virtual void setES(const edm::EventSetup& setup);
+  ~DTRefitAndCombineReco4D() override{};
 
-  virtual void setDTRecHit1DContainer(edm::Handle<DTRecHitCollection> all1DHits) {};
-  virtual void setDTRecSegment2DContainer(edm::Handle<DTRecSegment2DCollection> all2DSegments);
-  virtual void setChamber(const DTChamberId &chId);
-  virtual bool wants2DSegments(){return true;}
+  /// Operations
+  edm::OwnVector<DTRecSegment4D> reconstruct() override;
 
- protected:
+  std::string algoName() const override { return theAlgoName; }
 
- private:
+  void setES(const edm::EventSetup &setup) override;
+
+  void setDTRecHit1DContainer(edm::Handle<DTRecHitCollection> all1DHits) override{};
+  void setDTRecSegment2DContainer(edm::Handle<DTRecSegment2DCollection> all2DSegments) override;
+  void setChamber(const DTChamberId &chId) override;
+  bool wants2DSegments() override { return true; }
+
+protected:
+private:
   std::vector<DTChamberRecSegment2D> refitSuperSegments();
 
   std::string theAlgoName;
@@ -71,19 +70,19 @@ class DTRefitAndCombineReco4D : public DTRecSegment4DBaseAlgo {
   bool debug;
   // DTSegmentUpdator* theUpdator; // the updator and fitter
   // DTSegmentCleaner* theCleaner; // the cleaner
-    
-  edm::ESHandle<DTGeometry> theDTGeometry; // the DT geometry
 
-  //   // The reconstruction 2D algorithm 
-  // DTRecSegment2DBaseAlgo* the2DAlgo; 
+  edm::ESHandle<DTGeometry> theDTGeometry;  // the DT geometry
+  const edm::ESGetToken<DTGeometry, MuonGeometryRecord> theDTGeometryToken;
+
+  //   // The reconstruction 2D algorithm
+  // DTRecSegment2DBaseAlgo* the2DAlgo;
 
   // the updator
   DTSegmentUpdator *theUpdator;
-  
+
   const DTChamber *theChamber;
   std::vector<DTSLRecSegment2D> theSegments2DPhi1;
-  std::vector<DTSLRecSegment2D> theSegments2DTheta; 
+  std::vector<DTSLRecSegment2D> theSegments2DTheta;
   std::vector<DTSLRecSegment2D> theSegments2DPhi2;
-  
 };
 #endif

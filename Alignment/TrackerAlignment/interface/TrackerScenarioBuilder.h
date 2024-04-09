@@ -14,38 +14,37 @@
 #include <vector>
 #include <string>
 
+#include "Alignment/CommonAlignment/interface/StructureType.h"
 #include "Alignment/CommonAlignment/interface/MisalignmentScenarioBuilder.h"
 
 class AlignableTracker;
 
 /// Builds a scenario from configuration and applies it to the alignable tracker.
 
-class TrackerScenarioBuilder : public MisalignmentScenarioBuilder
-{
-
+class TrackerScenarioBuilder : public MisalignmentScenarioBuilder {
 public:
- 
   /// Constructor
-  explicit TrackerScenarioBuilder( AlignableTracker* alignable );
+  explicit TrackerScenarioBuilder(AlignableTracker* alignable);
 
   /// Destructor
-  ~TrackerScenarioBuilder() {};
+  ~TrackerScenarioBuilder() override{};
 
   /// Apply misalignment scenario to the tracker
-  void applyScenario( const edm::ParameterSet& scenario );
+  void applyScenario(const edm::ParameterSet& scenario) override;
   /// does this still make sense?
-  virtual bool isTopLevel_(const std::string& parameterSetName) const;
+  bool isTopLevel_(const std::string& parameterSetName) const override;
   /// True if hierarchy level 'sub' could be part of hierarchy level 'large'.
-  virtual bool possiblyPartOf(const std::string &sub, const std::string &large) const;
+  bool possiblyPartOf(const std::string& sub, const std::string& large) const override;
 
-private: // Members
+private:
+  std::string stripOffModule(const align::StructureType& type) const;
 
-  AlignableTracker* theAlignableTracker;   ///< Pointer to mother alignable object
+  // Members
+
+  AlignableTracker* theAlignableTracker;  ///< Pointer to mother alignable object
   /// following things are needed in possiblyPartOf:
-  std::vector<std::string> theSubdets; ///< sub-detector acronyms appearing in StructureType.h (TPE)
-  unsigned int theFirstStripIndex;     ///< index of first strip subdet in 'theSubdets' (pixel<strip)  
-
+  std::vector<std::string> theSubdets;  ///< sub-detector acronyms appearing in StructureType.h (TPE)
+  unsigned int theFirstStripIndex;      ///< index of first strip subdet in 'theSubdets' (pixel<strip)
 };
-
 
 #endif

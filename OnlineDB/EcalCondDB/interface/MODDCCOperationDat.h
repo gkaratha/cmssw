@@ -9,35 +9,28 @@
 #include "OnlineDB/EcalCondDB/interface/EcalLogicID.h"
 
 class MODDCCOperationDat : public IDataItem {
- public:
+public:
   friend class EcalCondDBInterface;
   MODDCCOperationDat();
-  ~MODDCCOperationDat();
+  ~MODDCCOperationDat() override;
 
   // User data methods
-  inline std::string getTable() { return "OD_DCC_OPERATION_DAT"; }
+  inline std::string getTable() override { return "OD_DCC_OPERATION_DAT"; }
 
   inline void setOperation(std::string x) { m_word = x; }
   inline std::string getOperation() const { return m_word; }
 
- private:
-  void prepareWrite() 
-    throw(std::runtime_error);
+private:
+  void prepareWrite() noexcept(false) override;
 
-  void writeDB(const EcalLogicID* ecid, const MODDCCOperationDat* item, MODRunIOV* iov )
-    throw(std::runtime_error);
+  void writeDB(const EcalLogicID* ecid, const MODDCCOperationDat* item, MODRunIOV* iov) noexcept(false);
 
-  void writeArrayDB(const std::map< EcalLogicID, MODDCCOperationDat >* data, MODRunIOV* iov)
-  throw(std::runtime_error);
+  void writeArrayDB(const std::map<EcalLogicID, MODDCCOperationDat>* data, MODRunIOV* iov) noexcept(false);
 
-
-
-  void fetchData(std::map< EcalLogicID, MODDCCOperationDat >* fillMap, MODRunIOV* iov)
-     throw(std::runtime_error);
+  void fetchData(std::map<EcalLogicID, MODDCCOperationDat>* fillMap, MODRunIOV* iov) noexcept(false);
 
   // User data
   std::string m_word;
-
 };
 
 #endif

@@ -22,35 +22,36 @@
 class GeomDetType;
 
 class GEMGeometry : public TrackingGeometry {
-
- public:
+public:
   /// Default constructor
   GEMGeometry();
 
   /// Destructor
-  virtual ~GEMGeometry();
+  ~GEMGeometry() override;
+
+  friend class GEMGeometryBuilder;
+  friend class GeometryAligner;
 
   // Return a vector of all det types
-  virtual const DetTypeContainer&  detTypes() const override;
-
-  // Return a vector of all GeomDetUnit
-  virtual const DetUnitContainer& detUnits() const override;
+  const DetTypeContainer& detTypes() const override;
 
   // Return a vector of all GeomDet
-  virtual const DetContainer& dets() const override;
-  
-  // Return a vector of all GeomDetUnit DetIds
-  virtual const DetIdContainer& detUnitIds() const override;
+  const DetContainer& detUnits() const override;
+
+  // Return a vector of all GeomDet
+  const DetContainer& dets() const override;
 
   // Return a vector of all GeomDet DetIds
-  virtual const DetIdContainer& detIds() const override;
+  const DetIdContainer& detUnitIds() const override;
 
-  // Return the pointer to the GeomDetUnit corresponding to a given DetId
-  virtual const GeomDetUnit* idToDetUnit(DetId) const override;
+  // Return a vector of all GeomDet DetIds
+  const DetIdContainer& detIds() const override;
 
   // Return the pointer to the GeomDet corresponding to a given DetId
-  virtual const GeomDet* idToDet(DetId) const override;
+  const GeomDet* idToDetUnit(DetId) const override;
 
+  // Return the pointer to the GeomDet corresponding to a given DetId
+  const GeomDet* idToDet(DetId) const override;
 
   //---- Extension of the interface
 
@@ -72,7 +73,7 @@ class GEMGeometry : public TrackingGeometry {
   /// Return a vector of all GEM eta partitions
   const std::vector<const GEMEtaPartition*>& etaPartitions() const;
 
-  // Return a GEMRegion 
+  // Return a GEMRegion
   const GEMRegion* region(int region) const;
 
   // Return a GEMStation
@@ -91,39 +92,43 @@ class GEMGeometry : public TrackingGeometry {
   const GEMEtaPartition* etaPartition(GEMDetId id) const;
 
   /// Add a GEMRegion to the Geometry
-  void add(GEMRegion* region);
+  void add(const GEMRegion* region);
 
   /// Add a GEMStation to the Geometry
-  void add(GEMStation* station);
+  void add(const GEMStation* station);
 
   /// Add a GEMRing to the Geometry
-  void add(GEMRing* ring);
+  void add(const GEMRing* ring);
 
   /// Add a GEMSuperChamber to the Geometry
-  void add(GEMSuperChamber* sch);
- 
+  void add(const GEMSuperChamber* sch);
+
   /// Add a GEMChamber to the Geometry
-  void add(GEMChamber* ch);
+  void add(const GEMChamber* ch);
 
   /// Add a GEMEtaPartition  to the Geometry
-  void add(GEMEtaPartition* etaPartition);
+  void add(const GEMEtaPartition* etaPartition);
 
- private:
-  DetUnitContainer theEtaPartitions;
+  bool hasME0() const;
+  bool hasGE11() const;
+  bool hasGE21() const;
+
+private:
+  DetContainer theEtaPartitions;
   DetContainer theDets;
   DetTypeContainer theEtaPartitionTypes;
   DetIdContainer theEtaPartitionIds;
   DetIdContainer theDetIds;
-  
-  // Map for efficient lookup by DetId 
+
+  // Map for efficient lookup by DetId
   mapIdToDet theMap;
 
-  std::vector<const GEMEtaPartition*> allEtaPartitions; // Are not owned by this class; are owned by their chamber.
-  std::vector<const GEMChamber*> allChambers; // Are not owned by this class; are owned by their chamber.
-  std::vector<const GEMSuperChamber*> allSuperChambers; // Are owned by this class.
-  std::vector<const GEMRing*> allRings; // Are owned by this class.
-  std::vector<const GEMStation*> allStations; // Are owned by this class.
-  std::vector<const GEMRegion*> allRegions; // Are owned by this class.
+  std::vector<const GEMEtaPartition*> allEtaPartitions;  // Are not owned by this class; are owned by their chamber.
+  std::vector<const GEMChamber*> allChambers;  // Are not owned by this class; are owned by their superchamber.
+  std::vector<const GEMSuperChamber*> allSuperChambers;  // Are owned by this class.
+  std::vector<const GEMRing*> allRings;                  // Are owned by this class.
+  std::vector<const GEMStation*> allStations;            // Are owned by this class.
+  std::vector<const GEMRegion*> allRegions;              // Are owned by this class.
 };
 
 #endif

@@ -6,22 +6,16 @@
 
 /** */
 class FastFedCablingTask : public CommissioningTask {
+public:
+  FastFedCablingTask(DQMStore*, const FedChannelConnection&);
+  ~FastFedCablingTask() override;
 
- public:
-  
-  FastFedCablingTask( DQMStore*, const FedChannelConnection& );
-  virtual ~FastFedCablingTask();
-  
- private:
-  
-  virtual void book();
-  virtual void fill( const SiStripEventSummary&,
-		     const edm::DetSet<SiStripRawDigi>& );
-  virtual void update();
-  
+private:
+  void book() override;
+  void fill(const SiStripEventSummary&, const edm::DetSet<SiStripRawDigi>&) override;
+  void update() override;
+
   HistoSet histo_;
-  
 };
 
-#endif // DQM_SiStripCommissioningSources_FastFedCablingTask_h
-
+#endif  // DQM_SiStripCommissioningSources_FastFedCablingTask_h

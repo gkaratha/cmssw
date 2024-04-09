@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def customizeHLTforAll(process, _customInfo = None):
+def customizeHLTforAll(process, menuType = "GRun", _customInfo = None):
 
     if (_customInfo is not None):
 
@@ -40,7 +40,7 @@ def customizeHLTforAll(process, _customInfo = None):
             _globalTag = _customInfo['globalTags'][_realData]
         if _globalTag != "":
             if hasattr(process,'GlobalTag'):
-                from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+                from Configuration.AlCa.GlobalTag import GlobalTag
                 process.GlobalTag = GlobalTag(process.GlobalTag, _globalTag, '')
 #               process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
@@ -50,19 +50,9 @@ def customizeHLTforAll(process, _customInfo = None):
         if _inputFile != "":
             if hasattr(process,'source'):
                 process.source.fileNames = cms.untracked.vstring( _inputFile )
-                    
-# MC customisation
+
         if not _realData:
             from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC
             process = customizeHLTforMC(process)
-            if _customInfo['menuType'] == "HIon":
-                from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
-                process = MassReplaceInputTag(process,"rawDataRepacker","rawDataCollector")
-    else:
-        pass
-
-# CMSSW version customisation
-    from HLTrigger.Configuration.customizeHLTforCMSSW import customiseHLTforCMSSW
-    process = customiseHLTforCMSSW(process)
 
     return process

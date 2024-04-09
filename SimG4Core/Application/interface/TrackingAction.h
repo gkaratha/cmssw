@@ -5,37 +5,45 @@
 #include "SimG4Core/Notification/interface/SimActivityRegistry.h"
 
 #include "G4UserTrackingAction.hh"
-#include "G4VSolid.hh"
+#include "G4Region.hh"
 
-class EventAction;
-class TrackWithHistory; 
+#include <vector>
+
+class SimTrackManager;
+class TrackWithHistory;
 class BeginOfTrack;
 class EndOfTrack;
+class CMSSteppingVerbose;
+class TrackInformation;
 
-class TrackingAction : public G4UserTrackingAction
-{
+class TrackingAction : public G4UserTrackingAction {
 public:
-    TrackingAction(EventAction * ea, const edm::ParameterSet & ps);
-    virtual ~TrackingAction();
+  explicit TrackingAction(SimTrackManager*, CMSSteppingVerbose*, const edm::ParameterSet& ps);
+  ~TrackingAction() override = default;
 
-    virtual void PreUserTrackingAction(const G4Track * aTrack);
-    virtual void PostUserTrackingAction(const G4Track * aTrack);
+  void PreUserTrackingAction(const G4Track* aTrack) override;
+  void PostUserTrackingAction(const G4Track* aTrack) override;
 
-    TrackWithHistory * currentTrackWithHistory() { return currentTrack_; }
-    const G4Track * geant4Track() const { return g4Track_; }
-    G4TrackingManager * getTrackManager();
+  inline TrackWithHistory* currentTrackWithHistory() { return currentTrack_; }
+  inline const G4Track* geant4Track() const { return g4Track_; }
+  inline G4TrackingManager* getTrackManager() { return fpTrackingManager; }
 
-    SimActivityRegistry::BeginOfTrackSignal m_beginOfTrackSignal;
-    SimActivityRegistry::EndOfTrackSignal m_endOfTrackSignal;
+  SimActivityRegistry::BeginOfTrackSignal m_beginOfTrackSignal;
+  SimActivityRegistry::EndOfTrackSignal m_endOfTrackSignal;
 
 private:
-    EventAction * eventAction_;
-    TrackWithHistory * currentTrack_;
-    const G4Track * g4Track_;
-    G4VSolid * worldSolid;
-    bool detailedTiming;
-    bool checkTrack;
-    int  trackMgrVerbose;
+  SimTrackManager* trackManager_;
+  CMSSteppingVerbose* steppingVerbose_;
+  const G4Track* g4Track_ = nullptr;
+  TrackInformation* trkInfo_ = nullptr;
+  TrackWithHistory* currentTrack_ = nullptr;
+  int endPrintTrackID_;
+  bool checkTrack_;
+  bool doFineCalo_;
+  bool saveCaloBoundaryInformation_;
+  double ekinMin_;
+  std::vector<double> ekinMinRegion_;
+  std::vector<G4Region*> ptrRegion_;
 };
 
 #endif

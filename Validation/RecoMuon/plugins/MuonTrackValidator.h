@@ -6,207 +6,184 @@
 *
 */
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "Validation/RecoMuon/plugins/MuonTrackValidatorBase.h"
 #include "SimDataFormats/Associations/interface/TrackToTrackingParticleAssociator.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
-#include "DataFormats/RecoCandidate/interface/TrackAssociation.h"
+#include "SimDataFormats/Associations/interface/TrackAssociation.h"
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 
+#include "SimTracker/TrackAssociation/interface/ParametersDefinerForTP.h"
+#include "SimTracker/TrackAssociation/interface/CosmicParametersDefinerForTP.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 class MuonTrackValidator : public DQMEDAnalyzer, protected MuonTrackValidatorBase {
- public:
+public:
   /// Constructor
-  MuonTrackValidator(const edm::ParameterSet& pset):MuonTrackValidatorBase(pset){
+  MuonTrackValidator(const edm::ParameterSet& pset) : MuonTrackValidatorBase(pset) {
     dirName_ = pset.getParameter<std::string>("dirName");
-    associatormap = pset.getParameter< edm::InputTag >("associatormap");
-    UseAssociators = pset.getParameter< bool >("UseAssociators");
-    useGEMs_ = pset.getParameter< bool >("useGEMs");
-    tpSelector = TrackingParticleSelector(pset.getParameter<double>("ptMinTP"),
-					  pset.getParameter<double>("minRapidityTP"),
-					  pset.getParameter<double>("maxRapidityTP"),
-					  pset.getParameter<double>("tipTP"),
-					  pset.getParameter<double>("lipTP"),
-					  pset.getParameter<int>("minHitTP"),
-					  pset.getParameter<bool>("signalOnlyTP"),
-					  pset.getParameter<bool>("intimeOnlyTP"),
-					  pset.getParameter<bool>("chargedOnlyTP"),
-					  pset.getParameter<bool>("stableOnlyTP"),
-					  pset.getParameter<std::vector<int> >("pdgIdTP"));
-    cosmictpSelector = CosmicTrackingParticleSelector(pset.getParameter<double>("ptMinTP"),
-						      pset.getParameter<double>("minRapidityTP"),
-						      pset.getParameter<double>("maxRapidityTP"),
-						      pset.getParameter<double>("tipTP"),
-						      pset.getParameter<double>("lipTP"),
-						      pset.getParameter<int>("minHitTP"),
-						      pset.getParameter<bool>("chargedOnlyTP"),
-						      pset.getParameter<std::vector<int> >("pdgIdTP"));
-    
-    minPhi = pset.getParameter<double>("minPhi");
-    maxPhi = pset.getParameter<double>("maxPhi");
-    nintPhi = pset.getParameter<int>("nintPhi");
-    useGsf = pset.getParameter<bool>("useGsf");
+    associatormap = pset.getParameter<edm::InputTag>("associatormap");
+    UseAssociators = pset.getParameter<bool>("UseAssociators");
+    useGEMs_ = pset.getParameter<bool>("useGEMs");
+    useME0_ = pset.getParameter<bool>("useME0");
+    edm::ParameterSet tpset = pset.getParameter<edm::ParameterSet>("muonTPSelector");
+    tpSelector = TrackingParticleSelector(tpset.getParameter<double>("ptMin"),
+                                          tpset.getParameter<double>("ptMax"),
+                                          tpset.getParameter<double>("minRapidity"),
+                                          tpset.getParameter<double>("maxRapidity"),
+                                          tpset.getParameter<double>("tip"),
+                                          tpset.getParameter<double>("lip"),
+                                          tpset.getParameter<int>("minHit"),
+                                          tpset.getParameter<bool>("signalOnly"),
+                                          tpset.getParameter<bool>("intimeOnly"),
+                                          tpset.getParameter<bool>("chargedOnly"),
+                                          tpset.getParameter<bool>("stableOnly"),
+                                          tpset.getParameter<std::vector<int> >("pdgId"));
+
+    cosmictpSelector = CosmicTrackingParticleSelector(tpset.getParameter<double>("ptMin"),
+                                                      tpset.getParameter<double>("minRapidity"),
+                                                      tpset.getParameter<double>("maxRapidity"),
+                                                      tpset.getParameter<double>("tip"),
+                                                      tpset.getParameter<double>("lip"),
+                                                      tpset.getParameter<int>("minHit"),
+                                                      tpset.getParameter<bool>("chargedOnly"),
+                                                      tpset.getParameter<std::vector<int> >("pdgId"));
+
     BiDirectional_RecoToSim_association = pset.getParameter<bool>("BiDirectional_RecoToSim_association");
 
     // dump cfg parameters
     edm::LogVerbatim("MuonTrackValidator") << "constructing MuonTrackValidator: " << pset.dump();
-    
+
     // Declare consumes (also for the base class)
     bsSrc_Token = consumes<reco::BeamSpot>(bsSrc);
-    tp_effic_Token = consumes<TrackingParticleCollection>(label_tp_effic);
-    tp_fake_Token = consumes<TrackingParticleCollection>(label_tp_fake);
-    for (unsigned int www=0;www<label.size();www++){
+    if (label_tp_refvector)
+      tp_refvector_Token = consumes<TrackingParticleRefVector>(label_tp);
+    else
+      tp_Token = consumes<TrackingParticleCollection>(label_tp);
+    pileupinfo_Token = consumes<std::vector<PileupSummaryInfo> >(label_pileupinfo);
+    for (unsigned int www = 0; www < label.size(); www++) {
       track_Collection_Token.push_back(consumes<edm::View<reco::Track> >(label[www]));
     }
     simToRecoCollection_Token = consumes<reco::SimToRecoCollection>(associatormap);
     recoToSimCollection_Token = consumes<reco::RecoToSimCollection>(associatormap);
 
-    _simHitTpMapTag = mayConsume<SimHitTPAssociationProducer::SimHitTPAssociationList>(pset.getParameter<edm::InputTag>("simHitTpMapTag"));
+    if (parametersDefiner == "LhcParametersDefinerForTP") {
+      lhcParametersDefinerTP_ = std::make_unique<ParametersDefinerForTP>(bsSrc, consumesCollector());
+    } else if (parametersDefiner == "CosmicParametersDefinerForTP") {
+      cosmicParametersDefinerTP_ = std::make_unique<CosmicParametersDefinerForTP>(consumesCollector());
+    } else {
+      throw cms::Exception("Configuration") << "Unexpected label: parametersDefiner = " << parametersDefiner;
+    }
+
+    _simHitTpMapTag = mayConsume<SimHitTPAssociationProducer::SimHitTPAssociationList>(
+        pset.getParameter<edm::InputTag>("simHitTpMapTag"));
 
     MABH = false;
     if (!UseAssociators) {
       // flag MuonAssociatorByHits
-      if (associators[0] == "MuonAssociationByHits") MABH = true;
+      if (associators[0] == "MuonAssociationByHits")
+        MABH = true;
       // reset string associators to the map label
       associators.clear();
       associators.push_back(associatormap.label());
-      edm::LogVerbatim("MuonTrackValidator") << "--> associators reset to: " <<associators[0];
+      edm::LogVerbatim("MuonTrackValidator") << "--> associators reset to: " << associators[0];
     } else {
-      for (auto const& associator :associators) {
+      for (auto const& associator : associators) {
         consumes<reco::TrackToTrackingParticleAssociator>(edm::InputTag(associator));
       }
     }
-    
+
     // inform on which SimHits will be counted
-    if (usetracker) edm::LogVerbatim("MuonTrackValidator")
-      <<"\n usetracker = TRUE : Tracker SimHits WILL be counted";
-    else edm::LogVerbatim("MuonTrackValidator")
-      <<"\n usetracker = FALSE : Tracker SimHits WILL NOT be counted";
-    if (usemuon) edm::LogVerbatim("MuonTrackValidator")
-      <<" usemuon = TRUE : Muon SimHits WILL be counted";
-    else edm::LogVerbatim("MuonTrackValidator")
-      <<" usemuon = FALSE : Muon SimHits WILL NOT be counted"<<std::endl;
-    
+    if (usetracker)
+      edm::LogVerbatim("MuonTrackValidator") << "\n usetracker = TRUE : Tracker SimHits WILL be counted";
+    else
+      edm::LogVerbatim("MuonTrackValidator") << "\n usetracker = FALSE : Tracker SimHits WILL NOT be counted";
+    if (usemuon)
+      edm::LogVerbatim("MuonTrackValidator") << " usemuon = TRUE : Muon SimHits WILL be counted";
+    else
+      edm::LogVerbatim("MuonTrackValidator") << " usemuon = FALSE : Muon SimHits WILL NOT be counted" << std::endl;
+
     // loop over the reco::Track collections to validate: check for inconsistent input settings
-    for (unsigned int www=0;www<label.size();www++) {
+    for (unsigned int www = 0; www < label.size(); www++) {
       std::string recoTracksLabel = label[www].label();
       std::string recoTracksInstance = label[www].instance();
-      
-      // tracks with hits only on tracker
-      if (recoTracksLabel=="generalTracks" ||
-	  (recoTracksLabel.find("cutsRecoTracks") != std::string::npos) ||
-	  recoTracksLabel=="ctfWithMaterialTracksP5LHCNavigation" ||
-	  recoTracksLabel=="hltL3TkTracksFromL2" ||
-	  (recoTracksLabel=="hltL3Muons" && recoTracksInstance=="L2Seeded"))
-	{
-	  if (usemuon) {
-	    edm::LogWarning("MuonTrackValidator")
-	      <<"\n*** WARNING : inconsistent input tracksTag = "<<label[www]
-	      <<"\n with usemuon == true"<<"\n ---> please change to usemuon == false ";
-	  }
-	  if (!usetracker) {
-	    edm::LogWarning("MuonTrackValidator")
-	      <<"\n*** WARNING : inconsistent input tracksTag = "<<label[www]
-	      <<"\n with usetracker == false"<<"\n ---> please change to usetracker == true ";
-	  }	
-	}
-      
-      // tracks with hits only on muon detectors
-      else if (recoTracksLabel=="standAloneMuons" ||
-	       recoTracksLabel=="standAloneSETMuons" ||
-	       recoTracksLabel=="cosmicMuons" ||
-	       recoTracksLabel=="hltL2Muons")
-	{
-	  if (usetracker) {
-	    edm::LogWarning("MuonTrackValidator")
-	      <<"\n*** WARNING : inconsistent input tracksTag = "<<label[www]
-	      <<"\n with usetracker == true"<<"\n ---> please change to usetracker == false ";
-	  }
-	  if (!usemuon) {
-	    edm::LogWarning("MuonTrackValidator")
-	      <<"\n*** WARNING : inconsistent input tracksTag = "<<label[www]
-	      <<"\n with usemuon == false"<<"\n ---> please change to usemuon == true ";
-	  }
-	}
-      
-    } // for (unsigned int www=0;www<label.size();www++)
-  }
-  
-  /// Destructor
-  virtual ~MuonTrackValidator(){ }
 
-  /// Method called before the event loop
-  //  void beginRun(edm::Run const&, edm::EventSetup const&);
-  /// Method called once per event
-  void analyze(const edm::Event&, const edm::EventSetup& );
-  /// Method called at the end of the event loop
-  void endRun(edm::Run const&, edm::EventSetup const&);
-  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&);
+      // tracks with hits only on tracker
+      if (recoTracksLabel == "generalTracks" || recoTracksLabel == "probeTracks" ||
+          recoTracksLabel == "displacedTracks" || recoTracksLabel == "extractGemMuons" ||
+          recoTracksLabel == "extractMe0Muons" || recoTracksLabel == "ctfWithMaterialTracksP5LHCNavigation" ||
+          recoTracksLabel == "ctfWithMaterialTracksP5" ||
+          recoTracksLabel == "hltIterL3OIMuonTrackSelectionHighPurity" || recoTracksLabel == "hltIterL3MuonMerged" ||
+          recoTracksLabel == "hltIterL3MuonAndMuonFromL1Merged") {
+        if (usemuon) {
+          edm::LogWarning("MuonTrackValidator")
+              << "\n*** WARNING : inconsistent input tracksTag = " << label[www] << "\n with usemuon == true"
+              << "\n ---> resetting to usemuon == false ";
+          usemuon = false;
+        }
+        if (!usetracker) {
+          edm::LogWarning("MuonTrackValidator")
+              << "\n*** WARNING : inconsistent input tracksTag = " << label[www] << "\n with usetracker == false"
+              << "\n ---> resetting to usetracker == true ";
+          usetracker = true;
+        }
+      }
+
+      // tracks with hits only on muon detectors
+      else if (recoTracksLabel == "seedsOfSTAmuons" || recoTracksLabel == "standAloneMuons" ||
+               recoTracksLabel == "seedsOfDisplacedSTAmuons" || recoTracksLabel == "displacedStandAloneMuons" ||
+               recoTracksLabel == "refittedStandAloneMuons" || recoTracksLabel == "cosmicMuons" ||
+               recoTracksLabel == "cosmicMuons1Leg" || recoTracksLabel == "hltL2Muons") {
+        if (usetracker) {
+          edm::LogWarning("MuonTrackValidator")
+              << "\n*** WARNING : inconsistent input tracksTag = " << label[www] << "\n with usetracker == true"
+              << "\n ---> resetting to usetracker == false ";
+          usetracker = false;
+        }
+        if (!usemuon) {
+          edm::LogWarning("MuonTrackValidator")
+              << "\n*** WARNING : inconsistent input tracksTag = " << label[www] << "\n with usemuon == false"
+              << "\n ---> resetting to usemuon == true ";
+          usemuon = true;
+        }
+      }
+
+    }  // for (unsigned int www=0;www<label.size();www++)
+  }
+
+  /// Destructor
+  ~MuonTrackValidator() override {}
+
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void bookHistograms(DQMEDAnalyzer::DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
 private:
-  /// retrieval of reconstructed momentum components from reco::Track (== mean values for GSF)
-  void getRecoMomentum (const reco::Track& track, double& pt, double& ptError,
-			double& qoverp, double& qoverpError, double& lambda, double& lambdaError,
-			double& phi, double& phiError ) const;
-  /// retrieval of reconstructed momentum components based on the mode of a reco::GsfTrack
-  void getRecoMomentum (const reco::GsfTrack& gsfTrack, double& pt, double& ptError,
-			double& qoverp, double& qoverpError, double& lambda, double& lambdaError,
-			double& phi, double& phiError) const;
-
- private:
   std::string dirName_;
   edm::InputTag associatormap;
   edm::EDGetTokenT<reco::SimToRecoCollection> simToRecoCollection_Token;
   edm::EDGetTokenT<reco::RecoToSimCollection> recoToSimCollection_Token;
   edm::EDGetTokenT<SimHitTPAssociationProducer::SimHitTPAssociationList> _simHitTpMapTag;
 
+  std::unique_ptr<ParametersDefinerForTP> lhcParametersDefinerTP_;
+  std::unique_ptr<CosmicParametersDefinerForTP> cosmicParametersDefinerTP_;
+
   bool UseAssociators;
   bool useGEMs_;
-  double minPhi, maxPhi;
-  int nintPhi;
-  bool useGsf;
+  bool useME0_;
+
   // select tracking particles
   //(i.e. "denominator" of the efficiency ratio)
-  TrackingParticleSelector tpSelector;	
+  TrackingParticleSelector tpSelector;
   CosmicTrackingParticleSelector cosmictpSelector;
 
   // flag new validation logic (bidirectional RecoToSim association)
   bool BiDirectional_RecoToSim_association;
   // flag MuonAssociatorByHits
   bool MABH;
-  
-  //1D
-  std::vector<MonitorElement*> h_nchi2, h_nchi2_prob, h_losthits;
-
-  //2D
-  std::vector<MonitorElement*> chi2_vs_nhits, etares_vs_eta;
-  std::vector<MonitorElement*> h_ptshifteta;
-  std::vector<MonitorElement*> ptres_vs_phi, chi2_vs_phi, nhits_vs_phi, phires_vs_phi;
-
-  //Profile2D
-  std::vector<MonitorElement*> ptmean_vs_eta_phi, phimean_vs_eta_phi;
-
-  //assoc chi2
-  std::vector<MonitorElement*> h_assochi2, h_assochi2_prob;
-
-  //chi2 and # lost hits vs eta: to be used with doProfileX
-  std::vector<MonitorElement*> chi2_vs_eta, nlosthits_vs_eta;
-  std::vector<MonitorElement*> h_chi2meanh, h_losthits_eta;
-  std::vector<MonitorElement*> h_hits_phi;
-  std::vector<MonitorElement*> h_chi2meanhitsh, h_chi2mean_vs_phi;
-
-  //resolution of track params: to be used with fitslicesytool
-  std::vector<MonitorElement*> dxyres_vs_eta, ptres_vs_eta, dzres_vs_eta, phires_vs_eta, cotThetares_vs_eta;
-  std::vector<MonitorElement*> dxyres_vs_pt, ptres_vs_pt, dzres_vs_pt, phires_vs_pt, cotThetares_vs_pt;
-
-  //pulls of track params vs eta: to be used with fitslicesytool
-  std::vector<MonitorElement*> dxypull_vs_eta, ptpull_vs_eta, dzpull_vs_eta, phipull_vs_eta, thetapull_vs_eta;
-  std::vector<MonitorElement*> ptpull_vs_phi, phipull_vs_phi, thetapull_vs_phi;
-  std::vector<MonitorElement*> h_dxypulleta, h_ptpulleta, h_dzpulleta, h_phipulleta, h_thetapulleta;
-  std::vector<MonitorElement*> h_ptpullphi, h_phipullphi, h_thetapullphi;
-
 };
-
 
 #endif

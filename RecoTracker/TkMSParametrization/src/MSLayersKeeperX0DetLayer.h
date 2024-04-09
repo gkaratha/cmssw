@@ -4,18 +4,16 @@
 #include "MSLayersKeeper.h"
 #include "MultipleScatteringGeometry.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Utilities/interface/Visibility.h"
+
 class dso_hidden MSLayersKeeperX0DetLayer final : public MSLayersKeeper {
 public:
-  MSLayersKeeperX0DetLayer() : isInitialised(false) { }
-  virtual ~MSLayersKeeperX0DetLayer() { }
-  virtual void init(const edm::EventSetup &iSetup);
-  virtual MSLayer layer(const DetLayer* layer) const
-    {return *theLayersData.findLayer(MSLayer(layer)); }
-  virtual const MSLayersAtAngle & layers(float cotTheta) const
-    {return theLayersData;}
+  MSLayersKeeperX0DetLayer();
+  ~MSLayersKeeperX0DetLayer() override = default;
+  MSLayer layer(const DetLayer* layer) const override { return *theLayersData.findLayer(MSLayer(layer)); }
+  const MSLayersAtAngle& layers(float cotTheta) const override { return theLayersData; }
 
 private:
-  bool isInitialised;
   MSLayersAtAngle theLayersData;
 };
 #endif

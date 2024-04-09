@@ -5,9 +5,8 @@ process = cms.Process("TEST")
 ## add message logger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.categories.append('TopHitFit')
-process.MessageLogger.categories.append('TtSemiLepKinFitter')
-process.MessageLogger.categories.append('TtSemiLeptonicEvent')
+process.MessageLogger.TopHitFit=dict()
+process.MessageLogger.TtSemiLepKinFitter=dict()
 process.MessageLogger.cerr.TtSemiLeptonicEvent = cms.untracked.PSet(
     limit = cms.untracked.int32(-1)
 )
@@ -25,7 +24,6 @@ process.maxEvents = cms.untracked.PSet(
 
 ## configure process options
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
     wantSummary      = cms.untracked.bool(True)
 )
 
@@ -36,15 +34,23 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
+process.task = cms.Task()
+
 ## std sequence for PAT
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
+process.task.add(process.patCandidatesTask)
+#Temporary customize to the unit tests that fail due to old input samples
+process.patTaus.skipMissingTauID = True
 process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
+process.task.add(process.selectedPatCandidatesTask)
 
 ## std sequence to produce the ttGenEvt
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
+process.task.add(process.makeGenEvtTask)
 
 ## std sequence to produce the ttSemiLepEvent
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttSemiLepEvtBuilder_cff")
+process.task.add(process.makeTtSemiLepEventTask)
 process.ttSemiLepEvent.verbosity = 1
 
 ## choose which hypotheses to produce
@@ -69,6 +75,8 @@ addTtSemiLepHypotheses(process,
 
 ## use electrons instead of muons for the hypotheses
 #useElectronsForAllTtSemiLepHypotheses(process)
+#process.task.add(process.kinFitTtSemiLepEventHypothesis)
+#process.task.add(process.hitFitTtSemiLepEventHypothesis)
 
 ## configure output module
 process.out = cms.OutputModule("PoolOutputModule",
@@ -76,7 +84,7 @@ process.out = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring('drop *'),
     dropMetaData = cms.untracked.string('DROPPED')
 )
-process.outpath = cms.EndPath(process.out)
+process.outpath = cms.EndPath(process.out, process.task)
 
 ## PAT content
 from PhysicsTools.PatAlgos.patEventContent_cff import patEventContentNoCleaning

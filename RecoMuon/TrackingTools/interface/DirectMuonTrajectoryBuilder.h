@@ -16,30 +16,30 @@ class MuonServiceProxy;
 class SeedTransformer;
 class TrajectorySeed;
 
-namespace edm {class ParameterSet;}
+namespace edm {
+  class ParameterSet;
+  class ConsumesCollector;
+}  // namespace edm
 
-class DirectMuonTrajectoryBuilder: public MuonTrajectoryBuilder {
+class DirectMuonTrajectoryBuilder : public MuonTrajectoryBuilder {
+public:
+  /// constructor
+  DirectMuonTrajectoryBuilder(const edm::ParameterSet&, const MuonServiceProxy*, edm::ConsumesCollector);
 
- public:
-  
-    /// constructor
-  DirectMuonTrajectoryBuilder(const edm::ParameterSet&, 
-			      const MuonServiceProxy*);
-  
   /// destructor
-  virtual ~DirectMuonTrajectoryBuilder();
-  
-    /// return a container of the reconstructed trajectories compatible with a given seed
-  virtual TrajectoryContainer trajectories(const TrajectorySeed&);
-  
+  ~DirectMuonTrajectoryBuilder() override;
+
+  /// return a container of the reconstructed trajectories compatible with a given seed
+  TrajectoryContainer trajectories(const TrajectorySeed&) override;
+
   /// return a container reconstructed muons starting from a given track
-  virtual CandidateContainer trajectories(const TrackCand&);
-  
+  CandidateContainer trajectories(const TrackCand&) override;
+
   /// pass the Event to the algo at each event
-  virtual void setEvent(const edm::Event& event);
-  
- private:
-     const MuonServiceProxy *theService;
-     SeedTransformer* theSeedTransformer;
+  void setEvent(const edm::Event& event) override;
+
+private:
+  const MuonServiceProxy* theService;
+  SeedTransformer* theSeedTransformer;
 };
 #endif

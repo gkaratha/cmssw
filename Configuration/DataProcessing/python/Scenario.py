@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 _Scenario_
 
@@ -27,7 +27,7 @@ class Scenario(object):
 
     """
     def __init__(self):
-        pass
+        self.eras=cms.Modifier()
 
 
     def promptReco(self, globalTag, **options):

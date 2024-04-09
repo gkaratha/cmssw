@@ -178,8 +178,9 @@ process.source = cms.Source("EmptyIOVSource",
 )
 
 #process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-process.load('Configuration.Geometry.GeometryExtended_cff')
+process.load('Configuration.Geometry.GeometryExtended2018_cff')
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
 
 process.poolDBESSource = cms.ESSource("PoolDBESSource",
    BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
@@ -217,7 +218,6 @@ elif options.ALCARecoTriggerBitsMon == True:
 else:
 
     process.DQMStore = cms.Service("DQMStore",
-                                   referenceFileName = cms.untracked.string(''),
                                    verbose = cms.untracked.int32(1)
                                    )
 
@@ -322,10 +322,8 @@ if options.QualityMon == True:
                                                       )
 
 # this module is almost useless since SiStripQualityDQM does all the job. If we want to remove it the log file has to be filled with SiStripQualityDQM
-    process.stat = cms.EDAnalyzer("SiStripQualityStatistics",
-                                  TkMapFileName = cms.untracked.string(''),
-                                  dataLabel = cms.untracked.string('')
-                                  )
+    from CalibTracker.SiStripQuality.siStripQualityStatistics_cfi import siStripQualityStatistics
+    process.stat = siStripQualityStatistics.clone()
 
     process.e = cms.EndPath(process.stat)
 
@@ -342,10 +340,9 @@ if options.CablingMon == True:
 
     process.sistripconn = cms.ESProducer("SiStripConnectivity")
 
-    process.stat = cms.EDAnalyzer("SiStripQualityStatistics",
-                                  TkMapFileName = cms.untracked.string(''),
-                                  dataLabel = cms.untracked.string('')
-                                  )
+
+    from CalibTracker.SiStripQuality.siStripQualityStatistics_cfi import siStripQualityStatistics
+    process.stat = siStripQualityStatistics.clone()
     
     process.reader = cms.EDAnalyzer("SiStripFedCablingReader")
     

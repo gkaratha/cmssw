@@ -10,13 +10,13 @@
 #include "SimMuon/RPCDigitizer/src/RPCSim.h"
 #include "SimMuon/RPCDigitizer/src/RPCSynchronizer.h"
 
-#include<cstring>
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<vector>
-#include<stdlib.h>
-#include <FWCore/Framework/interface/EventSetup.h>
+#include <cstring>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
 
 class RPCGeometry;
@@ -26,25 +26,22 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class RPCSimAverageNoiseEffCls : public RPCSim
-{
- public:
+class RPCSimAverageNoiseEffCls : public RPCSim {
+public:
   RPCSimAverageNoiseEffCls(const edm::ParameterSet& config);
-  ~RPCSimAverageNoiseEffCls();
+  ~RPCSimAverageNoiseEffCls() override;
 
-  void simulate(const RPCRoll* roll,
-		const edm::PSimHitContainer& rpcHits,
-                CLHEP::HepRandomEngine*) override;
+  void simulate(const RPCRoll* roll, const edm::PSimHitContainer& rpcHits, CLHEP::HepRandomEngine*) override;
 
-  void simulateNoise(const RPCRoll*,
-                     CLHEP::HepRandomEngine*) override;
+  void simulateNoise(const RPCRoll*, CLHEP::HepRandomEngine*) override;
 
   int getClSize(float posX, CLHEP::HepRandomEngine*);
-  int getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine*);
+  int getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine*);
 
- private:
-  void init(){};
- private:
+  // private:
+protected:
+  void init() override{};
+
   double aveEff;
   double aveCls;
   double resRPC;
@@ -54,17 +51,18 @@ class RPCSimAverageNoiseEffCls : public RPCSim
   double sspeed;
   double lbGate;
   bool rpcdigiprint;
-  
+  bool eledig;
+
   int N_hits;
   int nbxing;
   double rate;
   double gate;
   double frate;
 
-  std::map< int, std::vector<double> > clsMap;
+  std::map<int, std::vector<double> > clsMap;
   std::vector<double> sum_clsize;
   std::vector<double> clsForDetId;
-  std::ifstream *infile;
+  std::ifstream* infile;
 
   RPCSynchronizer* _rpcSync;
 };

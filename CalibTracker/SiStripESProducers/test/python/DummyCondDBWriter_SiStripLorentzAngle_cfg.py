@@ -8,11 +8,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Builder")
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
     debugModules = cms.untracked.vstring('siStripLorentzAngleDummyDBWriter'),
-    threshold = cms.untracked.string('DEBUG'),
-    destinations = cms.untracked.vstring('LorentzAngleBuilder.log')
+    files = cms.untracked.PSet(
+        LorentzAngleBuilder = cms.untracked.PSet(
+
+        )
+    ),
+    threshold = cms.untracked.string('DEBUG')
 )
 
 process.maxEvents = cms.untracked.PSet(
@@ -50,16 +56,17 @@ process.siStripLorentzAngleDummyDBWriter.record=process.PoolDBOutputService.toPu
 # - give one value and PerCent_Err != 0                                        -> gaussian distribution
 # - either give two equal values or a single value (pass an empty max vector)  -> fixed value
 
+from CalibTracker.SiStripESProducers.fake.SiStripLorentzAngleFakeESSource_cfi import siStripLorentzAngleFakeESSource
 # TIB min and max
-process.SiStripLorentzAngleGenerator.TIB_EstimatedValuesMin = cms.vdouble(0.014, 0.014, 0.014, 0.014)
-process.SiStripLorentzAngleGenerator.TIB_EstimatedValuesMax = cms.vdouble()
+siStripLorentzAngleFakeESSource.TIB_EstimatedValuesMin = cms.vdouble(0.014, 0.014, 0.014, 0.014)
+siStripLorentzAngleFakeESSource.TIB_EstimatedValuesMax = cms.vdouble()
 # TIB errors
-process.SiStripLorentzAngleGenerator.TIB_PerCent_Errs       = cms.vdouble(0.,    0.,    0.,    0.)
+siStripLorentzAngleFakeESSource.TIB_PerCent_Errs       = cms.vdouble(0.,    0.,    0.,    0.)
 # TOB min and max
-process.SiStripLorentzAngleGenerator.TOB_EstimatedValuesMin = cms.vdouble(0.021, 0.021, 0.021, 0.021, 0.021, 0.021)
-process.SiStripLorentzAngleGenerator.TOB_EstimatedValuesMax = cms.vdouble(0.021, 0.021, 0.021, 0.021, 0.021, 0.021)
+siStripLorentzAngleFakeESSource.TOB_EstimatedValuesMin = cms.vdouble(0.021, 0.021, 0.021, 0.021, 0.021, 0.021)
+siStripLorentzAngleFakeESSource.TOB_EstimatedValuesMax = cms.vdouble(0.021, 0.021, 0.021, 0.021, 0.021, 0.021)
 # TOB errors
-process.SiStripLorentzAngleGenerator.TOB_PerCent_Errs       = cms.vdouble(0.,    0.,    0.,    0.,    0.,    0.)
+siStripLorentzAngleFakeESSource.TOB_PerCent_Errs       = cms.vdouble(0.,    0.,    0.,    0.,    0.,    0.)
 
 process.p1 = cms.Path(process.siStripLorentzAngleDummyDBWriter)
 

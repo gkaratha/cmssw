@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <fstream>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -17,24 +17,22 @@
 
 namespace spf {
 
-class SherpackFetcher {
-public:
-  SherpackFetcher(edm::ParameterSet const&);
-  int Fetch();
-  ~SherpackFetcher();
-  int CopyFile(std::string pathstring);
-  const char *classname() const { return "SherpackFetcher"; }
-  
-private:
+  class SherpackFetcher {
+  public:
+    SherpackFetcher(edm::ParameterSet const &);
+    int Fetch();
+    ~SherpackFetcher();
+    int CopyFile(std::string pathstring);
+    const char *classname() const { return "SherpackFetcher"; }
 
-  std::string SherpaProcess;
-  std::string SherpackLocation;
-  std::string SherpackChecksum;
-  bool FetchSherpack;
-  std::string SherpaPath;
-  
-};
+  private:
+    std::string SherpaProcess;
+    std::string SherpackLocation;
+    std::string SherpackChecksum;
+    bool FetchSherpack;
+    std::string SherpaPath;
+  };
 
-}
+}  // namespace spf
 
 #endif

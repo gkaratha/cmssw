@@ -11,35 +11,32 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
 
-// #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "DQMServices/Core/interface/DQMStore.h"
 
 namespace reco {
-class Muon;
-class Jet;
-class MET;
-class Vertex;
-class Photon;
-class BeamSpot;
-}
-
-class DQMStore;
-class MonitorElement;
+  class Muon;
+  class Jet;
+  class MET;
+  class Vertex;
+  class Photon;
+  class BeamSpot;
+}  // namespace reco
 
 class EwkMuDQM : public DQMEDAnalyzer {
- public:
+public:
   EwkMuDQM(const edm::ParameterSet&);
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+
+protected:
   //Book histograms
-  void bookHistograms(DQMStore::IBooker &,
-    edm::Run const &, edm::EventSetup const &) override;
-  virtual void dqmBeginRun(const edm::Run&, const edm::EventSetup&);
-  virtual void endRun(const edm::Run&, const edm::EventSetup&);
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
+  void dqmBeginRun(const edm::Run&, const edm::EventSetup&) override;
 
   void init_histograms();
 
- private:
+private:
   edm::InputTag metTag_;
   edm::InputTag jetTag_;
   edm::EDGetTokenT<edm::TriggerResults> trigTag_;

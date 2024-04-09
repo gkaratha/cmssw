@@ -4,7 +4,7 @@
 //
 // Package:     FWCore/Framework
 // Class  :     edm::one::EDAnalyzer
-// 
+//
 /**\class edm::one::EDAnalyzer EDAnalyzer.h "FWCore/Framework/interface/one/EDAnalyzer.h"
 
  Description: [one line class summary]
@@ -26,31 +26,44 @@
 // forward declarations
 namespace edm {
   namespace one {
-    template< typename... T>
-    class EDAnalyzer : public virtual EDAnalyzerBase,
-                       public analyzer::AbilityToImplementor<T>::Type... { 
+    template <typename... T>
+    class EDAnalyzer : public virtual EDAnalyzerBase, public analyzer::AbilityToImplementor<T>::Type... {
     public:
+      static_assert(not(CheckAbility<module::Abilities::kRunCache, T...>::kHasIt and
+                        CheckAbility<module::Abilities::kOneWatchRuns, T...>::kHasIt),
+                    "Cannot use both WatchRuns and RunCache");
+      static_assert(not(CheckAbility<module::Abilities::kLuminosityBlockCache, T...>::kHasIt and
+                        CheckAbility<module::Abilities::kOneWatchLuminosityBlocks, T...>::kHasIt),
+                    "Cannot use both WatchLuminosityBlocks and LuminosityBLockCache");
+
       EDAnalyzer() = default;
+      EDAnalyzer(const EDAnalyzer&) = delete;
+      const EDAnalyzer& operator=(const EDAnalyzer&) = delete;
+
 #ifdef __INTEL_COMPILER
       virtual ~EDAnalyzer() = default;
 #endif
-      
-      // ---------- const member functions ---------------------
-      
-      // ---------- static member functions --------------------
-      
-      // ---------- member functions ---------------------------
-      
-    private:
-      EDAnalyzer(const EDAnalyzer&) = delete;
-      const EDAnalyzer& operator=(const EDAnalyzer&) = delete;
-      
-      // ---------- member data --------------------------------
-      
-    };
-    
-  }
-}
 
+      // ---------- const member functions ---------------------
+      bool wantsProcessBlocks() const final { return WantsProcessBlockTransitions<T...>::value; }
+      bool wantsInputProcessBlocks() const final { return WantsInputProcessBlockTransitions<T...>::value; }
+      bool wantsGlobalRuns() const final { return WantsGlobalRunTransitions<T...>::value; }
+      bool wantsGlobalLuminosityBlocks() const final { return WantsGlobalLuminosityBlockTransitions<T...>::value; }
+
+      // ---------- static member functions --------------------
+
+      // ---------- member functions ---------------------------
+      SerialTaskQueue* globalRunsQueue() final { return globalRunsQueue_.queue(); }
+      SerialTaskQueue* globalLuminosityBlocksQueue() final { return globalLuminosityBlocksQueue_.queue(); }
+
+    private:
+      // ---------- member data --------------------------------
+      impl::OptionalSerialTaskQueueHolder<WantsSerialGlobalRunTransitions<T...>::value> globalRunsQueue_;
+      impl::OptionalSerialTaskQueueHolder<WantsSerialGlobalLuminosityBlockTransitions<T...>::value>
+          globalLuminosityBlocksQueue_;
+    };
+
+  }  // namespace one
+}  // namespace edm
 
 #endif

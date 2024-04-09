@@ -10,21 +10,17 @@
  * Return the input unchanged for the moment.
  */
 
-class LagrangeChildUpdator:public ChildUpdator
-{
+class LagrangeChildUpdator : public ChildUpdator {
 public:
+  LagrangeChildUpdator() {}
+  ~LagrangeChildUpdator() override {}
 
- LagrangeChildUpdator(){}
- ~LagrangeChildUpdator(){}
- 
- RefCountedKinematicTree  update(RefCountedKinematicTree tree) const;
- 
- std::vector<RefCountedKinematicTree>  update(const std::vector<RefCountedKinematicTree> & trees) const;
- 
- LagrangeChildUpdator * clone() const
- {return new LagrangeChildUpdator(*this);}
- 
+  RefCountedKinematicTree update(RefCountedKinematicTree tree) const override;
+
+  std::vector<RefCountedKinematicTree> update(const std::vector<RefCountedKinematicTree>& trees) const override;
+
+  LagrangeChildUpdator* clone() const override { return new LagrangeChildUpdator(*this); }
+
 private:
-
 };
 #endif

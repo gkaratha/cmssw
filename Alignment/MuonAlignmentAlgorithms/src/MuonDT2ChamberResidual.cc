@@ -4,24 +4,47 @@
 
 #include "Alignment/MuonAlignmentAlgorithms/interface/MuonDT2ChamberResidual.h"
 
-MuonDT2ChamberResidual::MuonDT2ChamberResidual(edm::ESHandle<GlobalTrackingGeometry> globalGeometry, AlignableNavigator *navigator,
-                                               DetId chamberId, const AlignableDetOrUnitPtr& chamberAlignable)
-  : MuonHitsChamberResidual(globalGeometry, navigator, chamberId, chamberAlignable)
-{
-  m_type = MuonChamberResidual::kDT2; 
+MuonDT2ChamberResidual::MuonDT2ChamberResidual(edm::ESHandle<GlobalTrackingGeometry> globalGeometry,
+                                               AlignableNavigator *navigator,
+                                               DetId chamberId,
+                                               AlignableDetOrUnitPtr chamberAlignable)
+    : MuonHitsChamberResidual(globalGeometry, navigator, chamberId, chamberAlignable) {
+  m_type = MuonChamberResidual::kDT2;
   align::GlobalVector zDirection(0., 0., 1.);
-  m_sign = m_globalGeometry->idToDet(m_chamberId)->toLocal(zDirection).y() > 0. ? 1. : -1.; 
+  m_sign = m_globalGeometry->idToDet(m_chamberId)->toLocal(zDirection).y() > 0. ? 1. : -1.;
 }
 
-void MuonDT2ChamberResidual::addResidual(const TrajectoryStateOnSurface *tsos, const TransientTrackingRecHit *hit)
-{
+// void MuonDT2ChamberResidual::addResidual(const TrajectoryStateOnSurface *tsos, const TransientTrackingRecHit *hit)
+
+void MuonDT2ChamberResidual::addResidual(edm::ESHandle<Propagator> prop,
+                                         const TrajectoryStateOnSurface *tsos,
+                                         const TrackingRecHit *hit,
+                                         double chamber_width,
+                                         double chamber_length) {
+  bool m_debug = false;
+
+  m_chamber_width = chamber_width;
+  m_chamber_length = chamber_length;
+
   DetId id = hit->geographicalId();
 
-  align::LocalPoint hitChamberPos = m_chamberAlignable->surface().toLocal(m_globalGeometry->idToDet(id)->toGlobal(hit->localPosition()));
-  align::LocalPoint tsosChamberPos = m_chamberAlignable->surface().toLocal(m_globalGeometry->idToDet(id)->toGlobal(tsos->localPosition()));
+  align::LocalPoint hitChamberPos =
+      m_chamberAlignable->surface().toLocal(m_globalGeometry->idToDet(id)->toGlobal(hit->localPosition()));
+  align::LocalPoint tsosChamberPos =
+      m_chamberAlignable->surface().toLocal(m_globalGeometry->idToDet(id)->toGlobal(tsos->localPosition()));
+
+  if (m_debug) {
+    std::cout << " MuonDT2ChamberResidual hitChamberPos x: " << hitChamberPos.x()
+              << " tsosChamberPos x: " << tsosChamberPos.x() << std::endl;
+    std::cout << "                        hitChamberPos y: " << hitChamberPos.y()
+              << " tsosChamberPos y: " << tsosChamberPos.y() << std::endl;
+    std::cout << "                        hitChamberPos z: " << hitChamberPos.z()
+              << " tsosChamberPos z: " << tsosChamberPos.z() << std::endl;
+  }
 
   double residual = tsosChamberPos.y() - hitChamberPos.y();  // residual is track minus hit
-  double weight = 1. / hit->localPositionError().xx();  // weight linear fit by hit-only local error (yes, xx: layer x is chamber y)
+  double weight =
+      1. / hit->localPositionError().xx();  // weight linear fit by hit-only local error (yes, xx: layer x is chamber y)
   double layerPosition = tsosChamberPos.z();  // the layer's position in the chamber's coordinate system
   double layerHitPos = hitChamberPos.z();
 
@@ -61,10 +84,12 @@ void MuonDT2ChamberResidual::addResidual(const TrajectoryStateOnSurface *tsos, c
   m_hity_xy += weight * layerHitPos * hitChamberPos.y();
 
   m_localIDs.push_back(id);
-  m_localResids.push_back(tsos->localPosition().x() - hit->localPosition().x());
+  //  m_localResids.push_back(tsos->localPosition().x() - hit->localPosition().x()); //FIXME looks like this line is not used anywhere, moreover it is wrong for segment-based reconstruction, I changed it to the follwoing line
+  m_localResids.push_back(residual);
   m_individual_x.push_back(layerPosition);
   m_individual_y.push_back(residual);
   m_individual_weight.push_back(weight);
-  
-  if (m_numHits>1) segment_fit();
+
+  if (m_numHits > 1)
+    segment_fit();
 }

@@ -1,12 +1,15 @@
 #ifndef DDLMaterial_H
 #define DDLMaterial_H
 
+#include <string>
+
 // -------------------------------------------------------------------------
 // Includes
 // -------------------------------------------------------------------------
 #include "DDXMLElement.h"
 
-#include <string>
+class DDCompactView;
+class DDLElementRegistry;
 
 /// DDLMaterial processes Box elements.
 /** @class DDLMaterial
@@ -23,17 +26,11 @@
  *                                                                         
  */
 
-class DDLMaterial : public DDXMLElement
-{
+class DDLMaterial : public DDXMLElement {
 public:
+  DDLMaterial(DDLElementRegistry* myreg);
 
-  /// Constructor
-  DDLMaterial( DDLElementRegistry* myreg );
-
-  /// Destructor
-  virtual ~DDLMaterial( void );
-
-  virtual void setReference( const std::string& nmspace, DDCompactView& cpv );
+  virtual void setReference(const std::string& nmspace, DDCompactView& cpv);
 };
 
 #endif

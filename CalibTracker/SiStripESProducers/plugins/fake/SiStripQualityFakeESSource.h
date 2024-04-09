@@ -3,13 +3,10 @@
 
 // system include files
 #include <memory>
-#include "boost/shared_ptr.hpp"
 
 // user include files
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
 
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -22,23 +19,19 @@
 // class declaration
 //
 
-
-class SiStripQualityFakeESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder  {
- public:
+class SiStripQualityFakeESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
+public:
   SiStripQualityFakeESSource(const edm::ParameterSet&);
-  ~SiStripQualityFakeESSource(){};
-  
-  
-  std::auto_ptr<SiStripQuality> produce(const SiStripQualityRcd&);
-  
+  ~SiStripQualityFakeESSource() override{};
+  SiStripQualityFakeESSource(const SiStripQualityFakeESSource&) = delete;
+  const SiStripQualityFakeESSource& operator=(const SiStripQualityFakeESSource&) = delete;
+
+  std::unique_ptr<SiStripQuality> produce(const SiStripQualityRcd&);
+
 private:
-  
-  void setIntervalFor( const edm::eventsetup::EventSetupRecordKey&,
-		       const edm::IOVSyncValue& iov,
-		       edm::ValidityInterval& iValidity);
-  
-  SiStripQualityFakeESSource( const SiStripQualityFakeESSource& );
-  const SiStripQualityFakeESSource& operator=( const SiStripQualityFakeESSource& );
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+                      const edm::IOVSyncValue& iov,
+                      edm::ValidityInterval& iValidity) override;
 };
 
 #endif

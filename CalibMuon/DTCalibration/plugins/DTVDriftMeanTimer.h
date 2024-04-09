@@ -10,23 +10,25 @@
 
 #include "CalibMuon/DTCalibration/interface/DTVDriftBaseAlgo.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 class TFile;
 class DTMeanTimerFitter;
 
 namespace dtCalibration {
 
-class DTVDriftMeanTimer: public DTVDriftBaseAlgo {
-public:
-   DTVDriftMeanTimer(edm::ParameterSet const&);
-   virtual ~DTVDriftMeanTimer();
+  class DTVDriftMeanTimer : public DTVDriftBaseAlgo {
+  public:
+    DTVDriftMeanTimer(edm::ParameterSet const&, edm::ConsumesCollector);
+    ~DTVDriftMeanTimer() override;
 
-   virtual void setES(const edm::EventSetup& setup);
-   virtual DTVDriftData compute(const DTSuperLayerId&);
-private:
-   TFile* rootFile_;
-   DTMeanTimerFitter* fitter_;
-};
+    void setES(const edm::EventSetup& setup) override;
+    DTVDriftData compute(const DTSuperLayerId&) override;
 
-} // namespace
+  private:
+    TFile* rootFile_;
+    DTMeanTimerFitter* fitter_;
+  };
+
+}  // namespace dtCalibration
 #endif

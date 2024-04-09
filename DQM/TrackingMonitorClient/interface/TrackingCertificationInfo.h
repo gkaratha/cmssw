@@ -4,7 +4,7 @@
 //
 // Package:     TrackingMonitorClient
 // Class  :     TrackingCertificationInfo
-// 
+//
 /**\class TrackingCertificationInfo TrackingCertificationInfo.h DQM/TrackingMonitorClient/interface/TrackingCertificationInfo.h
 
  Description: 
@@ -19,78 +19,76 @@
 #include "DQMServices/Core/interface/DQMEDHarvester.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/ESWatcher.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
 #include "DQMServices/Core/interface/DQMStore.h"
 
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <map>
 
-class MonitorElement;
 class SiStripDetCabling;
+class SiStripDetCablingRcd;
+class RunInfo;
+class RunInfoRcd;
 
-class TrackingCertificationInfo: public DQMEDHarvester
-{
-
- public:
-
+class TrackingCertificationInfo : public DQMEDHarvester {
+public:
   /// Constructor
   TrackingCertificationInfo(const edm::ParameterSet& ps);
-  
+
   /// Destructor
-  virtual ~TrackingCertificationInfo();
-
- private:
-
-  /// BeginJob
-  void beginJob();
-
-  /// Begin Run
-  void beginRun(edm::Run const& run, edm::EventSetup const& eSetup);
-
-  /// End Of Luminosity
-  void dqmEndLuminosityBlock(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_,edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& iSetup);
-  
-  /// EndJob
-  void dqmEndJob(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
+  ~TrackingCertificationInfo() override;
 
 private:
+  /// BeginJob
+  void beginJob() override;
 
-  void bookTrackingCertificationMEs(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
-  void bookTrackingCertificationMEsAtLumi(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
+  /// Begin Run
+  void beginRun(edm::Run const& run, edm::EventSetup const& eSetup) override;
 
-  void resetTrackingCertificationMEs(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
-  void resetTrackingCertificationMEsAtLumi(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
+  /// End Of Luminosity
+  void dqmEndLuminosityBlock(DQMStore::IBooker& ibooker_,
+                             DQMStore::IGetter& igetter_,
+                             edm::LuminosityBlock const& lumiSeg,
+                             edm::EventSetup const& iSetup) override;
 
-  void fillTrackingCertificationMEs(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
-  void fillTrackingCertificationMEsAtLumi(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
+  /// EndJob
+  void dqmEndJob(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_) override;
 
-  void fillDummyTrackingCertification(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
-  void fillDummyTrackingCertificationAtLumi(DQMStore::IBooker & ibooker_, DQMStore::IGetter & igetter_);
+private:
+  void bookTrackingCertificationMEs(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+  void bookTrackingCertificationMEsAtLumi(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
 
+  void resetTrackingCertificationMEs(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+  void resetTrackingCertificationMEsAtLumi(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
 
-  struct TrackingMEs{
+  void fillTrackingCertificationMEs(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+  void fillTrackingCertificationMEsAtLumi(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+
+  void fillDummyTrackingCertification(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+  void fillDummyTrackingCertificationAtLumi(DQMStore::IBooker& ibooker_, DQMStore::IGetter& igetter_);
+
+  struct TrackingMEs {
     MonitorElement* TrackingFlag;
   };
 
-  struct TrackingLSMEs{
+  struct TrackingLSMEs {
     MonitorElement* TrackingFlag;
   };
 
-  std::map<std::string, TrackingMEs>   TrackingMEsMap;
+  std::map<std::string, TrackingMEs> TrackingMEsMap;
   std::map<std::string, TrackingLSMEs> TrackingLSMEsMap;
 
-  MonitorElement * TrackingCertification;  
-  MonitorElement * TrackingCertificationSummaryMap;  
+  MonitorElement* TrackingCertification;
+  MonitorElement* TrackingCertificationSummaryMap;
 
-  MonitorElement * TrackingLSCertification;  
+  MonitorElement* TrackingLSCertification;
 
-  edm::ESHandle< SiStripDetCabling > detCabling_;
   edm::ParameterSet pSet_;
 
   bool trackingCertificationBooked_;
@@ -103,6 +101,12 @@ private:
   bool checkPixelFEDs_;
 
   unsigned long long m_cacheID_;
+
+  edm::ESGetToken<RunInfo, RunInfoRcd> runInfoToken_;
+  const RunInfo* sumFED_ = nullptr;
+  edm::ESGetToken<SiStripDetCabling, SiStripDetCablingRcd> detCablingToken_;
+  edm::ESWatcher<SiStripDetCablingRcd> fedDetCablingWatcher_;
+  const SiStripDetCabling* detCabling_;
 
   std::vector<std::string> SubDetFolder;
 };
