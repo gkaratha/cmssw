@@ -148,6 +148,7 @@ void UnifiedParticleTransformerAK4ONNXJetTagsProducer::produce(edm::Event& iEven
                        {(int64_t)1, (int64_t)n_npf_, (int64_t)n_pairwise_features_npf_},
                        {(int64_t)1, (int64_t)n_sv_, (int64_t)n_pairwise_features_sv_}};
 
+
       outputs = globalCache()->run(input_names_, data_, input_shapes_, output_names_, 1)[0];
       assert(outputs.size() == flav_names_.size());
     }
@@ -210,9 +211,12 @@ void UnifiedParticleTransformerAK4ONNXJetTagsProducer::make_inputs(
 
   // c_pf candidates
   auto max_c_pf_n = std::min(features.c_pf_features.size(), (std::size_t)n_cpf_);
+  //  std::cout<<" UNI ncpf "<<max_c_pf_n<<std::endl;
+
   for (std::size_t c_pf_n = 0; c_pf_n < max_c_pf_n; c_pf_n++) {
     const auto& c_pf_features = features.c_pf_features.at(c_pf_n);
     ptr = &data_[kChargedCandidates][offset + c_pf_n * n_features_cpf_];
+   // std::cout<<c_pf_n<<"  "<<c_pf_features.pt<<std::endl;
     start = ptr;
     *ptr = c_pf_features.btagPf_trackEtaRel;
     *(++ptr) = c_pf_features.btagPf_trackPtRel;
@@ -245,10 +249,13 @@ void UnifiedParticleTransformerAK4ONNXJetTagsProducer::make_inputs(
 
   // n_lt candidates
   auto max_lt_n = std::min(features.lt_features.size(), (std::size_t)n_lt_);
+ // std::cout<<" CMSSW LT "<<max_lt_n<<std::endl;
   for (std::size_t lt_n = 0; lt_n < max_lt_n; lt_n++) {
     const auto& lt_features = features.lt_features.at(lt_n);
     ptr = &data_[kLostTracks][offset + lt_n * n_features_lt_];
     start = ptr;
+   // std::cout<<lt_n<<"  "<<lt_features.pt<<std::endl;
+
     *ptr = lt_features.btagPf_trackEtaRel;
     *(++ptr) = lt_features.btagPf_trackPtRel;
     *(++ptr) = lt_features.btagPf_trackPPar;
@@ -286,13 +293,17 @@ void UnifiedParticleTransformerAK4ONNXJetTagsProducer::make_inputs(
     *(++ptr) = n_pf_features.puppiw;
     assert(start + n_features_npf_ - 1 == ptr);
   }
-
+  
   // sv candidates
   auto max_sv_n = std::min(features.sv_features.size(), (std::size_t)n_sv_);
+//  std::cout<<" CMSSW sv "<<max_sv_n<<std::endl;
+
   for (std::size_t sv_n = 0; sv_n < max_sv_n; sv_n++) {
     const auto& sv_features = features.sv_features.at(sv_n);
     ptr = &data_[kVertices][offset + sv_n * n_features_sv_];
     start = ptr;
+   // std::cout<<sv_n<<"  "<<sv_features.pt<<std::endl;
+
     *ptr = sv_features.pt;
     *(++ptr) = sv_features.deltaR;
     *(++ptr) = sv_features.mass;

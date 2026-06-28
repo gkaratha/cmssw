@@ -4,7 +4,7 @@ from PhysicsTools.NanoAOD.globals_cff import genTable,genFilterTable
 from PhysicsTools.NanoAOD.met_cff import metMCTable
 from PhysicsTools.NanoAOD.genparticles_cff import *
 from PhysicsTools.NanoAOD.particlelevel_cff import *
-from PhysicsTools.NanoAOD.genWeightsTable_cfi import *
+#from PhysicsTools.NanoAOD.genWeightsTable_cfi import *
 from PhysicsTools.NanoAOD.genVertex_cff import *
 from PhysicsTools.NanoAOD.common_cff import Var,CandVars
 from PhysicsTools.NanoAOD.simpleSingletonCandidateFlatTableProducer_cfi import simpleSingletonCandidateFlatTableProducer
@@ -41,15 +41,15 @@ nanogenSequence = cms.Sequence(
     tautagger+
     rivetProducerHTXS+
     cms.Sequence(particleLevelTablesTask)+
-    metMCTable+
-    genWeightsTable
+    metMCTable#+
+    #genWeightsTable
 )
 
 def nanoGenCommonCustomize(process):
     process.rivetMetTable.extension = False
     process.lheInfoTable.storeLHEParticles = True
     process.lheInfoTable.precision = 14
-    process.genWeightsTable.keepAllPSWeights = True
+   # process.genWeightsTable.keepAllPSWeights = True
     process.genJetFlavourAssociation.jets = process.genJetTable.src
     process.genJetFlavourTable.src = process.genJetTable.src
     process.genJetAK8FlavourAssociation.jets = process.genJetAK8Table.src
@@ -185,6 +185,6 @@ def setLHEFullPrecision(process):
     process.lheInfoTable.precision = 23
     return process
 
-def setGenWeightsFullPrecision(process):
-    process.genWeightsTable.lheWeightPrecision = 23
-    return process
+#def setGenWeightsFullPrecision(process):
+#    process.genWeightsTable.lheWeightPrecision = 23
+#    return process

@@ -90,6 +90,7 @@ namespace cms::Ort {
                                const std::vector<std::string>& output_names,
                                int64_t batch_size) const {
     assert(input_names.size() == input_values.size());
+//    std::cout<<"inpt "<<input_shapes.size() <<" "<< input_names.size()<< std::endl;
     assert(input_shapes.empty() || input_names.size() == input_shapes.size());
     assert(batch_size > 0);
 

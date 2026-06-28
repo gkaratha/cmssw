@@ -67,6 +67,8 @@
 #include "DataFormats/BTauReco/interface/ParticleTransformerAK4TagInfo.h"
 #include "DataFormats/BTauReco/interface/UnifiedParticleTransformerAK4Features.h"
 #include "DataFormats/BTauReco/interface/UnifiedParticleTransformerAK4TagInfo.h"
+#include "DataFormats/BTauReco/interface/SoftParticleTransformerAK4Features.h"
+#include "DataFormats/BTauReco/interface/SoftParticleTransformerAK4TagInfo.h"
 #include "DataFormats/BTauReco/interface/DeepBoostedJetTagInfo.h"
 #include "DataFormats/BTauReco/interface/PixelClusterTagInfo.h"
 

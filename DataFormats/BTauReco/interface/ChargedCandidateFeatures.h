@@ -9,6 +9,7 @@ namespace btagbtvdeep {
     float ptrel_noclip;
     float erel;
     float etarel;
+    float phirel;
     float puppiw;
     float vtx_ass;
 

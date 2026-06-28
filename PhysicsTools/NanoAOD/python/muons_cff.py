@@ -25,7 +25,8 @@ isoForMu = cms.EDProducer("MuonIsoValueMapProducer",
 )
 
 ptRatioRelForMu = cms.EDProducer("MuonJetVarProducer",
-    srcJet = cms.InputTag("updatedJetsPuppi"),
+ #   srcJet = cms.InputTag("updatedJetsPuppi"),
+    srcJet = cms.InputTag("updatedJets"),
     srcLep = cms.InputTag("slimmedMuonsUpdated"),
     srcVtx = cms.InputTag("offlineSlimmedPrimaryVertices"),
 )

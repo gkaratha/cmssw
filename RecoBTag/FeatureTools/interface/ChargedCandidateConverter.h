@@ -8,6 +8,8 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/JetReco/interface/Jet.h"
+
 
 namespace btagbtvdeep {
 
@@ -43,9 +45,9 @@ namespace btagbtvdeep {
     c_pf_features.ptrel_noclip = (c_pf->pt() * constituentWeight) / jet.pt();
     c_pf_features.erel = (c_pf->energy() * constituentWeight) / jet.energy();
 
-    const float etasign = jet.eta() > 0 ? 1 : -1;
-    c_pf_features.etarel = etasign * (c_pf->eta() - jet.eta());
-
+ //   const float etasign = jet.eta() > 0 ? 1 : -1;
+    c_pf_features.etarel = catch_infs_and_bound(fabs(c_pf->eta() - jet.eta()),0,-2,0,-0.5);
+    c_pf_features.phirel = catch_infs_and_bound(fabs(reco::deltaPhi(c_pf->phi() , jet.phi())),0,-2,0,-0.5);
     c_pf_features.btagPf_trackEtaRel = catch_infs_and_bound(track_info.getTrackEtaRel(), 0, -5, 15);
     c_pf_features.btagPf_trackPtRel = catch_infs_and_bound(track_info.getTrackPtRel(), 0, -1, 4);
     c_pf_features.btagPf_trackPPar = catch_infs_and_bound(track_info.getTrackPPar(), 0, -1e5, 1e5);

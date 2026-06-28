@@ -62,7 +62,7 @@ updatedJetsWithUserData = cms.EDProducer("PATJetUserDataEmbedder",
 
 finalJets = cms.EDFilter("PATJetRefSelector",
     src = cms.InputTag("updatedJetsWithUserData"),
-    cut = cms.string("pt > 15")
+    cut = cms.string("pt > 5")
 )
 
 
@@ -90,6 +90,8 @@ jetTable = simplePATJetFlatTableProducer.clone(
         svIdx1 = Var("?overlaps('vertices').size()>0?overlaps('vertices')[0].key():-1", "int16", doc="index of first matching secondary vertex"),
         svIdx2 = Var("?overlaps('vertices').size()>1?overlaps('vertices')[1].key():-1", "int16", doc="index of second matching secondary vertex"),
         nSVs = Var("?hasOverlaps('vertices')?overlaps('vertices').size():0", "uint8", doc="number of secondary vertices in the jet"),
+        btagSoftParTBvsAll = Var("?bDiscriminator('pfSoftParticleTransformerAK4DiscriminatorsJetTags:BvsAll')>0?bDiscriminator('pfSoftParticleTransformerAK4DiscriminatorsJetTags:BvsAll'):-1",float,precision=10,doc="Soft ParT b vs. udscg"),
+        btagSoftParTBvsL = Var("?bDiscriminator('pfSoftParticleTransformerAK4DiscriminatorsJetTags:BvsL')>0?bDiscriminator('pfSoftParticleTransformerAK4DiscriminatorsJetTags:BvsL'):-1",float,precision=10,doc="Soft ParT b vs. udsg"),
         btagDeepFlavB = Var("bDiscriminator('pfDeepFlavourJetTags:probb')+bDiscriminator('pfDeepFlavourJetTags:probbb')+bDiscriminator('pfDeepFlavourJetTags:problepb')",float,doc="DeepJet b+bb+lepb tag discriminator",precision=10),
         btagDeepFlavCvL = Var("?(bDiscriminator('pfDeepFlavourJetTags:probc')+bDiscriminator('pfDeepFlavourJetTags:probuds')+bDiscriminator('pfDeepFlavourJetTags:probg'))>0?bDiscriminator('pfDeepFlavourJetTags:probc')/(bDiscriminator('pfDeepFlavourJetTags:probc')+bDiscriminator('pfDeepFlavourJetTags:probuds')+bDiscriminator('pfDeepFlavourJetTags:probg')):-1",float,doc="DeepJet c vs uds+g discriminator",precision=10),
         btagDeepFlavCvB = Var("?(bDiscriminator('pfDeepFlavourJetTags:probc')+bDiscriminator('pfDeepFlavourJetTags:probb')+bDiscriminator('pfDeepFlavourJetTags:probbb')+bDiscriminator('pfDeepFlavourJetTags:problepb'))>0?bDiscriminator('pfDeepFlavourJetTags:probc')/(bDiscriminator('pfDeepFlavourJetTags:probc')+bDiscriminator('pfDeepFlavourJetTags:probb')+bDiscriminator('pfDeepFlavourJetTags:probbb')+bDiscriminator('pfDeepFlavourJetTags:problepb')):-1",float,doc="DeepJet c vs b+bb+lepb discriminator",precision=10),
@@ -341,6 +343,9 @@ run2_jme_2017.toModify(
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 def nanoAOD_addDeepInfoAK4CHS(process,addDeepBTag,addDeepFlavour,addParticleNet,addRobustParTAK4=False,addUnifiedParTAK4=False):
     _btagDiscriminators=[]
+    print('skata')
+    from RecoBTag.ONNXRuntime.pfSoftParticleTransformerAK4_cff import _pfSoftParticleTransformerAK4JetTagsAll as pfSoftParticleTransformerAK4JetTagsAll
+    _btagDiscriminators += pfSoftParticleTransformerAK4JetTagsAll
     if addDeepBTag:
         print("Updating process to run DeepCSV btag")
         _btagDiscriminators += ['pfDeepCSVJetTags:probb','pfDeepCSVJetTags:probbb','pfDeepCSVJetTags:probc']

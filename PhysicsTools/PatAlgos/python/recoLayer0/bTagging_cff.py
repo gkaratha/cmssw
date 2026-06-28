@@ -47,6 +47,8 @@ supportedBtagInfos = [
   , 'pfUnifiedParticleTransformerAK4TagInfos'
     # UnifiedParticleTransformerAK4V1 tag infos
   , 'pfUnifiedParticleTransformerAK4V1TagInfos'
+    # SoftParticleTransformerAK4 tag infos
+  , 'pfSoftParticleTransformerAK4TagInfos'
     # GlobalParticleTransformerAK8 tag infos
   , 'pfGlobalParticleTransformerAK8TagInfos'
     # DeepDoubleB/C tag infos
@@ -381,6 +383,19 @@ for disc in _pfUnifiedParticleTransformerAK4V1JetTagsMetaDiscrs:
 # -----------------------------------
 
 # -----------------------------------
+# setup SoftParticleTransformer AK4
+from RecoBTag.ONNXRuntime.pfSoftParticleTransformerAK4_cff import _pfSoftParticleTransformerAK4JetTagsProbs, _pfSoftParticleTransformerAK4JetTagsMetaDiscrs
+# update supportedBtagDiscr
+for disc in _pfSoftParticleTransformerAK4JetTagsProbs + _pfSoftParticleTransformerAK4JetTagsMetaDiscrs:
+    supportedBtagDiscr[disc] = [["pfSoftParticleTransformerAK4TagInfos"]]
+# update supportedMetaDiscr
+for disc in _pfSoftParticleTransformerAK4JetTagsMetaDiscrs:
+    supportedMetaDiscr[disc] = _pfSoftParticleTransformerAK4JetTagsProbs
+# -----------------------------------
+
+
+
+# -----------------------------------
 # setup Negative ParticleTransformer AK4
 from RecoBTag.ONNXRuntime.pfParticleTransformerAK4_cff import _pfNegativeParticleTransformerAK4JetTagsProbs
 # update supportedBtagDiscr
@@ -395,6 +410,14 @@ from RecoBTag.ONNXRuntime.pfUnifiedParticleTransformerAK4_cff import _pfNegative
 for disc in _pfNegativeUnifiedParticleTransformerAK4JetTagsProbs:
     supportedBtagDiscr[disc] = [["pfNegativeUnifiedParticleTransformerAK4TagInfos"]]
 # -----------------------------------
+
+# setup Negative ParticleTransformer AK4
+from RecoBTag.ONNXRuntime.pfSoftParticleTransformerAK4_cff import _pfNegativeSoftParticleTransformerAK4JetTagsProbs
+# update supportedBtagDiscr
+for disc in _pfNegativeSoftParticleTransformerAK4JetTagsProbs:
+    supportedBtagDiscr[disc] = [["pfNegativeSoftParticleTransformerAK4TagInfos"]]
+# -----------------------------------
+
 
 # -----------------------------------
 # setup GlobalParticleTransformer AK8

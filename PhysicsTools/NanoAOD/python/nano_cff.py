@@ -8,7 +8,7 @@ from PhysicsTools.NanoAOD.jetMC_cff import *
 from PhysicsTools.NanoAOD.jetConstituents_cff import *
 from PhysicsTools.NanoAOD.muons_cff import *
 from PhysicsTools.NanoAOD.taus_cff import *
-from PhysicsTools.NanoAOD.boostedTaus_cff import *
+#from PhysicsTools.NanoAOD.boostedTaus_cff import *
 from PhysicsTools.NanoAOD.electrons_cff import *
 from PhysicsTools.NanoAOD.lowPtElectrons_cff import *
 from PhysicsTools.NanoAOD.photons_cff import *
@@ -17,7 +17,7 @@ from PhysicsTools.NanoAOD.extraflags_cff import *
 from PhysicsTools.NanoAOD.ttbarCategorization_cff import *
 from PhysicsTools.NanoAOD.genparticles_cff import *
 from PhysicsTools.NanoAOD.particlelevel_cff import *
-from PhysicsTools.NanoAOD.genWeightsTable_cfi import *
+#from PhysicsTools.NanoAOD.genWeightsTable_cfi import *
 from PhysicsTools.NanoAOD.tauSpinnerTable_cfi import *
 from PhysicsTools.NanoAOD.genVertex_cff import *
 from PhysicsTools.NanoAOD.vertices_cff import *
@@ -36,12 +36,13 @@ nanoMetadata = cms.EDProducer("UniqueStringProducer",
 )
 
 linkedObjects = cms.EDProducer("PATObjectCrossLinker",
-   jets=cms.InputTag("finalJetsPuppi"),
+#   jets=cms.InputTag("finalJetsPuppi"),
+   jets=cms.InputTag("finalJets"),
    muons=cms.InputTag("finalMuons"),
    electrons=cms.InputTag("finalElectrons"),
    lowPtElectrons=cms.InputTag("finalLowPtElectrons"),
    taus=cms.InputTag("finalTaus"),
-   boostedTaus=cms.InputTag("finalBoostedTaus"),
+ #  boostedTaus=cms.InputTag("finalBoostedTaus"),
    photons=cms.InputTag("finalPhotons"),
    vertices=cms.InputTag("slimmedSecondaryVertices")
 )
@@ -59,14 +60,18 @@ lhcInfoTable = lhcInfoProducer.clone()
 
 nanoTableTaskCommon = cms.Task(
     cms.Task(nanoMetadata),
-    jetPuppiTask, jetPuppiForMETTask, jetAK8Task, jetConstituentsTask,
-    extraFlagsProducersTask, muonTask, tauTask, boostedTauTask,
+    jetTask, jetForMETTask,
+    #jetPuppiTask, jetPuppiForMETTask, 
+    jetAK8Task, jetConstituentsTask,
+    extraFlagsProducersTask, muonTask, tauTask, # boostedTauTask,
     electronTask , lowPtElectronTask, photonTask,
     vertexTask, isoTrackTask, jetAK8LepTask,  # must be after all the leptons
     softActivityTask,
     cms.Task(linkedObjects),
-    jetPuppiTablesTask, jetAK8TablesTask, jetConstituentsTablesTask,
-    muonTablesTask, fsrTablesTask, tauTablesTask, boostedTauTablesTask,
+    jetTablesTask,
+    #jetPuppiTablesTask, 
+    jetAK8TablesTask, jetConstituentsTablesTask,
+    muonTablesTask, fsrTablesTask, tauTablesTask, # boostedTauTablesTask,
     electronTablesTask, lowPtElectronTablesTask, photonTablesTask,
     globalTablesTask, vertexTablesTask, metTablesTask, extraFlagsTableTask,
     isoTrackTablesTask,softActivityTablesTask
@@ -90,9 +95,10 @@ nanoSequence = cms.Sequence(nanoSequenceCommon + nanoSequenceOnlyData + nanoSequ
 
 nanoTableTaskFS = cms.Task(
     genParticleTask, particleLevelTask, jetMCTask, muonMCTask, electronMCTask, lowPtElectronMCTask, photonMCTask,
-    tauMCTask, boostedTauMCTask,
+    tauMCTask,# boostedTauMCTask,
     metMCTable, ttbarCatMCProducersTask, globalTablesMCTask, ttbarCategoryTableTask,
-    genWeightsTableTask, genVertexTablesTask, genParticleTablesTask, genProtonTablesTask, particleLevelTablesTask, tauSpinnerTableTask
+   # genWeightsTableTask,
+    genVertexTablesTask, genParticleTablesTask, genProtonTablesTask, particleLevelTablesTask , tauSpinnerTableTask
 )
 
 nanoSequenceFS = cms.Sequence(nanoSequenceCommon + cms.Sequence(nanoTableTaskFS))
@@ -140,13 +146,21 @@ def nanoAOD_addUTagToTaus(process, addUTagInfo=False, usePUPPIjets=False):
         originalTauName = process.finalTaus.src.value()
         
         if usePUPPIjets: # option to use PUPPI jets   
-            jetCollection = "updatedJetsPuppi"
-            TagName = "pfUnifiedParticleTransformerAK4JetTags"
-            tag_prefix = "byUTagPUPPI"
-            updatedTauName = originalTauName+'WithUTagPUPPI'
-            # Unified ParT Tagger used for PUPPI jets
-            from RecoBTag.ONNXRuntime.pfUnifiedParticleTransformerAK4JetTags_cfi import pfUnifiedParticleTransformerAK4JetTags
-            Discriminators = [TagName+":"+tag for tag in pfUnifiedParticleTransformerAK4JetTags.flav_names.value()]
+           # jetCollection = "updatedJetsPuppi"
+         #   jetCollection = "updatedJets"
+         #   TagName = "pfUnifiedParticleTransformerAK4JetTags"
+         #   tag_prefix = "byUTagPUPPI"
+         #   updatedTauName = originalTauName+'WithUTagPUPPI'
+         #   # Unified ParT Tagger used for PUPPI jets
+         #   from RecoBTag.ONNXRuntime.pfUnifiedParticleTransformerAK4JetTags_cfi import pfUnifiedParticleTransformerAK4JetTags
+         #   Discriminators = [TagName+":"+tag for tag in pfUnifiedParticleTransformerAK4JetTags.flav_names.value()]
+            jetCollection = "updatedJets"
+            TagName = "pfParticleNetFromMiniAODAK4CHSCentralJetTags"
+            tag_prefix = "byUTagCHS"
+            updatedTauName = originalTauName+'WithUTagCHS'
+            # PNet tagger used for CHS jets
+            from RecoBTag.ONNXRuntime.pfParticleNetFromMiniAODAK4_cff import pfParticleNetFromMiniAODAK4CHSCentralJetTags
+            Discriminators = [TagName+":"+tag for tag in pfParticleNetFromMiniAODAK4CHSCentralJetTags.flav_names.value()]
         else: # use CHS jets by default
             jetCollection = "updatedJets"
             TagName = "pfParticleNetFromMiniAODAK4CHSCentralJetTags"

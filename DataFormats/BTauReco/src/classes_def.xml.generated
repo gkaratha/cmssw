@@ -330,8 +330,6 @@
   <class name="edm::reftobase::RefHolder<reco::ParticleTransformerAK4TagInfoRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::UnifiedParticleTransformerAK4TagInfoRef>" />
   <class name="edm::reftobase::RefHolder<reco::UnifiedParticleTransformerAK4TagInfoRef>" />  
-  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SoftParticleTransformerAK4TagInfoRef>" />
-  <class name="edm::reftobase::RefHolder<reco::SoftParticleTransformerAK4TagInfoRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CombinedTauTagInfoRef>" />
   <class name="edm::reftobase::RefHolder<reco::CombinedTauTagInfoRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::IsolatedTauTagInfoRef>" />
@@ -371,8 +369,6 @@
   <class name="edm::reftobase::RefHolder<reco::ParticleTransformerAK4TagInfoFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::UnifiedParticleTransformerAK4TagInfoFwdRef>" />
   <class name="edm::reftobase::RefHolder<reco::UnifiedParticleTransformerAK4TagInfoFwdRef>" />
-  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SoftParticleTransformerAK4TagInfoFwdRef>" />
-  <class name="edm::reftobase::RefHolder<reco::SoftParticleTransformerAK4TagInfoFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CombinedTauTagInfoFwdRef>" />
   <class name="edm::reftobase::RefHolder<reco::CombinedTauTagInfoFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::IsolatedTauTagInfoFwdRef>" />
@@ -446,8 +442,8 @@
     <version ClassVersion="3" checksum="1570694350"/>
   </class>
   <class name="btagbtvdeep::TrackPairFeatures" ClassVersion="4">
+   <version ClassVersion="4" checksum="3763515787"/>
     <version ClassVersion="3" checksum="2028136496"/>
-    <version ClassVersion="4" checksum="3763515787"/>
   </class>
   <class name="btagbtvdeep::DeepFlavourFeatures" ClassVersion="4">
     <version ClassVersion="3" checksum="2487956635"/>
@@ -485,15 +481,7 @@
   <class name="reco::UnifiedParticleTransformerAK4TagInfoRefProd"/>
   <class name="reco::UnifiedParticleTransformerAK4TagInfoRefVector"/>
   <class name="edm::Wrapper<reco::UnifiedParticleTransformerAK4TagInfoCollection>"/>
- 
-  <class name="reco::SoftParticleTransformerAK4TagInfo"/>
-  <class name="reco::SoftParticleTransformerAK4TagInfoCollection"/>
-  <class name="reco::SoftParticleTransformerAK4TagInfoRef"/>
-  <class name="reco::SoftParticleTransformerAK4TagInfoFwdRef"/>
-  <class name="reco::SoftParticleTransformerAK4TagInfoRefProd"/>
-  <class name="reco::SoftParticleTransformerAK4TagInfoRefVector"/>
-  <class name="edm::Wrapper<reco::SoftParticleTransformerAK4TagInfoCollection>"/>
- 
+  
   <class name="reco::DeepDoubleXTagInfo"/>
   <class name="reco::DeepDoubleXTagInfoCollection"/>
   <class name="reco::DeepDoubleXTagInfoRef"/>

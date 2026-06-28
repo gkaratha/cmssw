@@ -150,6 +150,8 @@ def applySubstructure( process, postfix="" ) :
 
     # Setup DeepJet and UParT taggers for subjet
     from RecoBTag.ONNXRuntime.pfUnifiedParticleTransformerAK4_cff import _pfUnifiedParticleTransformerAK4JetTagsAll as pfUnifiedParticleTransformerAK4JetTagsAll
+    from RecoBTag.ONNXRuntime.pfSoftParticleTransformerAK4_cff import _pfSoftParticleTransformerAK4JetTagsAll as pfSoftParticleTransformerAK4JetTagsAll
+
     _btagDiscriminatorsSubjets = cms.PSet(
       names=cms.vstring(
         'pfDeepFlavourJetTags:probb',
@@ -164,6 +166,7 @@ def applySubstructure( process, postfix="" ) :
         'pfUnifiedParticleTransformerAK4V1JetTags:ptnu',
         'pfUnifiedParticleTransformerAK4V1JetTags:ptreshigh',
         'pfUnifiedParticleTransformerAK4V1JetTags:ptreslow',
+        'pfUnifiedSoftTransformerAK4DiscriminatorsJetTags:BvsAll',
       )
     )
     updateJetCollection(

@@ -1,23 +1,39 @@
+///////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Soft Jet Tagging Infos ////////////////////////
+// Author: G. Karathanasis, CERN with help of BTV
+// Provides the input variables (features) for the SoftParT tagger. 
+// Soft tagging: rely on charged CHS jets
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "FWCore/Utilities/interface/ESGetToken.h"
+#include "FWCore/ParameterSet/interface/Registry.h"
+#include "FWCore/Common/interface/Provenance.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/EventSetupRecord.h"
+#include "FWCore/Framework/interface/EventSetupRecordImplementation.h"
+#include "FWCore/Framework/interface/EventSetupRecordKey.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-
 #include "DataFormats/BTauReco/interface/ShallowTagInfo.h"
+#include "DataFormats/BTauReco/interface/SoftParticleTransformerAK4TagInfo.h"
+#include "DataFormats/BTauReco/interface/SoftParticleTransformerAK4Features.h"
+#include "DataFormats/BTauReco/interface/SeedingTrackFeatures.h"
+#include "DataFormats/BTauReco/interface/TrackPairFeatures.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/Provenance/interface/ProductProvenance.h"
+#include "DataFormats/Common/interface/AssociationMap.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
-#include "DataFormats/BTauReco/interface/UnifiedParticleTransformerAK4TagInfo.h"
-#include "DataFormats/BTauReco/interface/UnifiedParticleTransformerAK4Features.h"
 
 #include "RecoBTag/FeatureTools/interface/JetConverter.h"
 #include "RecoBTag/FeatureTools/interface/ShallowTagInfoConverter.h"
@@ -25,49 +41,34 @@
 #include "RecoBTag/FeatureTools/interface/NeutralCandidateConverter.h"
 #include "RecoBTag/FeatureTools/interface/ChargedCandidateConverter.h"
 #include "RecoBTag/FeatureTools/interface/LostTracksConverter.h"
-
 #include "RecoBTag/FeatureTools/interface/TrackInfoBuilder.h"
 #include "RecoBTag/FeatureTools/interface/sorting_modules.h"
-
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
-
-#include "RecoBTag/FeatureTools/interface/deep_helpers.h"
-
-#include "FWCore/ParameterSet/interface/Registry.h"
-#include "FWCore/Common/interface/Provenance.h"
-#include "DataFormats/Provenance/interface/ProductProvenance.h"
-
-#include "DataFormats/BTauReco/interface/SeedingTrackFeatures.h"
-#include "DataFormats/BTauReco/interface/TrackPairFeatures.h"
 #include "RecoBTag/FeatureTools/interface/TrackPairInfoBuilder.h"
 #include "RecoBTag/FeatureTools/interface/SeedingTrackInfoBuilder.h"
 #include "RecoBTag/FeatureTools/interface/SeedingTracksConverter.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/Framework/interface/EventSetup.h"
+#include "RecoBTag/FeatureTools/interface/deep_helpers.h"
 #include "RecoBTag/TrackProbability/interface/HistogramProbabilityEstimator.h"
 class HistogramProbabilityEstimator;
-#include <memory>
 
+
+#include <memory>
 #include <typeinfo>
 #include "CondFormats/BTauObjects/interface/TrackProbabilityCalibration.h"
 #include "CondFormats/DataRecord/interface/BTagTrackProbability2DRcd.h"
 #include "CondFormats/DataRecord/interface/BTagTrackProbability3DRcd.h"
-#include "FWCore/Framework/interface/EventSetupRecord.h"
-#include "FWCore/Framework/interface/EventSetupRecordImplementation.h"
-#include "FWCore/Framework/interface/EventSetupRecordKey.h"
-#include "DataFormats/Common/interface/AssociationMap.h"
 
-class UnifiedParticleTransformerAK4TagInfoProducer : public edm::stream::EDProducer<> {
+
+
+
+class SoftParticleTransformerAK4TagInfoProducer : public edm::stream::EDProducer<> {
 public:
-  explicit UnifiedParticleTransformerAK4TagInfoProducer(const edm::ParameterSet&);
-  ~UnifiedParticleTransformerAK4TagInfoProducer() override = default;
+  explicit SoftParticleTransformerAK4TagInfoProducer(const edm::ParameterSet&);
+  ~SoftParticleTransformerAK4TagInfoProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-  typedef std::vector<reco::UnifiedParticleTransformerAK4TagInfo> UnifiedParticleTransformerAK4TagInfoCollection;
+  typedef std::vector<reco::SoftParticleTransformerAK4TagInfo> SoftParticleTransformerAK4TagInfoCollection;
   typedef reco::VertexCompositePtrCandidateCollection SVCollection;
   typedef reco::VertexCollection VertexCollection;
   typedef edm::AssociationMap<edm::OneToOne<reco::JetView, reco::JetView>> JetMatchMap;
@@ -105,7 +106,7 @@ private:
   const double max_jet_eta_;
 };
 
-UnifiedParticleTransformerAK4TagInfoProducer::UnifiedParticleTransformerAK4TagInfoProducer(
+SoftParticleTransformerAK4TagInfoProducer::SoftParticleTransformerAK4TagInfoProducer(
     const edm::ParameterSet& iConfig)
     : jet_radius_(iConfig.getParameter<double>("jet_radius")),
       min_candidate_pt_(iConfig.getParameter<double>("min_candidate_pt")),
@@ -127,7 +128,7 @@ UnifiedParticleTransformerAK4TagInfoProducer::UnifiedParticleTransformerAK4TagIn
       is_weighted_jet_(iConfig.getParameter<bool>("is_weighted_jet")),
       min_jet_pt_(iConfig.getParameter<double>("min_jet_pt")),
       max_jet_eta_(iConfig.getParameter<double>("max_jet_eta")) {
-  produces<UnifiedParticleTransformerAK4TagInfoCollection>();
+  produces<SoftParticleTransformerAK4TagInfoCollection>();
 
   const auto& puppi_value_map_tag = iConfig.getParameter<edm::InputTag>("puppi_value_map");
   if (!puppi_value_map_tag.label().empty()) {
@@ -152,8 +153,8 @@ UnifiedParticleTransformerAK4TagInfoProducer::UnifiedParticleTransformerAK4TagIn
   }
 }
 
-void UnifiedParticleTransformerAK4TagInfoProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  // pfUnifiedParticleTransformerAK4TagInfos
+void SoftParticleTransformerAK4TagInfoProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  // pfSoftParticleTransformerAK4TagInfos
   edm::ParameterSetDescription desc;
   desc.add<double>("jet_radius", 0.4);
   desc.add<double>("min_candidate_pt", 0.10);
@@ -173,12 +174,11 @@ void UnifiedParticleTransformerAK4TagInfoProducer::fillDescriptions(edm::Configu
   desc.add<bool>("is_weighted_jet", false);
   desc.add<double>("min_jet_pt", 0.0);
   desc.add<double>("max_jet_eta", 2.5);
-  descriptions.add("pfUnifiedParticleTransformerAK4TagInfos", desc);
+  descriptions.add("pfSoftParticleTransformerAK4TagInfos", desc);
 }
 
-void UnifiedParticleTransformerAK4TagInfoProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
-//  std::cout<<"here uni"<<std::endl;
-  auto output_tag_infos = std::make_unique<UnifiedParticleTransformerAK4TagInfoCollection>();
+void SoftParticleTransformerAK4TagInfoProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  auto output_tag_infos = std::make_unique<SoftParticleTransformerAK4TagInfoCollection>();
   edm::Handle<edm::View<reco::Jet>> jets;
   iEvent.getByToken(jet_token_, jets);
 
@@ -222,7 +222,7 @@ void UnifiedParticleTransformerAK4TagInfoProducer::produce(edm::Event& iEvent, c
 
   for (std::size_t jet_n = 0; jet_n < jets->size(); jet_n++) {
     // create data containing structure
-    btagbtvdeep::UnifiedParticleTransformerAK4Features features;
+    btagbtvdeep::SoftParticleTransformerAK4Features features;
 
     // reco jet reference (use as much as possible)
     const auto& jet = jets->at(jet_n);
@@ -549,4 +549,4 @@ void UnifiedParticleTransformerAK4TagInfoProducer::produce(edm::Event& iEvent, c
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(UnifiedParticleTransformerAK4TagInfoProducer);
+DEFINE_FWK_MODULE(SoftParticleTransformerAK4TagInfoProducer);

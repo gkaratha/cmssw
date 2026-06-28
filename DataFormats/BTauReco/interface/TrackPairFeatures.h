@@ -15,6 +15,7 @@ namespace btagbtvdeep {
     float sip3D;
     float ip2D;
     float sip2D;
+    float pca_distpv;
     float distPCA;
     float dsigPCA;
     float x_PCAonSeed;
